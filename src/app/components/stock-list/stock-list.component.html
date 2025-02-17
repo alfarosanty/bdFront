@@ -1,0 +1,45 @@
+<div class="list row">
+    <div class="col-md-8">
+      <div class="input-group mb-3">
+        <input
+          type="text"
+          class="form-control"
+          placeholder="Buscar por producto"
+          [(ngModel)]="producto"
+        />
+        <div class="input-group-append">
+          <button
+            class="btn btn-outline-secondary"
+            type="button"
+            (click)="searchStock()"
+          >
+            Buscar
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <h4>Listado de productos</h4>
+      <ul class="list-group">
+        <li
+          class="list-group-item"
+          *ngFor="let stock of stocks; let i = index"
+          [class.active]="i == currentIndex"
+          (click)="setActiveStock(stock, i)"
+        >
+          {{ stock.producto }} ({{ stock.cantidad }} Mts)
+        </li>
+      </ul>
+  
+      <button class="m-3 btn btn-sm btn-danger" (click)="removeAllStock()">
+        Eliminar todo
+      </button>
+    </div>
+    <div class="col-md-6">
+      <app-stock-details
+        [viewMode]="true"
+        [currentStock]="currentStock"
+      ></app-stock-details>
+    </div>
+  </div>
+  

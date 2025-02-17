@@ -1,0 +1,35 @@
+<div>
+    <div class="submit-form">
+      <div *ngIf="!submitted">
+        <div class="form-group">
+          <label for="poducto">Producto</label>
+          <input
+            type="text"
+            class="form-control"
+            id="poducto"
+            required
+            [(ngModel)]="stock.producto"
+            name="poducto"
+          />
+        </div>
+  
+        <div class="form-group">
+          <label for="description">Cantidad</label>
+          <input
+            class="form-control"
+            id="cantidad"
+            required
+            [(ngModel)]="stock.cantidad"
+            name="cantidad"
+          />
+        </div>
+  
+        <button (click)="saveStock()" class="btn btn-success">Guardar</button>
+      </div>
+  
+      <div *ngIf="submitted">
+        <h4>Guardado correctamente!</h4>
+        <button class="btn btn-success" (click)="newStock()">Nuevo</button>
+      </div>
+    </div>
+  </div>

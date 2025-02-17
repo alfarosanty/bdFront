@@ -1,0 +1,96 @@
+<div *ngIf="viewMode; else editable">
+    <div *ngIf="currentStock.id">
+      <h4>Producto</h4>
+      <div>
+        <label><strong>Id:</strong></label> {{ currentStock.id }}
+      </div>
+      <div>
+        <label><strong>Producto:</strong></label> {{ currentStock.producto }}
+      </div>
+      <div>
+        <label><strong>Cantidad:</strong></label>
+        {{ currentStock.cantidad }}
+      </div>
+      <div>
+        <label><strong>Status:</strong></label>
+        {{ currentStock.baja ? "True" : "False" }}
+      </div>
+  
+      <a class="badge badge-warning"
+        routerLink="/listStock/{{ currentStock.id }}">
+        Editar
+      </a>
+    </div>
+  
+    <div *ngIf="!currentStock">
+      <br />
+      <p>Clickear en un stock...</p>
+    </div>
+  </div>
+  
+  <ng-template #editable>
+    <div *ngIf="currentStock.id" class="edit-form">
+      <h4>Stock</h4>
+      <form>
+        <div class="form-group">
+          <label for="title">Producto</label>
+          <input
+            type="text"
+            class="form-control"
+            id="producto"
+            [(ngModel)]="currentStock.producto"
+            name="producto"
+          />
+        </div>
+        <div class="form-group">
+          <label for="description">Cantidad</label>
+          <input
+            type="text"
+            class="form-control"
+            id="cantidad"
+            [(ngModel)]="currentStock.cantidad"
+            name="cantidad"
+          />
+        </div>
+  
+        <div class="form-group">
+          <label><strong>Status:</strong></label>
+          {{ currentStock.baja ? "True" : "False" }}
+        </div>
+      </form>
+  
+      <button
+        class="badge badge-primary mr-2"
+        *ngIf="currentStock.baja"
+        (click)="updateBorrado(false)"
+      >
+        Borrar
+      </button>
+      <button
+        *ngIf="!currentStock.baja"
+        class="badge badge-primary mr-2"
+        (click)="updateBorrado(true)"
+      >
+        Publicar
+      </button>
+  
+      <button class="badge badge-danger mr-2" (click)="deleteStock()">
+        Eliminar
+      </button>
+  
+      <button
+        type="submit"
+        class="badge badge-success mb-2"
+        (click)="updateStock()"
+      >
+        Update
+      </button>
+      <p>{{ message }}</p>
+    </div>
+  
+    <div *ngIf="!currentStock.id">
+      <br />
+      <p>Stock inaccesible...</p>
+    </div>
+  </ng-template>
+  
