@@ -1,0 +1,77 @@
+<div class="general-container">
+
+<div class="superior-container">
+<div class="selector-container">
+    <h2>Clientes</h2>
+
+    <!-- Menú desplegable de clientes -->
+    <div class="dropdown">
+        <label for="clientes">Seleccionar Cliente:</label>
+        <select id="clientes" onchange="mostrarDatosCliente()">
+            <option value="">Seleccione un cliente</option>
+            <option value="cliente1">Cliente1</option>
+            <option value="cliente2">Cliente2</option>
+            <option value="cliente3">Cliente3</option>
+            <option value="cliente4">Otro cliente</option>
+        </select>
+    </div>
+
+</div>
+
+
+<div class="datosCliente-container" id="datosCliente">
+    <h3>Datos del Cliente</h3>
+    <p><strong>Razón Social:</strong> <span id="razon"></span></p>
+    <p><strong>Domicilio:</strong> <span id="domicilio"></span></p>
+    <p><strong>Localidad:</strong> <span id="localidad"></span></p>
+    <p><strong>Teléfono:</strong> <span id="telefono"></span></p>
+    <p><strong>I.V.A:</strong> <span id="tipoCliente"></span></p>
+    <p><strong>CUIT:</strong> <span id="cuit"></span></p>
+</div>
+
+</div>
+
+<div class="inferior-container">
+    <h3>Datos del Comprobante</h3>
+
+    <div class="datos-comprobante">
+        <div class="lista-group">
+            <label>Precio Lista:</label>
+            <input type="radio" name="lista" id="lista1"> <label for="lista1">Lista1</label>
+            <input type="radio" name="lista" id="lista2"> <label for="lista2">Lista2</label>
+        </div>
+
+        <div>
+            <label for="fecha">Fecha de Emisión:</label>
+            <input type="date" id="fecha">
+        </div>
+
+        <div>
+            <label for="descuento">Descuento:</label>
+            <input type="text" id="descuento" size="5"> %
+        </div>
+
+        <div>
+            <label for="vendedor">Vendedor:</label>
+            <select id="vendedor">
+                <option>01 - Archi - Miriam</option>
+                <option>02 - Juan - Pedro</option>
+            </select>
+        </div>
+
+        <div>
+            <input type="checkbox" id="iva">
+            <label for="iva">Eximir pago de IVA (Ley 24.331)</label>
+        </div>
+
+        <div>
+            <button class="boton-siguiente" type="button" (click)="listarClientes()">Siguiente</button>
+        </div>
+
+    </div>
+</div>
+
+
+
+
+</div>

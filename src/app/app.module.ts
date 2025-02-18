@@ -8,6 +8,7 @@ import { AppComponent } from './app.component';
 import { AddStockComponent } from './components/add-stock/add-stock.component';
 import { StockDetailsComponent } from './components/stock-details/stock-details.component';
 import { StockListComponent } from './components/stock-list/stock-list.component';
+import { SearchBudgetComponent } from './components/search-budget/search-budget.component';
 
 @NgModule({
   declarations: [
@@ -15,6 +16,7 @@ import { StockListComponent } from './components/stock-list/stock-list.component
     AddStockComponent,
     StockDetailsComponent,
     StockListComponent,
+    SearchBudgetComponent,
   ],
   imports: [
     BrowserModule,
