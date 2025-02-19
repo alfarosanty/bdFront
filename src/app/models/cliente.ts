@@ -1,8 +1,10 @@
 export class Cliente {
-    razon_social?:string;
+    id?:string;
+    razonSocial?:string;
     domicilio?:string;
     localidad?:string;
+    provincia?:string;
     telefono?:number;
     iva?:string;
-    cuit?:number;
+    cuit?:string;
 }
