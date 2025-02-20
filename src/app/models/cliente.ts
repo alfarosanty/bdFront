@@ -1,10 +1,15 @@
 export class Cliente {
-    id?:string;
+    id?:number;
     razonSocial?:string;
     domicilio?:string;
     localidad?:string;
     provincia?:string;
     telefono?:number;
-    iva?:string;
+    condicionFiscal?:CondicionFiscal;
     cuit?:string;
+}
+
+class CondicionFiscal{
+    codigo?: string;
+    descripcion?: string;
 }

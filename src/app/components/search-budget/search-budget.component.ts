@@ -9,10 +9,11 @@ import { ClienteService } from 'src/app/service/cliente.service';
 })
 export class SearchBudgetComponent {
   clientes?: Cliente[];
-  currentCliente: Cliente = {};
+  currentCliente?: Cliente;
   currentIndex = -1;
   producto = '';
   numCliente = '';
+  mostrarColores = false
 
   constructor(private clienteService: ClienteService) {}
 
@@ -35,10 +36,26 @@ export class SearchBudgetComponent {
     });
   }
 
-  buscarxNumeroCliente(): void {
-    //this.currentCliente= this.clienteService.get(this.numCliente);
-    
+  seleccionarXnumeroCliente() {
+
+
+    this.clienteService.getAll().subscribe({
+      next: (data) => {
+        this.currentCliente = data[0];
+        console.log(data[0]);
+      },
+      error: (e) => console.error(e)
+    });
+
+    /*this.clienteService.get(this.numCliente).subscribe({
+      next: (data)=>{
+      this.currentCliente = data
+      console.log(data);
+      },
+      error: (e) => console.error(e)
+  });*/
   }
+  
 
  seleccionarCliente(): void {
 
@@ -55,6 +72,10 @@ export class SearchBudgetComponent {
       this.currentCliente = this.clientes[this.currentIndex-1];
     }
       
+  }
+
+  mostrarVariedadColores(){
+    this.mostrarColores=true;
   }
   
 }

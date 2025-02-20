@@ -8,8 +8,10 @@
     <div class="dropdown">
         <div>
             <label for="descuento">Numero de Cliente:</label>
-            <input type="text" id="numCliente" (change)="buscarxNumeroCliente()">
+            <input type="text" id="numCliente" [(ngModel)]="numCliente" (keydown.enter)="seleccionarXnumeroCliente()">
         </div>
+
+
         <label for="clientes">Seleccionar Cliente:</label>
         <select  (change)="seleccionarCliente()" [(ngModel)]="currentIndex">
             <option >Seleccione un cliente</option>
@@ -29,7 +31,7 @@
     <p><strong>Domicilio:</strong> {{ currentCliente.domicilio }}</p>
     <p><strong>Localidad:</strong> {{ currentCliente.localidad }}</p>
     <p><strong>Teléfono:</strong> {{ currentCliente.telefono }}</p>
-    <p><strong>I.V.A:</strong> {{ currentCliente.iva }}</p>
+    <p><strong>I.V.A:</strong> {{ currentCliente.condicionFiscal?.descripcion }}</p>
     <p><strong>CUIT:</strong> {{ currentCliente.cuit }}</p>
   </div>
 </div>
@@ -53,7 +55,7 @@
 
         <div>
             <label for="descuento">Descuento:</label>
-            <input type="text" id="descuento" size="5"> %
+            <input type="number" id="descuento" size="5"> %
         </div>
 
         <div>
@@ -77,6 +79,30 @@
 </div>
 
 
+
+<div class="presupuesto-container">
+    <div class="seleccion-container">
+        <div>
+            <label>Artículo:</label>
+            <input type="text" (keydown.enter)="mostrarVariedadColores()">
+        </div>
+    </div>
+<!-- Este DIV aparecerá a la derecha cuando presiones Enter -->
+    <div class="colores-container" *ngIf="mostrarColores">
+        <h3>Detalle de selección</h3>
+        <label for="colores">Color:</label>
+    <select class="select-color">
+      <option value="Rojo" style="background-color: red; font-weight: bold;">Rojo</option>
+      <option value="Verde" style="background-color: green; font-weight: bold;">Verde</option>
+      <option value="Azul" style="background-color: blue; font-weight: bold;">Azul</option>
+      <option value="Amarillo" style="background-color: yellow; font-weight: bold;">Amarillo</option>
+    </select>        
+        <!-- Input para mostrar el valor seleccionado -->
+        <label for="cantidades">Cantidad:</label>
+        <input type="text" id="Cantidad" size="2">
+    </div>
+
+</div>
 
 
 </div>
