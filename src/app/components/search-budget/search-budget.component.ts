@@ -12,6 +12,7 @@ export class SearchBudgetComponent {
   currentCliente: Cliente = {};
   currentIndex = -1;
   producto = '';
+  numCliente = '';
 
   constructor(private clienteService: ClienteService) {}
 
@@ -34,22 +35,28 @@ export class SearchBudgetComponent {
     });
   }
 
- seleccionarCliente(target: EventTarget | null): void {
+  buscarxNumeroCliente(): void {
+    //this.currentCliente= this.clienteService.get(this.numCliente);
+    
+  }
+
+ seleccionarCliente(): void {
+
+
+  
     // Verificar si target no es null y es un HTMLSelectElement
-    const selectElement = target as HTMLSelectElement;
-  
-    if (selectElement) {
-      const clienteId = selectElement.value;
-  
-      if (clienteId) {
-        this.currentCliente = this.clientes?.find(cliente => cliente.id?.toString() === clienteId) || {};
-      } else {
-        this.currentCliente = {};  // Si no hay cliente seleccionado, vaciar los detalles
-      }
-      console.log(this.currentCliente);  // Mostrar los detalles del cliente seleccionado
+    //const selectElement = target as HTMLSelectElement;
+    //this.currentCliente = cliente;
+    
+    console.log('passo');
+    console.log (this.currentIndex);
+    if(this.clientes){
+      console.log(this.clientes[this.currentIndex-1]);
+      this.currentCliente = this.clientes[this.currentIndex-1];
     }
+      
   }
   
-  
-
 }
+
+

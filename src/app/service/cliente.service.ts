@@ -21,20 +21,5 @@ export class ClienteService {
     return this.http.get<Cliente>(`${baseUrl}/GetById/${id}`);
   }
 
-  create(data: any): Observable<any> {
-    return this.http.post(`${baseUrl}/PostStock`, data);
-  }
-
-  update(id: any, data: any): Observable<any> {
-    //return this.http.put(`${baseUrl}/${id}`, data);
-    return this.http.post(`${baseUrl}/UpdateStock`, data);
-  }
-
-  delete(id: any): Observable<any> {
-    return this.http.delete(`${baseUrl}/DeleteStock/${id}`);
-  }
-
-  deleteAll(): Observable<any> {
-    return this.http.delete(baseUrl);
-  }
 }
+

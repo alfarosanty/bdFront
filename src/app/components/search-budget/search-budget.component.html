@@ -6,10 +6,14 @@
 
     <!-- Menú desplegable de clientes -->
     <div class="dropdown">
+        <div>
+            <label for="descuento">Numero de Cliente:</label>
+            <input type="text" id="numCliente" (change)="buscarxNumeroCliente()">
+        </div>
         <label for="clientes">Seleccionar Cliente:</label>
-        <select id="clientes" (change)="seleccionarCliente($event.target)">
-            <option value="">Seleccione un cliente</option>
-            <option *ngFor="let cliente of clientes" [value]="cliente.razonSocial">
+        <select  (change)="seleccionarCliente()" [(ngModel)]="currentIndex">
+            <option >Seleccione un cliente</option>
+            <option *ngFor="let cliente of clientes" [value]="cliente.id" >
                  {{cliente.razonSocial}} 
             </option>
           </select>
