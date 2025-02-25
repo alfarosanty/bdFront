@@ -1,3 +1,4 @@
+
 <div class="general-container">
 
 <div class="superior-container">
@@ -76,6 +77,7 @@
 
 
 <div class="presupuesto-container">
+    <div class="seleccion-y-colores-container">
     <div class="seleccion-container">
         <div>
             <label>Artículo:</label>
@@ -85,26 +87,29 @@
 <!-- Este DIV aparecerá a la derecha cuando presiones Enter -->
     <div class="colores-container" *ngIf="mostrarColores">
         <h3>Detalle de selección</h3>
-        <label for="colores">Color:</label>
-    <select class="select-color">
+        <label for="colores">Color:</label> 
+    <select class="select-color" [(ngModel)]="articuloColorIndex">  
 
-        <option *ngFor="let articulo of articulos" [value]="articulo.id" >
+        <option *ngFor="let articulo of articulos ; let i = index"  [value]="i" >
             {{articulo.color?.descripcion}} 
        </option>
     </select>        
         <!-- Input para mostrar el valor seleccionado -->
         <label for="cantidades">Cantidad:</label>
-        <input type="text" id="Cantidad" size="2">
+        <input type="text" id="Cantidad" size="2" [(ngModel)]="cantProducto"  (keydown.enter)="agregarArticulo()">
     </div>
 
-    <div class="grilla">
-        <div class="celda">Celda 1</div>
-        <div class="celda">Celda 2</div>
-        <div class="celda">Celda 3</div>
-        <div class="celda">Celda 4</div>
-        <div class="celda">Celda 5</div>
-        <div class="celda">Celda 6</div>
-    </div>
+</div>
+
+    <div class="grilla-container">
+        <h3>Grilla de Información</h3>
+        <div class="grilla">
+            <div class="item"> CÓDIGO</div>
+            <div class="item">DESCRIPCIÓN</div>
+            <div class="item"> CANTIDAD</div>
+            <div class="item">PRECIO</div>
+        </div>
+
 
 </div>
 

@@ -1,4 +1,6 @@
 import { Color } from "./color.model";
+import { Familia } from "./familia.model";
+import { Medida } from "./medida.model";
 
 export class Articulo {
     id?:number;
@@ -6,4 +8,7 @@ export class Articulo {
     descripcion?:string;
     color?: Color;
     precio?:number;
+    familia?:Familia;
+    medida?:Medida;
+    
 }

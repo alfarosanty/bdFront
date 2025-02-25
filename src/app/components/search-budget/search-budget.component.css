@@ -96,6 +96,15 @@ select {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
+    flex-direction: column;
+}
+
+.seleccion-y-colores-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    width: 100%;
 }
 
 .seleccion-container{
@@ -126,3 +135,27 @@ select {
     font-size: 14px;
     font-weight: bold;
   }
+
+  .grilla-container {
+    width: 100%;
+    margin: 0 auto;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.grilla {
+    display: grid;
+    grid-template-columns: 15% 55% 12% 15%; /* Tamaños fijos para cada celda */
+    grid-template-rows: auto; /* Alturas para filas específicas */
+
+}
+
+.item {
+   
+    color: black;
+    padding: 20px;
+    text-align: left;
+    font-size: 100%;
+    border: 1px solid black; /* Añadir borde negro */
+
+}

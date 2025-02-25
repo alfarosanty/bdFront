@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { Articulo } from 'src/app/models/articulo.model';
 import { Cliente } from 'src/app/models/cliente';
+import { Medida } from 'src/app/models/medida.model';
+import { PresupuestoArticulo } from 'src/app/models/presupuesto-articulo.model';
 import { ArticuloService } from 'src/app/services/articulo.service';
 import { ClienteService } from 'src/app/services/cliente.service';
 
@@ -11,24 +13,33 @@ import { ClienteService } from 'src/app/services/cliente.service';
 })
 export class SearchBudgetComponent {
 //DATOS DEL PRESUPUESTO
-currentCliente?: Cliente;
-fechaPresupuesto ='';
 
-  
   clientes?: Cliente[];
-  articulos?: Articulo[];
-  currentIndex = -1;
+  articulos: Articulo[]=[];
+  familiaMedida: string[] = [];
+  mapaPresupuestoArticulos ?: Map<string,PresupuestoArticulo[]>;
+
+
+  currentCliente?: Cliente;
+  currentArticulo ?: Articulo;
+
+  fechaPresupuesto ='';
   producto = '';
   numCliente = '';
-  mostrarColores = false;
   codigoArticulo = '';
-  familiaMedida: string[] = [];
+  cantProducto = '';
+  mostrarColores = false;
+  currentIndex = -1;
+  articuloColorIndex = -1;
+ 
 
   constructor(private clienteService: ClienteService, private articuloService:ArticuloService) {}
 
   ngOnInit(): void {
     this.listarClientes();
     this.fechaPresupuesto = new Date().toISOString().split('T')[0];
+    this.mapaPresupuestoArticulos=new Map();
+  
   }
 
 
@@ -75,7 +86,6 @@ fechaPresupuesto ='';
   mostrarVariedadColores(){
     
     this.articulos = [];
-    console.log('pasoooo');
     //resultado: string[] = [];
     console.log('viene con ' + this.codigoArticulo);
    if(this.codigoArticulo){   
@@ -96,6 +106,36 @@ fechaPresupuesto ='';
     this.mostrarColores=false;    
   }
   
+agregarArticulo(){
+  console.log("estoy aca!!!!!");
+  console.log (this.articuloColorIndex);
+  if(this.articulos){
+    this.currentArticulo = this.articulos[this.articuloColorIndex];
+  }
+
+    if(this.currentArticulo){
+    const claveMapa :string = this.currentArticulo?.familia?.codigo + "/" + this.currentArticulo.medida?.codigo;
+    console.log(claveMapa)
+
+    var pa :PresupuestoArticulo[] = [];
+
+    if(this.mapaPresupuestoArticulos?.has(claveMapa))
+      pa  = this.mapaPresupuestoArticulos.get(claveMapa) as PresupuestoArticulo[]
+    
+      pa.push({articulo: this.currentArticulo,cantidad: Number(this.cantProducto)});
+
+      this.mapaPresupuestoArticulos?.set(claveMapa,pa);
+
+      console.log(this.mapaPresupuestoArticulos);
+      
+
+      
+    }
+
+  }
+
 }
+
+
 
 
