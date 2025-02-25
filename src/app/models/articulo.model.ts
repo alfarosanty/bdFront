@@ -5,4 +5,5 @@ export class Articulo {
     codigo?:string;
     descripcion?:string;
     color?: Color;
+    precio?:number;
 }

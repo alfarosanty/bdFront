@@ -68,6 +68,10 @@ fechaPresupuesto ='';
       
   }
 
+  convertirAMayuscula(){
+    this.codigoArticulo = this.codigoArticulo.toUpperCase();
+  }
+
   mostrarVariedadColores(){
     
     this.articulos = [];
