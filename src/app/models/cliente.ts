@@ -1,3 +1,5 @@
+import { Color } from "./color.model";
+
 export class Cliente {
     id?:number;
     razonSocial?:string;
@@ -7,6 +9,7 @@ export class Cliente {
     telefono?:number;
     condicionFiscal?:CondicionFiscal;
     cuit?:string;
+    
 }
 
 class CondicionFiscal{

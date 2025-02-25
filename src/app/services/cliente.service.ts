@@ -14,11 +14,11 @@ export class ClienteService {
   constructor(private http: HttpClient) {}
 
   getAll(): Observable<Cliente[]> {
-    return this.http.get<Cliente[]>(`${baseUrl}/`);
+    return this.http.get<Cliente[]>(`${baseUrl}/GetClientes `);
   }
 
   get(id: any): Observable<Cliente> {
-    return this.http.get<Cliente>(`${baseUrl}/GetById/${id}`);
+    return this.http.get<Cliente>(`${baseUrl}/GetClienteById/${id}`);
   }
 
 }

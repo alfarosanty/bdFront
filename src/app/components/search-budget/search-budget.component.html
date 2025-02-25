@@ -50,14 +50,14 @@
 
         <div>
             <label for="fecha">Fecha de Emisión:</label>
-            <input type="date" id="fecha">
+            <input type="date" id="fecha" [(ngModel)]="fechaPresupuesto">
         </div>
 
         <div>
             <label for="descuento">Descuento:</label>
             <input type="number" id="descuento" size="5"> %
         </div>
-
+<!-- 
         <div>
             <label for="vendedor">Vendedor:</label>
             <select id="vendedor">
@@ -65,16 +65,11 @@
                 <option>02 - Juan - Pedro</option>
             </select>
         </div>
-
+    -->
         <div>
             <input type="checkbox" id="iva">
             <label for="iva">Eximir pago de IVA (Ley 24.331)</label>
         </div>
-
-        <div>
-            <button class="boton-siguiente" type="button" (click)="listarClientes()">Siguiente</button>
-        </div>
-
     </div>
 </div>
 
@@ -84,7 +79,7 @@
     <div class="seleccion-container">
         <div>
             <label>Artículo:</label>
-            <input type="text" (keydown.enter)="mostrarVariedadColores()">
+            <input type="text" id="codigoArticulo" [(ngModel)]="codigoArticulo" (keydown.enter)="mostrarVariedadColores()" onKeyUp="javascript:this.value=this.value.toUpperCase();">
         </div>
     </div>
 <!-- Este DIV aparecerá a la derecha cuando presiones Enter -->
@@ -92,10 +87,10 @@
         <h3>Detalle de selección</h3>
         <label for="colores">Color:</label>
     <select class="select-color">
-      <option value="Rojo" style="background-color: red; font-weight: bold;">Rojo</option>
-      <option value="Verde" style="background-color: green; font-weight: bold;">Verde</option>
-      <option value="Azul" style="background-color: blue; font-weight: bold;">Azul</option>
-      <option value="Amarillo" style="background-color: yellow; font-weight: bold;">Amarillo</option>
+
+        <option *ngFor="let articulo of articulos" [value]="articulo.id" >
+            {{articulo.color?.descripcion}} 
+       </option>
     </select>        
         <!-- Input para mostrar el valor seleccionado -->
         <label for="cantidades">Cantidad:</label>
@@ -105,4 +100,7 @@
 </div>
 
 
+<div>
+    <button class="boton-siguiente" type="button" (click)="listarClientes()">Siguiente</button>
+</div>
 </div>
