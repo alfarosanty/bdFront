@@ -1,6 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Articulo } from '../models/articulo.model';
+import { Presupuesto } from '../models/presupuesto.model';
+
+const baseUrl = 'http://localhost:7166';
+
 
 @Injectable({
   providedIn: 'root'
@@ -8,9 +12,15 @@ import { Articulo } from '../models/articulo.model';
 
 
 
+
 export class PresupuestoService {
 
   constructor(private http: HttpClient) {}
+
+  guardar(presupuesto :Presupuesto)  {
+  return this.http.post(`${baseUrl}/Presupuesto`, presupuesto);
+  }
+
 }
 
 
