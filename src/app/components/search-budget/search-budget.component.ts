@@ -3,7 +3,9 @@ import { Articulo } from 'src/app/models/articulo.model';
 import { Cliente } from 'src/app/models/cliente';
 import { Medida } from 'src/app/models/medida.model';
 import { PresupuestoArticulo } from 'src/app/models/presupuesto-articulo.model';
+import { Presupuesto } from 'src/app/models/presupuesto.model';
 import { ArticuloService } from 'src/app/services/articulo.service';
+import { PresupuestoService } from 'src/app/services/budget.service';
 import { ClienteService } from 'src/app/services/cliente.service';
 
 @Component({
@@ -33,7 +35,7 @@ export class SearchBudgetComponent {
   articuloColorIndex = -1;
  
 
-  constructor(private clienteService: ClienteService, private articuloService:ArticuloService) {}
+  constructor(private clienteService: ClienteService, private articuloService:ArticuloService, private presupuestoService:PresupuestoService) {}
 
   ngOnInit(): void {
     this.listarClientes();
@@ -139,6 +141,10 @@ agregarArticulo(){
       .reduce((total, cantidad) => (total || 0) + (cantidad || 0), 0) || 0) ;  // Suma las cantidades
   }
   
+  guardarPresupuesto(presupuesto:Presupuesto){
+    this.presupuestoService.guardar(presupuesto)
+}
+
 }
 
 
