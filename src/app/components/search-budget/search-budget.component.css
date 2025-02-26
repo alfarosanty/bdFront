@@ -149,13 +149,26 @@ select {
     grid-template-rows: auto; /* Alturas para filas específicas */
 
 }
+.item-header {
+   
+    color: black;
+    padding: 20px;
+    text-align: left;
+    font-size: 80%;
+    border: 1px solid black; /* Añadir borde negro */
+    font-weight: bold;
+}
 
 .item {
    
     color: black;
     padding: 20px;
     text-align: left;
-    font-size: 100%;
+    font-size: 80%;
     border: 1px solid black; /* Añadir borde negro */
 
 }
+
+.row {
+    display: contents; /* Importante para que las filas usen el diseño de la grilla */
+  }

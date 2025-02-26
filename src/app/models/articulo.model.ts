@@ -7,7 +7,7 @@ export class Articulo {
     codigo?:string;
     descripcion?:string;
     color?: Color;
-    precio?:number;
+    precio1?:number;
     familia?:Familia;
     medida?:Medida;
     

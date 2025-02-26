@@ -107,15 +107,17 @@ export class SearchBudgetComponent {
   }
   
 agregarArticulo(){
-  console.log("estoy aca!!!!!");
   console.log (this.articuloColorIndex);
   if(this.articulos){
     this.currentArticulo = this.articulos[this.articuloColorIndex];
+    this.articulos = this.articulos.filter(articulo => articulo.id !== this.currentArticulo?.id);
+
   }
 
     if(this.currentArticulo){
     const claveMapa :string = this.currentArticulo?.familia?.codigo + "/" + this.currentArticulo.medida?.codigo;
     console.log(claveMapa)
+
 
     var pa :PresupuestoArticulo[] = [];
 
@@ -127,13 +129,16 @@ agregarArticulo(){
       this.mapaPresupuestoArticulos?.set(claveMapa,pa);
 
       console.log(this.mapaPresupuestoArticulos);
-      
-
-      
+           
     }
-
   }
 
+  getCantidadTotal(presupuestoArticulos: PresupuestoArticulo[]): number {
+    return (presupuestoArticulos
+      .map(articulo => articulo.cantidad)  // Extrae la propiedad 'cantidad'
+      .reduce((total, cantidad) => (total || 0) + (cantidad || 0), 0) || 0) ;  // Suma las cantidades
+  }
+  
 }
 
 
