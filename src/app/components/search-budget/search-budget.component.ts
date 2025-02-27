@@ -25,12 +25,13 @@ export class SearchBudgetComponent {
   currentCliente?: Cliente;
   currentArticulo ?: Articulo;
 
-  fechaPresupuesto ='';
+  fechaPresupuesto ?:string;
   producto = '';
   numCliente = '';
   codigoArticulo = '';
   cantProducto = '';
   mostrarColores = false;
+  eximirIVA = false;
   currentIndex = -1;
   articuloColorIndex = -1;
  
@@ -39,7 +40,7 @@ export class SearchBudgetComponent {
 
   ngOnInit(): void {
     this.listarClientes();
-    this.fechaPresupuesto = new Date().toISOString().split('T')[0];
+    this.fechaPresupuesto =  new Date().toISOString().split('T')[0];;
     this.mapaPresupuestoArticulos=new Map();
   
   }
@@ -141,8 +142,32 @@ agregarArticulo(){
       .reduce((total, cantidad) => (total || 0) + (cantidad || 0), 0) || 0) ;  // Suma las cantidades
   }
   
-  guardarPresupuesto(presupuesto:Presupuesto){
-    this.presupuestoService.guardar(presupuesto)
+  guardarPresupuesto(){
+    const presupuesto = new Presupuesto();
+    presupuesto.Cliente = this.currentCliente;
+    presupuesto.EximirIVA = this.eximirIVA;
+    presupuesto.Articulos = [];
+    if(this.fechaPresupuesto)
+        presupuesto.Fecha = new Date(this.fechaPresupuesto);
+
+
+    this.mapaPresupuestoArticulos?.forEach((valor, clave) => {
+      console.log(clave);
+      console.log('largooo'  + valor.length);
+      valor.forEach(presuArt => {
+        console.log(presuArt.articulo?.color?.descripcion + '' +presuArt.cantidad);
+        presupuesto.Articulos?.push(presuArt);      
+  })
+  
+});
+    //presupuesto.articulos
+    console.log(presupuesto.Articulos?.length);
+  const idPresupuesto = this.presupuestoService.guardar(presupuesto);
+  if(idPresupuesto){
+    //reiniciar el formulario
+    //mostrar el Numero de presupuesto generado
+    alert(idPresupuesto);
+  }
 }
 
 }

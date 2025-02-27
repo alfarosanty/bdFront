@@ -18,7 +18,15 @@ export class PresupuestoService {
   constructor(private http: HttpClient) {}
 
   guardar(presupuesto :Presupuesto)  {
-  return this.http.post(`${baseUrl}/Presupuesto`, presupuesto);
+    alert('url' + '${baseUrl}/Presupuesto');
+  return this.http.post(`${baseUrl}/Presupuesto`, presupuesto).subscribe(
+    response => {
+      console.log('Respuesta de la API:', response);
+    },
+    error => {
+      console.error('Error en la llamada POST:', error);
+    }
+  );
   }
 
 }
