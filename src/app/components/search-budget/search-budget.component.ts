@@ -157,7 +157,11 @@ calcularPrecioConDescuento(presupuestoArticulo: any): number {
     return (presupuestoArticulo.PrecioUnitario - (presupuestoArticulo.PrecioUnitario * ((presupuestoArticulo.descuento || 0) * 0.01)));
   }
 
-
+  borrarFila(key : any){
+    
+    this.mapaPresupuestoArticulos?.delete(key);
+  
+    }
 
   
   guardarPresupuesto(){

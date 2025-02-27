@@ -1,3 +1,5 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
 
 <div class="general-container">
 
@@ -76,6 +78,11 @@
             <label>Artículo:</label>
             <input type="text" id="codigoArticulo" [(ngModel)]="codigoArticulo" (ngModelChange)="convertirAMayuscula()" (keydown.enter)="mostrarVariedadColores()" onKeyUp="javascript:this.value=this.value.toUpperCase();">
         </div>
+
+        <div> 
+            <button class="boton-busqueda-articulo" type="button" >Buscar Artículo</button>
+        </div>
+
     </div>
 <!-- Este DIV aparecerá a la derecha cuando presiones Enter -->
     <div class="colores-container" *ngIf="mostrarColores">
@@ -102,7 +109,9 @@
             <div class="item-header">CANTIDAD</div>
             <div class="item-header">PRECIO UNITARIO</div>
             <div class="item-header">PRECIO TOTAL</div>
-            <div class="item-header">DESCUENTO UNITARIO </div>
+            <div class="item-header">DESCUENTO </div>
+            <div class="item-header">BORRAR </div>
+
 
 
             <div *ngFor="let entry of mapaPresupuestoArticulos | keyvalue" class="row">
@@ -142,6 +151,12 @@
 
                     <input type="number" id="descuento" size="5" class="input-pequeño" [(ngModel)]="descUnitario"  (keydown.enter)="aplicarDescuentoUnitario(entry.key)"> %
 
+                </div>
+
+                <div class="item">
+                    <button  (click)="borrarFila(entry.key)" class="boton-borrar">
+                        <i class="fas fa-trash-alt"></i> 
+                    </button>
                 </div>
 
                 

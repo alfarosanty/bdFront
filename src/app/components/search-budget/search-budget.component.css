@@ -145,7 +145,7 @@ select {
 
 .grilla {
     display: grid;
-    grid-template-columns: 15% 55% 12% 15% 15% 15%; /* Tamaños fijos para cada celda */
+    grid-template-columns: 15% 50% 9% 15% 15% 12% 10%; /* Tamaños fijos para cada celda */
     grid-template-rows: auto; /* Alturas para filas específicas */
 
 }
@@ -154,7 +154,7 @@ select {
     color: black;
     padding: 20px;
     text-align: left;
-    font-size: 80%;
+    font-size: 70%;
     border: 1px solid black; /* Añadir borde negro */
     font-weight: bold;
 }
@@ -164,7 +164,7 @@ select {
     color: black;
     padding: 20px;
     text-align: left;
-    font-size: 80%;
+    font-size: 70%;
     border: 1px solid black; /* Añadir borde negro */
 
 }
@@ -175,4 +175,28 @@ select {
 
 .input-pequeño{
     width: 60%;
+}
+
+.boton-busqueda-articulo {
+    margin-top: 10px;
+}
+
+.boton-siguiente {
+    margin-top: 10px;
+}
+
+.boton-borrar {
+    background-color: transparent;
+    border: none;
+    color: red;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.boton-borrar:hover {
+    text-decoration: underline;
+}
+
+.boton-borrar i {
+    margin-right: 5px;
 }
