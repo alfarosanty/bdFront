@@ -97,10 +97,13 @@
     <div class="grilla-container">
         <h3>Grilla de Información</h3>
         <div class="grilla">
-            <div class="item-header"> CÓDIGO</div>
+            <div class="item-header">CÓDIGO</div>
             <div class="item-header">DESCRIPCIÓN</div>
-            <div class="item-header"> CANTIDAD</div>
-            <div class="item-header">PRECIO</div>
+            <div class="item-header">CANTIDAD</div>
+            <div class="item-header">PRECIO UNITARIO</div>
+            <div class="item-header">PRECIO TOTAL</div>
+            <div class="item-header">DESCUENTO UNITARIO </div>
+
 
             <div *ngFor="let entry of mapaPresupuestoArticulos | keyvalue" class="row">
                 <div class="item">{{ entry.key }}</div>
@@ -122,9 +125,23 @@
                 <div class="item">
 
                     <ng-container  entry.value>
-                        {{ getCantidadTotal(entry.value) * (entry.value[0].articulo?.precio1 || 0)  }}
+                        {{ calcularPrecioConDescuento(entry.value[0]) }}
                      </ng-container>
                     
+                </div>
+
+                <div class="item">
+
+                    <ng-container  entry.value>
+                        {{ getCantidadTotal(entry.value) * calcularPrecioConDescuento(entry.value[0])  }}
+                     </ng-container>
+                    
+                </div>
+
+                <div class="item">
+
+                    <input type="number" id="descuento" size="5" class="input-pequeño" [(ngModel)]="descUnitario"  (keydown.enter)="aplicarDescuentoUnitario(entry.key)"> %
+
                 </div>
 
                 

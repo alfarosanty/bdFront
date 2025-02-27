@@ -30,6 +30,7 @@ export class SearchBudgetComponent {
   numCliente = '';
   codigoArticulo = '';
   cantProducto = '';
+  descUnitario = '';
   mostrarColores = false;
   eximirIVA = false;
   currentIndex = -1;
@@ -127,7 +128,7 @@ agregarArticulo(){
     if(this.mapaPresupuestoArticulos?.has(claveMapa))
       pa  = this.mapaPresupuestoArticulos.get(claveMapa) as PresupuestoArticulo[]
     
-      pa.push({articulo: this.currentArticulo,cantidad: Number(this.cantProducto)});
+      pa.push({articulo: this.currentArticulo,cantidad: Number(this.cantProducto), PrecioUnitario: this.currentArticulo.precio1});
 
       this.mapaPresupuestoArticulos?.set(claveMapa,pa);
 
@@ -141,6 +142,23 @@ agregarArticulo(){
       .map(articulo => articulo.cantidad)  // Extrae la propiedad 'cantidad'
       .reduce((total, cantidad) => (total || 0) + (cantidad || 0), 0) || 0) ;  // Suma las cantidades
   }
+
+  aplicarDescuentoUnitario(key : any){
+    
+  var pa :PresupuestoArticulo[] = [];
+
+  pa =  this.mapaPresupuestoArticulos?.get(key) as PresupuestoArticulo[]
+
+  pa.forEach(presupuesto =>{presupuesto.descuento = Number(this.descUnitario)})
+
+  }
+
+calcularPrecioConDescuento(presupuestoArticulo: any): number {
+    return (presupuestoArticulo.PrecioUnitario - (presupuestoArticulo.PrecioUnitario * ((presupuestoArticulo.descuento || 0) * 0.01)));
+  }
+
+
+
   
   guardarPresupuesto(){
     const presupuesto = new Presupuesto();

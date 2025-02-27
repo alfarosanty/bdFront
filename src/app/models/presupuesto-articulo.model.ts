@@ -4,4 +4,5 @@ export class PresupuestoArticulo {
     articulo?:Articulo;
     cantidad?: number;
     PrecioUnitario?: number;
+    descuento?: number;
 }
