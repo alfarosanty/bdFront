@@ -91,7 +91,10 @@
     <select class="select-color" [(ngModel)]="articuloColorIndex">  
 
         <option *ngFor="let articulo of articulos ; let i = index"  [value]="i" >
-            {{articulo.color?.descripcion}} 
+
+                {{mostrarColoresDisponibles(articulo)}} 
+
+            
        </option>
     </select>        
         <!-- Input para mostrar el valor seleccionado -->

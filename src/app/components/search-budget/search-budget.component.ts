@@ -101,14 +101,37 @@ export class SearchBudgetComponent {
     },
     error: (e) => console.error(e)
   });  
-  console.log(this.articulos);
-  if(this.articulos)
+
+  console.log("volvio de la base con" + this.articulos.length);
+  if(this.articulos){
     this.mostrarColores=true;
-  else
+    //remover colores ya cargados
+  var idspa=  this.mapaPresupuestoArticulos?.get(this.codigoArticulo)?.map(pa=>pa.articulo?.id);
+
+console.log('viene con' + idspa);
+console.log("volvio de la base con" + this.articulos.length);
+
+if(idspa){
+  console.log(this.articulos);
+  this.articulos = this.articulos.filter(articulo => !(idspa?.includes(articulo.id)));
+  }
+
+
+
+} else
      this.mostrarColores=false;  
 }else
-    this.mostrarColores=false;    
+    this.mostrarColores=false;   
+    
+    
+   console.log("volvio de la base con" + this.articulos.length);
+ 
   }
+
+  mostrarColoresDisponibles(articulo : Articulo) : string {
+    return (articulo.color?.descripcion || "");
+    }
+  
   
 agregarArticulo(){
   console.log (this.articuloColorIndex);
