@@ -18,15 +18,31 @@
         </div>
       </div>
     </div>
+<!--COMBO DE PRODUCTOS CON FILTRADO-->
+<div class="col-md-6">
+
+
+
+  <mat-form-field>
+    <mat-label>Selecciona una opción</mat-label>
+    <input type="text" matInput [formControl]="myControl" [matAutocomplete]="auto">
+    <mat-autocomplete #auto="matAutocomplete">
+      <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
+        {{ option }}
+      </mat-option>
+    </mat-autocomplete>
+  </mat-form-field>
+
+  
+
+ </div>
+
     <div class="col-md-6">
       <h4>Listado de productos</h4>
       <ul class="list-group">
-        <li
-          class="list-group-item"
-          *ngFor="let stock of stocks; let i = index"
-          [class.active]="i == currentIndex"
-          (click)="setActiveStock(stock, i)"
-        >
+        <li class="list-group-item"
+          *ngFor="let stock of stocks; let i = index" [class.active]="i == currentIndex">
+
           {{ stock.producto }} ({{ stock.cantidad }} Mts)
         </li>
       </ul>

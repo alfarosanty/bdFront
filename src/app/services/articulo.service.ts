@@ -21,5 +21,10 @@ export class ArticuloService {
 
   }
 
+
+  getAllFamiliaMedida(): Observable<Articulo[]> {
+    return this.http.get<Articulo[]>(`${baseUrl}/GetArticulosByFamiliaMedida`);
+  }
+
   
 }

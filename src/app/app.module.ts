@@ -10,6 +10,14 @@ import { StockDetailsComponent } from './components/stock-details/stock-details.
 import { StockListComponent } from './components/stock-list/stock-list.component';
 import { SearchBudgetComponent } from './components/search-budget/search-budget.component';
 
+
+import { MatSelectModule } from '@angular/material/select';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { ReactiveFormsModule } from '@angular/forms';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -19,10 +27,16 @@ import { SearchBudgetComponent } from './components/search-budget/search-budget.
     SearchBudgetComponent,
   ],
   imports: [
+    MatSelectModule,
+    MatInputModule,
+    MatFormFieldModule,
+    MatAutocompleteModule,
+    ReactiveFormsModule,
     BrowserModule,
     AppRoutingModule,
     FormsModule,
-    HttpClientModule
+    HttpClientModule,
+    BrowserAnimationsModule
   ],
   providers: [],
   bootstrap: [AppComponent]

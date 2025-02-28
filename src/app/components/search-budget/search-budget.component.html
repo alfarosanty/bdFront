@@ -73,9 +73,19 @@
             <input type="text" id="codigoArticulo" [(ngModel)]="codigoArticulo" (ngModelChange)="convertirAMayuscula()" (keydown.enter)="mostrarVariedadColores()" onKeyUp="javascript:this.value=this.value.toUpperCase();">
         </div>
 
-        <div> 
-            <button class="boton-busqueda-articulo" type="button" >Buscar Artículo</button>
-        </div>
+        <!--COMBO DE PRODUCTOS CON FILTRADO-->
+        <div >
+            <mat-form-field>
+            <mat-label>Selecciona una opción</mat-label>
+            <input type="text" [(ngModel)]="articuloSeleccionado"  matInput [formControl]="myControl" [matAutocomplete]="auto" (keydown.enter)="seleccionarArticulo()">
+            <mat-autocomplete #auto="matAutocomplete">
+                <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
+                {{ option }}
+                </mat-option>
+            </mat-autocomplete>
+            </mat-form-field> 
+
+   </div>
 
     </div>
 <!-- Este DIV aparecerá a la derecha cuando presiones Enter -->

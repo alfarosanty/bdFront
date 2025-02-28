@@ -1,4 +1,7 @@
 import { Component } from '@angular/core';
+import { FormControl } from '@angular/forms';
+import { Observable } from 'rxjs';
+import { map, startWith } from 'rxjs/operators'
 import { Articulo } from 'src/app/models/articulo.model';
 import { Cliente } from 'src/app/models/cliente';
 import { Medida } from 'src/app/models/medida.model';
@@ -7,6 +10,8 @@ import { Presupuesto } from 'src/app/models/presupuesto.model';
 import { ArticuloService } from 'src/app/services/articulo.service';
 import { PresupuestoService } from 'src/app/services/budget.service';
 import { ClienteService } from 'src/app/services/cliente.service';
+
+
 
 @Component({
   selector: 'app-search-budget',
@@ -36,7 +41,13 @@ export class SearchBudgetComponent {
   eximirIVA = false;
   currentIndex = -1;
   articuloColorIndex = -1;
- 
+
+  //INPUT BUSQUEDA
+  myControl = new FormControl();
+  options: string[] = [];
+filteredOptions: Observable<string[]>= new Observable<string[]>();
+articuloSeleccionado ='';
+ //END INPUT
 
   constructor(private clienteService: ClienteService, private articuloService:ArticuloService, private presupuestoService:PresupuestoService) {}
 
@@ -44,7 +55,29 @@ export class SearchBudgetComponent {
     this.listarClientes();
     this.fechaPresupuesto =  new Date().toISOString().split('T')[0];;
     this.mapaPresupuestoArticulos=new Map();
-  
+
+    this.articuloService.getAllFamiliaMedida().subscribe({
+      next: (data) => {
+        this.articulos = data; 
+        for (let i = 0; i < this.articulos?.length; i++) {
+          let item = this.articulos[i];
+          if(item.familia && item.familia.descripcion && item.medida && item.medida.descripcion)
+            this.options.push(item.familia?.codigo+'/'+item.medida.codigo +' '+item.familia?.descripcion + item.medida.descripcion);
+          console.log(item);
+          }
+          console.log('items options ' +  this.options.length);       
+        console.log(data);
+      },
+      error: (e) => console.error(e)
+    });
+
+    this.filteredOptions = this.myControl.valueChanges.pipe(startWith(''),map(value => this._filter(value)));
+
+  }
+
+  private _filter(value: string): string[] {
+    const filterValue = value.toLowerCase();
+    return this.options.filter(option => option.toLowerCase().includes(filterValue));
   }
 
 
@@ -88,6 +121,14 @@ export class SearchBudgetComponent {
     this.codigoArticulo = this.codigoArticulo.toUpperCase();
   }
 
+  seleccionarArticulo(){
+    const codigoAritculoSeleccionado = this.articuloSeleccionado.split(' ');
+    this.codigoArticulo = codigoAritculoSeleccionado[0];
+    this.mostrarVariedadColores();
+
+
+  }
+
   mostrarVariedadColores() {
     this.articulos = [];
     console.log('viene con ' + this.codigoArticulo);
@@ -102,8 +143,7 @@ export class SearchBudgetComponent {
         next: (data) => {
           this.articulos = data;
           console.log("Volvió de la base con " + this.articulos.length + " artículos."); 
-  
-          // Remover colores ya cargados
+            // Remover colores ya cargados
           var idspa = this.mapaPresupuestoArticulos?.get(this.codigoArticulo)?.map(pa => pa.articulo?.id);
   
           if (idspa) {
