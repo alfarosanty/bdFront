@@ -149,6 +149,14 @@ select {
     grid-template-rows: auto; /* Alturas para filas específicas */
 
 }
+
+.grilla-total {
+    display: grid;
+    grid-template-columns: 20% 20% 20% 20% 20%; /* Tamaños fijos para cada celda */
+    grid-template-rows: auto; /* Alturas para filas específicas */
+}
+
+
 .item-header {
    
     color: black;
@@ -172,6 +180,10 @@ select {
 .row {
     display: contents; /* Importante para que las filas usen el diseño de la grilla */
   }
+
+.row-totales {
+    display: contents; /* Usamos flexbox para alinear los elementos en fila */
+}
 
 .input-pequeño{
     width: 60%;

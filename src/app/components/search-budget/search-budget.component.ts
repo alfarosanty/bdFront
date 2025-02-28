@@ -31,6 +31,7 @@ export class SearchBudgetComponent {
   codigoArticulo = '';
   cantProducto = '';
   descUnitario = '';
+  descTotal = '';
   mostrarColores = false;
   eximirIVA = false;
   currentIndex = -1;
@@ -95,7 +96,6 @@ export class SearchBudgetComponent {
     if (this.codigoArticulo) {
       // Separa el código en familia y medida
       this.familiaMedida = this.codigoArticulo.split('/');
-      console.log('Familia y Medida:', this.familiaMedida);
   
       // Llama al servicio para obtener artículos según la familia y medida
       this.articuloService.getByFamiliaMedida(this.familiaMedida[0], this.familiaMedida[1]).subscribe({
@@ -105,12 +105,9 @@ export class SearchBudgetComponent {
   
           // Remover colores ya cargados
           var idspa = this.mapaPresupuestoArticulos?.get(this.codigoArticulo)?.map(pa => pa.articulo?.id);
-          console.log('IDs ya cargados:', idspa);
   
           if (idspa) {
-            console.log('Artículos antes de filtrar:', this.articulos);
             this.articulos = this.articulos.filter(articulo => !(idspa?.includes(articulo.id)));
-            console.log('Artículos después de filtrar:', this.articulos);
           }
   
           // Mostrar u ocultar colores según si hay artículos disponibles
@@ -176,7 +173,7 @@ agregarArticulo(){
 
   }
 
-calcularPrecioConDescuento(presupuestoArticulo: any): number {
+  calcularPrecioConDescuento(presupuestoArticulo: any): number {
     return (presupuestoArticulo.PrecioUnitario - (presupuestoArticulo.PrecioUnitario * ((presupuestoArticulo.descuento || 0) * 0.01)));
   }
 
@@ -186,6 +183,34 @@ calcularPrecioConDescuento(presupuestoArticulo: any): number {
   
     }
 
+
+  calcularPrecioSubtotal() : number{
+      if (this.mapaPresupuestoArticulos) {
+        // Aplana las listas de artículos
+        let presupuestosArticulos = Array.from(this.mapaPresupuestoArticulos.values()).flatMap(Lista => Lista);
+    
+        // Obtén solo los precios de los artículos
+        let preciosDePresupuestos = presupuestosArticulos.map(presupuestoArticulo => (this.calcularPrecioConDescuento(presupuestoArticulo)) * (presupuestoArticulo.cantidad || 0));
+        console.log(preciosDePresupuestos);
+    
+        // Suma los precios para obtener el subtotal
+        let subtotalDePrecios = preciosDePresupuestos.reduce((acumulador, precio) => {
+          return (acumulador || 0) + (precio || 0);  // Suma los precios al acumulador
+        }, 0);
+    
+        return subtotalDePrecios; 
+      }
+    
+      return 0; 
+    }
+
+
+  calcularPrecioTotal() : number{
+
+    var descuento = 0.01 * Number(this.descTotal)
+    return this.calcularPrecioSubtotal() - (this.calcularPrecioSubtotal() * descuento )
+    }
+    
   
   guardarPresupuesto(){
     const presupuesto = new Presupuesto();

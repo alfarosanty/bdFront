@@ -150,20 +150,36 @@
 
                 </div>
 
+                 
+
                 <div class="item">
                     <button  (click)="borrarFila(entry.key)" class="boton-borrar">
                         <i class="fas fa-trash-alt"></i> 
                     </button>
-                </div>
+                </div>         
 
-                
-
-            </div>
 </div>
 
+<div class="grilla-totales">
+
+<div class="row-totales">
+    <div class="item">SUBTOTAL: {{ calcularPrecioSubtotal() }} </div>
+
+    <div class="item">TOTAL:   {{ calcularPrecioTotal() }} </div>
+    <div class="item">Descuento: 
+        <input type="number" id="descuento" size="5" class="input-pequeño" [(ngModel)]="descTotal"  (keydown.enter)="calcularPrecioTotal()"> %
+    </div>
+
+
+</div>
 
 <div>
     
     <button class="boton-siguiente" type="button" (click)="guardarPresupuesto()">Siguiente</button>
 </div>
+
 </div>
+
+
+
+
