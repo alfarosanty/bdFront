@@ -87,46 +87,46 @@ export class SearchBudgetComponent {
     this.codigoArticulo = this.codigoArticulo.toUpperCase();
   }
 
-  mostrarVariedadColores(){
-    
+  mostrarVariedadColores() {
     this.articulos = [];
-    //resultado: string[] = [];
     console.log('viene con ' + this.codigoArticulo);
-   if(this.codigoArticulo){   
-    this.familiaMedida = this.codigoArticulo.split('/');
-    console.log(this.familiaMedida);
-   this.articuloService.getByFamiliaMedida(this.familiaMedida[0],this.familiaMedida[1]).subscribe({
-    next: (data) => {
-      this.articulos = data;
-    },
-    error: (e) => console.error(e)
-  });  
-
-  console.log("volvio de la base con" + this.articulos.length);
-  if(this.articulos){
-    this.mostrarColores=true;
-    //remover colores ya cargados
-  var idspa=  this.mapaPresupuestoArticulos?.get(this.codigoArticulo)?.map(pa=>pa.articulo?.id);
-
-console.log('viene con' + idspa);
-console.log("volvio de la base con" + this.articulos.length);
-
-if(idspa){
-  console.log(this.articulos);
-  this.articulos = this.articulos.filter(articulo => !(idspa?.includes(articulo.id)));
+  
+    // Verifica si hay un código de artículo
+    if (this.codigoArticulo) {
+      // Separa el código en familia y medida
+      this.familiaMedida = this.codigoArticulo.split('/');
+      console.log('Familia y Medida:', this.familiaMedida);
+  
+      // Llama al servicio para obtener artículos según la familia y medida
+      this.articuloService.getByFamiliaMedida(this.familiaMedida[0], this.familiaMedida[1]).subscribe({
+        next: (data) => {
+          this.articulos = data;
+          console.log("Volvió de la base con " + this.articulos.length + " artículos."); 
+  
+          // Remover colores ya cargados
+          var idspa = this.mapaPresupuestoArticulos?.get(this.codigoArticulo)?.map(pa => pa.articulo?.id);
+          console.log('IDs ya cargados:', idspa);
+  
+          if (idspa) {
+            console.log('Artículos antes de filtrar:', this.articulos);
+            this.articulos = this.articulos.filter(articulo => !(idspa?.includes(articulo.id)));
+            console.log('Artículos después de filtrar:', this.articulos);
+          }
+  
+          // Mostrar u ocultar colores según si hay artículos disponibles
+          this.mostrarColores = this.articulos.length > 0;
+          console.log('mostrarColores:', this.mostrarColores);
+        },
+        error: (e) => console.error('Error al obtener artículos:', e)
+      });
+  
+    } else {
+      // Si no hay código de artículo, ocultar los colores
+      this.mostrarColores = false;
+      console.log('No hay código de artículo. mostrarColores:', this.mostrarColores);
+    }
   }
-
-
-
-} else
-     this.mostrarColores=false;  
-}else
-    this.mostrarColores=false;   
-    
-    
-   console.log("volvio de la base con" + this.articulos.length);
- 
-  }
+  
 
   mostrarColoresDisponibles(articulo : Articulo) : string {
     return (articulo.color?.descripcion || "");
