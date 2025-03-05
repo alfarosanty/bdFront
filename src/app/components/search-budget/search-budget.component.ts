@@ -343,8 +343,8 @@ if(this.presupuestoCliente){
   
   // Dibujar encabezados de la tabla
   let startY = 60; // Posición de inicio para la tabla
-  const columnWidths = [20, 25, 110, 28, 28]; // Cambié los anchos
-  doc.setFontSize(10);
+  const columnWidths = [35, 15, 100, 25, 25]; // Cambié los anchos
+  doc.setFontSize(7);
   
   doc.setFillColor(211, 211, 211); // Gris claro para el fondo
   doc.rect(8, startY - 6, columnWidths.reduce((a, b) => a + b, 0), 12, 'F'); // Rectángulo de fondo gris claro
@@ -380,7 +380,7 @@ if(this.presupuestoCliente){
 
   // Agregar el total debajo de la tabla
   startY += 10; // Espaciado después de la última fila
-  doc.text(`Total: $${total}`, 180, startY);
+  doc.text(`Total: $${total}`, 190, startY);
 
 } else{
 
@@ -405,8 +405,8 @@ if(this.presupuestoCliente){
   
   // Dibujar encabezados de la tabla
   let startY = 60; // Posición de inicio para la tabla
-  const columnWidths = [20, 25, 155]; // Cambié los anchos
-  doc.setFontSize(10);
+  const columnWidths = [35, 15, 145]; // Cambié los anchos
+  doc.setFontSize(7);
   
   doc.setFillColor(211, 211, 211); // Gris claro para el fondo
   doc.rect(8, startY - 6, columnWidths.reduce((a, b) => a + b, 0), 12, 'F'); // Rectángulo de fondo gris claro
