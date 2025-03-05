@@ -10,6 +10,10 @@ import { Presupuesto } from 'src/app/models/presupuesto.model';
 import { ArticuloService } from 'src/app/services/articulo.service';
 import { PresupuestoService } from 'src/app/services/budget.service';
 import { ClienteService } from 'src/app/services/cliente.service';
+import { jsPDF }  from 'jspdf';
+import  autoTable  from 'jspdf-autotable';
+
+
 
 
 
@@ -71,7 +75,7 @@ articuloSeleccionado ='';
       error: (e) => console.error(e)
     });
 
-    this.filteredOptions = this.myControl.valueChanges.pipe(startWith(''),map(value => this._filter(value)));
+    this.filteredOptions = this.myControl.valueChanges.pipe(startWith(''),map(value => this._filter(String(value))));
 
   }
 
@@ -279,6 +283,79 @@ agregarArticulo(){
     alert(idPresupuesto);
   }
 }
+
+
+
+generarPDF() {
+  const doc = new jsPDF();
+
+  // Encabezado
+  doc.setFontSize(16);
+  doc.text('Presupuesto', 10, 10);
+  doc.setFontSize(12);
+  doc.text(`Fecha: ${this.fechaPresupuesto}`, 10, 20);
+  
+  if (this.currentCliente) {
+    doc.text(`Cliente: ${this.currentCliente.razonSocial}`, 10, 30);
+    doc.text(`Dirección: ${this.currentCliente.domicilio}`, 10, 40);
+    doc.text(`Teléfono: ${this.currentCliente.telefono}`, 10, 50);
+  }
+
+  // Datos de los artículos
+  const columnas = ['Código', 'Cantidad', 'Descripción', 'Precio Unitario', 'Subtotal'];
+  const filas: any[] = [];
+
+  this.mapaPresupuestoArticulos?.forEach((articulos, clave) => {
+    articulos.forEach((presuArt) => {
+      filas.push([
+        clave,
+        presuArt.cantidad,
+        (presuArt.articulo?.descripcion || "") + (presuArt.cantidad || 0) + presuArt.articulo?.color?.codigo,
+        (presuArt.PrecioUnitario || 0).toFixed(2),
+        (this.calcularPrecioConDescuento(presuArt) * (presuArt.cantidad || 0)).toFixed(2)
+      ]);
+    });
+  });
+
+  // Dibujar encabezados de la tabla
+  let startY = 60; // Posición de inicio para la tabla
+  const columnWidths = [30, 30, 80, 40, 40]; // Ancho de cada columna
+  doc.setFontSize(10);
+
+  doc.setFillColor(0, 0, 255); // Azul para el fondo
+  doc.setTextColor(255, 255, 255); // Blanco para el texto
+  doc.setFont('helvetica', 'bold'); // Negrita para el encabezado
+
+  // Encabezados
+  columnas.forEach((columna, index) => {
+    doc.text(columna, 10 + columnWidths.slice(0, index).reduce((a, b) => a + b, 0), startY);
+  });
+
+  // Dibujar filas de la tabla con texto negro
+  doc.setTextColor(0, 0, 0); // Volver a color de texto negro para el contenido de la tabla
+  doc.setFont('helvetica', 'normal'); // Texto normal para las filas
+
+  // Dibujar filas de la tabla
+  filas.forEach((fila, index) => {
+    startY += 10;
+    fila.forEach((valor: string | number, colIndex: number) => { // Añadí los tipos explícitos
+      doc.text(valor.toString(), 10 + columnWidths.slice(0, colIndex).reduce((a, b) => a + b, 0), startY);
+    });
+  });
+
+  // Calcular el total
+  const total = String(this.calcularPrecioTotal())
+
+  // Agregar el total debajo de la tabla
+  startY += 10; // Espaciado después de la última fila
+  doc.text(`Total: $${total}`, 10, startY);
+
+  // Guardar o descargar el PDF
+  doc.save(`Presupuesto_${new Date().toISOString().split('T')[0]}.pdf`);
+}
+
+
+
 
 }
 
