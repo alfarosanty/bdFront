@@ -180,11 +180,18 @@
         <input type="number" id="descuento" size="5" class="input-pequeño" [(ngModel)]="descTotal"  (keydown.enter)="calcularPrecioTotal()"> %
     </div>
 
-
-</div>
- <button class="boton-generarPDF" type="button" (click)="generarPDF()">Generar PDF</button> 
-</div>
-
-
+<div>
+    <button class="boton-generarPDF" type="button" (click)="generarPDF()">Generar PDF </button>
+  </div>
+  
+  <!-- Asegúrate de envolver los elementos en un contenedor para mantenerlos alineados -->
+  <div>
+    <label>
+        <input type="radio" [(ngModel)]="presupuestoCliente" [value]="true" name="tipo" /> Cliente
+      </label>
+      <label>
+        <input type="radio" [(ngModel)]="presupuestoCliente" [value]="false" name="tipo" /> Empleado
+      </label>
+  </div>
 
 

@@ -195,6 +195,7 @@ select {
 
 .boton-generarPDF {
     margin-top: 10px;
+    display: inline-block; /* Asegura que los botones se alineen horizontalmente */
 }
 
 .boton-borrar {

@@ -11,7 +11,6 @@ import { ArticuloService } from 'src/app/services/articulo.service';
 import { PresupuestoService } from 'src/app/services/budget.service';
 import { ClienteService } from 'src/app/services/cliente.service';
 import { jsPDF }  from 'jspdf';
-import  autoTable  from 'jspdf-autotable';
 
 
 
@@ -43,6 +42,7 @@ export class SearchBudgetComponent {
   descTotal = '';
   mostrarColores = false;
   eximirIVA = false;
+  presupuestoCliente = true;
   currentIndex = -1;
   articuloColorIndex = -1;
 
@@ -314,74 +314,134 @@ generarPDF() {
   }
 
   // Datos a la derecha (colocarlos en una posición mayor de X)
-  const rightMargin = 150;  // El margen derecho, ajusta según sea necesario
-
-
-    doc.text("Loria 1140 - Lomas de Zamora", rightMargin, 40);  // Nombre del vendedor a la derecha
-    doc.text("Teléfono: 11-6958-2829", rightMargin, 50);  // Nombre del vendedor a la derecha
+  const rightMargin = 150;
+  doc.text("Loria 1140 - Lomas de Zamora", rightMargin, 40);
+  doc.text("Teléfono: 11-6958-2829", rightMargin, 50);
 
   
-
+if(this.presupuestoCliente){
   // Datos de los artículos
   const columnas = ['Código', 'Cantidad', 'Descripción', 'Precio Unitario', 'Subtotal'];
   const filas: any[] = [];
-
-  this.mapaPresupuestoArticulos?.forEach((articulos, clave) => {
-    articulos.forEach((presuArt) => {
-      filas.push([
-        clave,
-        presuArt.cantidad,
-        (presuArt.articulo?.descripcion || "") + (presuArt.cantidad || 0) + presuArt.articulo?.color?.codigo,
-        (presuArt.PrecioUnitario || 0).toFixed(2),
-        (this.calcularPrecioConDescuento(presuArt) * (presuArt.cantidad || 0)).toFixed(2)
-      ]);
-    });
+  
+  this.mapaPresupuestoArticulos?.forEach((presupuestosArticulos, clave) => {
+    const cantidades = presupuestosArticulos.map(presupuestoArticulo => presupuestoArticulo.cantidad);
+    const totalCantidad = cantidades.reduce((total, cantidad) => (total || 0) + (cantidad || 0), 0);
+    const descripcionFija = presupuestosArticulos[0].articulo?.descripcion || "";
+    const descripcionCompleta = presupuestosArticulos.map(presuArt => {
+      return `${presuArt.cantidad || 0}${presuArt.articulo?.color?.codigo || ""}`;
+    }).join("");
+  
+    filas.push([
+      clave,
+      totalCantidad,
+      descripcionFija + " " + descripcionCompleta,
+      (presupuestosArticulos[0].PrecioUnitario || 0).toFixed(2),
+      (this.calcularPrecioConDescuento(presupuestosArticulos[0]) * (totalCantidad || 0)).toFixed(2)
+    ]);
   });
-
+  
   // Dibujar encabezados de la tabla
   let startY = 60; // Posición de inicio para la tabla
-  const columnWidths = [30, 30, 80, 40, 40]; // Ancho de cada columna
+  const columnWidths = [20, 25, 110, 28, 28]; // Cambié los anchos
   doc.setFontSize(10);
-
-// Fondo gris claro para el encabezado
-doc.setFillColor(211, 211, 211); // Gris claro para el fondo
-doc.rect(10, startY - 5, columnWidths.reduce((a, b) => a + b, 0), 10, 'F'); // Rectángulo de fondo gris claro
-
-// Texto negro en negrita para los encabezados
-doc.setTextColor(0, 0, 0); // Negro para el texto
-doc.setFont('helvetica', 'bold'); // Negrita para el encabezado
-
+  
+  doc.setFillColor(211, 211, 211); // Gris claro para el fondo
+  doc.rect(8, startY - 6, columnWidths.reduce((a, b) => a + b, 0), 12, 'F'); // Rectángulo de fondo gris claro
+  
+  doc.setTextColor(0, 0, 0); // Negro para el texto
+  doc.setFont('helvetica', 'bold'); // Negrita para el encabezado
+  
   // Encabezados de la tabla
   columnas.forEach((columna, index) => {
-    doc.text(columna, 10 + columnWidths.slice(0, index).reduce((a, b) => a + b, 0), startY);
+    const x = 10 + columnWidths.slice(0, index).reduce((a, b) => a + b, 0);
+    doc.text(columna, x, startY);
+    // Dibujar borde para la celda del encabezado
+    doc.rect(x - 2, startY - 6, columnWidths[index], 12); // Ajusta el tamaño de la celda
   });
-
-  // Dibujar filas de la tabla con texto negro
+  
+  // Dibujar filas de la tabla
   doc.setTextColor(0, 0, 0); // Volver a color de texto negro para el contenido de la tabla
   doc.setFont('helvetica', 'normal'); // Texto normal para las filas
-
-  // Dibujar filas de la tabla
-  filas.forEach((fila, index) => {
+  
+  filas.forEach((fila, rowIndex) => {
     startY += 10;
     fila.forEach((valor: string | number, colIndex: number) => {
-      doc.text(valor.toString(), 10 + columnWidths.slice(0, colIndex).reduce((a, b) => a + b, 0), startY);
+      const x = 10 + columnWidths.slice(0, colIndex).reduce((a, b) => a + b, 0);
+      doc.text(valor.toString(), x, startY);
+      // Dibujar borde para la celda
+      doc.rect(x - 2, startY - 6, columnWidths[colIndex], 10); // Ajusta el tamaño de la celda
     });
   });
+  
 
   // Calcular el total
   const total = String(this.calcularPrecioTotal());
 
   // Agregar el total debajo de la tabla
   startY += 10; // Espaciado después de la última fila
-  doc.text(`Total: $${total}`, 10, startY);
+  doc.text(`Total: $${total}`, 180, startY);
+
+} else{
+
+  // Datos de los artículos
+  const columnas = ['Código', 'Cantidad', 'Descripción'];
+  const filas: any[] = [];
+  
+  this.mapaPresupuestoArticulos?.forEach((presupuestosArticulos, clave) => {
+    const cantidades = presupuestosArticulos.map(presupuestoArticulo => presupuestoArticulo.cantidad);
+    const totalCantidad = cantidades.reduce((total, cantidad) => (total || 0) + (cantidad || 0), 0);
+    const descripcionFija = presupuestosArticulos[0].articulo?.descripcion || "";
+    const descripcionCompleta = presupuestosArticulos.map(presuArt => {
+      return `${presuArt.cantidad || 0}${presuArt.articulo?.color?.codigo || ""}`;
+    }).join("");
+  
+    filas.push([
+      clave,
+      totalCantidad,
+      descripcionFija + " " + descripcionCompleta,
+    ]);
+  });
+  
+  // Dibujar encabezados de la tabla
+  let startY = 60; // Posición de inicio para la tabla
+  const columnWidths = [20, 25, 155]; // Cambié los anchos
+  doc.setFontSize(10);
+  
+  doc.setFillColor(211, 211, 211); // Gris claro para el fondo
+  doc.rect(8, startY - 6, columnWidths.reduce((a, b) => a + b, 0), 12, 'F'); // Rectángulo de fondo gris claro
+  
+  doc.setTextColor(0, 0, 0); // Negro para el texto
+  doc.setFont('helvetica', 'bold'); // Negrita para el encabezado
+  
+  // Encabezados de la tabla
+  columnas.forEach((columna, index) => {
+    const x = 10 + columnWidths.slice(0, index).reduce((a, b) => a + b, 0);
+    doc.text(columna, x, startY);
+    // Dibujar borde para la celda del encabezado
+    doc.rect(x - 2, startY - 6, columnWidths[index], 12); // Ajusta el tamaño de la celda
+  });
+  
+  // Dibujar filas de la tabla
+  doc.setTextColor(0, 0, 0); // Volver a color de texto negro para el contenido de la tabla
+  doc.setFont('helvetica', 'normal'); // Texto normal para las filas
+  
+  filas.forEach((fila, rowIndex) => {
+    startY += 10;
+    fila.forEach((valor: string | number, colIndex: number) => {
+      const x = 10 + columnWidths.slice(0, colIndex).reduce((a, b) => a + b, 0);
+      doc.text(valor.toString(), x, startY);
+      // Dibujar borde para la celda
+      doc.rect(x - 2, startY - 6, columnWidths[colIndex], 10); // Ajusta el tamaño de la celda
+    });
+  });
+
+
+}
 
   // Guardar o descargar el PDF
   doc.save(`Presupuesto_${new Date().toISOString().split('T')[0]}.pdf`);
 }
-
-
-
-
 
 }
 
