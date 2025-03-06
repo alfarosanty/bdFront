@@ -9,6 +9,7 @@ import { AddStockComponent } from './components/add-stock/add-stock.component';
 import { StockDetailsComponent } from './components/stock-details/stock-details.component';
 import { StockListComponent } from './components/stock-list/stock-list.component';
 import { SearchBudgetComponent } from './components/search-budget/search-budget.component';
+import { SelectBudgetComponent } from './components/select-budget/select-budget.component';
 
 
 import { MatSelectModule } from '@angular/material/select';
@@ -25,6 +26,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
     StockDetailsComponent,
     StockListComponent,
     SearchBudgetComponent,
+    SelectBudgetComponent,
   ],
   imports: [
     MatSelectModule,

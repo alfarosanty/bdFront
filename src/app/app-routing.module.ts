@@ -4,6 +4,7 @@ import { AddStockComponent } from './components/add-stock/add-stock.component'
 import { StockDetailsComponent } from './components/stock-details/stock-details.component'
 import { StockListComponent } from './components/stock-list/stock-list.component'
 import { SearchBudgetComponent } from './components/search-budget/search-budget.component';
+import { SelectBudgetComponent } from './components/select-budget/select-budget.component';
 
 
 const routes: Routes = [
@@ -12,7 +13,8 @@ const routes: Routes = [
   { path: 'viewStock', component: StockDetailsComponent },
   { path: 'listStock', component: StockListComponent },
   { path: 'listStock/:id', component: StockDetailsComponent },
-  { path:  'searchBudget', component: SearchBudgetComponent}
+  { path:  'searchBudget', component: SearchBudgetComponent},
+  { path:  'selectBudget', component: SelectBudgetComponent},
 
 ];
 

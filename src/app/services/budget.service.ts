@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Articulo } from '../models/articulo.model';
 import { Presupuesto } from '../models/presupuesto.model';
+import { Observable } from 'rxjs';
 
 const baseUrl = 'http://localhost:7166';
 
@@ -29,6 +29,13 @@ export class PresupuestoService {
   );
   }
 
+  getAll(): Observable<Presupuesto[]> {
+    return this.http.get<Presupuesto[]>(`${baseUrl}/GetPresupuestos `);
+  }
+
+  get(id: any): Observable<Presupuesto> {
+    return this.http.get<Presupuesto>(`${baseUrl}/GetPresupuestoById/${id}`);
+  }
 }
 
 

@@ -1,0 +1,38 @@
+.search-panel {
+    margin-top: 2%;
+    padding: 2%;
+    border: 1px solid #ccc;
+    border-radius: 2%;
+    width: 25%;
+    display: flex;
+    
+  }
+  
+  .search-panel input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    margin-bottom: 10%;
+  }
+  
+  .search-panel button {
+    width: 100%;
+    padding: 8px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+  }
+  
+  .search-panel button:hover {
+    background-color: #0056b3;
+  }
+
+  .boton-de-busqueda{
+    margin-top: 5%;
+  }
+
+  

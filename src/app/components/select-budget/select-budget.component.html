@@ -1,0 +1,43 @@
+<div class="superior-container">
+
+    <button (click)="generarPresupuesto()">Generar Presupuesto</button>
+</div>
+
+<div class="inferior-container">
+    <div class="inferior-izquierda-container">
+
+    <button class="boton-de-busqueda" (click)="mostrarPanelBusqueda = !mostrarPanelBusqueda">
+        Buscar Presupuesto
+      </button>
+
+      <div *ngIf="mostrarPanelBusqueda" class="search-panel">
+            <div class="search-by-client">
+              <label for="clienteBuscado">Buscar por Cliente:</label>
+              <input id="clienteBuscado" type="text" [(ngModel)]="clienteBuscado" placeholder="Nombre del cliente">
+              <button (click)="buscarPresupuestosXCliente()">Buscar</button>
+        </div>
+
+        <div class="dropdown" *ngIf="((presupuestosFiltrados || []).length) > 0">
+            <button class="dropdown-btn">Presupuestos Filtrados</button>
+            <ul class="dropdown-menu">
+              <li *ngFor="let presupuesto of presupuestosFiltrados">
+                {{ presupuesto.NumeroPresupuesto }} - {{ presupuesto.Cliente?.razonSocial }}
+              </li>
+            </ul>
+          </div>
+    </div>
+
+        <div *ngIf="mostrarPanelBusqueda" class="search-panel">
+            <div class="search-by-number">
+              <label for="numeroPresupuesto">Buscar por Número de Presupuesto:</label>
+              <input id="numeroPresupuesto" type="text" [(ngModel)]="numPresupuesto" placeholder="Número de presupuesto">
+              <button (click)="buscarPresupuestoXNumero()">Buscar</button>
+        </div> 
+    </div> 
+</div>
+
+<div class="inferior-derecha-container">
+
+</div>
+
+</div>
