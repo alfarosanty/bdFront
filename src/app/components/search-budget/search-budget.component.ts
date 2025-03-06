@@ -43,6 +43,7 @@ export class SearchBudgetComponent {
   mostrarColores = false;
   eximirIVA = false;
   presupuestoCliente = true;
+  showBackDrop=false;
   currentIndex = -1;
   articuloColorIndex = -1;
 
@@ -95,7 +96,7 @@ listarClientes(): void {
       catchError(error => {
         // Manejo del error
         console.error('Ocurrió un error:', error);
-        alert('errrp');
+        alert('No se puede obtener los datos provenientes de la base de datos');
         return throwError(() => new Error('Hubo un problema al obtener los clientes.'));
       })
     ).subscribe({
@@ -104,6 +105,7 @@ listarClientes(): void {
         console.log(data);
       },
       error: (e) => console.error(e)
+      
     });
   }
 
@@ -291,8 +293,9 @@ agregarArticulo(){
   if(idPresupuesto){
     //reiniciar el formulario
     //mostrar el Numero de presupuesto generado
-    alert(idPresupuesto);
+    console.log(idPresupuesto);
   }
+    this.showBackDrop=true
   }else    
   alert("Debe seleccionar un cliente y agregar artículos al presupuesto antes de continuar.");
   throw new Error("Validación fallida: Cliente o presupuesto no definidos.");
@@ -301,8 +304,7 @@ agregarArticulo(){
 
 
 generarPDF() {
-
-  if (!this.validarDatosRequeridos()){
+  this.showBackDrop=false;
   const doc = new jsPDF();
 
   // Encabezado
@@ -398,7 +400,6 @@ if(this.presupuestoCliente){
   // Agregar el total debajo de la tabla
   startY += 10; // Espaciado después de la última fila
   doc.text(`Total: $${total}`, 190, startY);
-
 } else{
 
   // Datos de los artículos
@@ -459,10 +460,6 @@ if(this.presupuestoCliente){
   // Guardar o descargar el PDF
   doc.save(`Presupuesto_${new Date().toISOString().split('T')[0]}.pdf`);
 
-}else    
-alert("Debe seleccionar un cliente y agregar artículos al presupuesto antes de continuar.");
-throw new Error("Validación fallida: Cliente o presupuesto no definidos."); 
-
 }
 
 
@@ -470,7 +467,7 @@ throw new Error("Validación fallida: Cliente o presupuesto no definidos.");
 
 validarDatosRequeridos() : Boolean{
 
-  return this.currentCliente == null || this.currentCliente == undefined && this.mapaPresupuestoArticulos?.size == 0 
+  return Object.keys((this.currentCliente || "")).length === 0 || this.currentCliente == undefined || this.mapaPresupuestoArticulos?.size == 0 
 
 }
 
