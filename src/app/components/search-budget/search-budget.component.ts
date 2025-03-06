@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { Observable } from 'rxjs';
-import { map, startWith } from 'rxjs/operators'
+import { Observable, throwError } from 'rxjs';
+import { catchError, map, startWith } from 'rxjs/operators'
 import { Articulo } from 'src/app/models/articulo.model';
 import { Cliente } from 'src/app/models/cliente';
 import { Medida } from 'src/app/models/medida.model';
@@ -75,6 +75,8 @@ articuloSeleccionado ='';
       error: (e) => console.error(e)
     });
 
+
+
     this.filteredOptions = this.myControl.valueChanges.pipe(startWith(''),map(value => this._filter(String(value))));
 
   }
@@ -85,12 +87,18 @@ articuloSeleccionado ='';
   }
 
 
-  listarClientes(): void {
+listarClientes(): void {
 
     this.currentCliente = {};
     this.currentIndex = -1;
-
-    this.clienteService.getAll().subscribe({
+    this.clienteService.getAll().pipe(
+      catchError(error => {
+        // Manejo del error
+        console.error('Ocurrió un error:', error);
+        alert('errrp');
+        return throwError(() => new Error('Hubo un problema al obtener los clientes.'));
+      })
+    ).subscribe({
       next: (data) => {
         this.clientes = data;
         console.log(data);
@@ -113,11 +121,12 @@ articuloSeleccionado ='';
 
  seleccionarCliente(): void {
     console.log('passo');
-    console.log (this.currentIndex);
     if(this.clientes){
       console.log(this.clientes[this.currentIndex-1]);
       this.currentCliente = this.clientes[this.currentIndex-1];
     }
+
+    console.log(this.currentCliente)
       
   }
 
@@ -257,6 +266,8 @@ agregarArticulo(){
     
   
   guardarPresupuesto(){
+
+    if(!this.validarDatosRequeridos()){
     const presupuesto = new Presupuesto();
     presupuesto.Cliente = this.currentCliente;
     presupuesto.EximirIVA = this.eximirIVA;
@@ -282,10 +293,16 @@ agregarArticulo(){
     //mostrar el Numero de presupuesto generado
     alert(idPresupuesto);
   }
+  }else    
+  alert("Debe seleccionar un cliente y agregar artículos al presupuesto antes de continuar.");
+  throw new Error("Validación fallida: Cliente o presupuesto no definidos.");
+
 }
 
 
 generarPDF() {
+
+  if (!this.validarDatosRequeridos()){
   const doc = new jsPDF();
 
   // Encabezado
@@ -344,7 +361,7 @@ if(this.presupuestoCliente){
   // Dibujar encabezados de la tabla
   let startY = 60; // Posición de inicio para la tabla
   const columnWidths = [35, 15, 100, 25, 25]; // Cambié los anchos
-  doc.setFontSize(7);
+  doc.setFontSize(8);
   
   doc.setFillColor(211, 211, 211); // Gris claro para el fondo
   doc.rect(8, startY - 6, columnWidths.reduce((a, b) => a + b, 0), 12, 'F'); // Rectángulo de fondo gris claro
@@ -406,7 +423,7 @@ if(this.presupuestoCliente){
   // Dibujar encabezados de la tabla
   let startY = 60; // Posición de inicio para la tabla
   const columnWidths = [35, 15, 145]; // Cambié los anchos
-  doc.setFontSize(7);
+  doc.setFontSize(8);
   
   doc.setFillColor(211, 211, 211); // Gris claro para el fondo
   doc.rect(8, startY - 6, columnWidths.reduce((a, b) => a + b, 0), 12, 'F'); // Rectángulo de fondo gris claro
@@ -441,7 +458,22 @@ if(this.presupuestoCliente){
 
   // Guardar o descargar el PDF
   doc.save(`Presupuesto_${new Date().toISOString().split('T')[0]}.pdf`);
+
+}else    
+alert("Debe seleccionar un cliente y agregar artículos al presupuesto antes de continuar.");
+throw new Error("Validación fallida: Cliente o presupuesto no definidos."); 
+
 }
+
+
+
+
+validarDatosRequeridos() : Boolean{
+
+  return this.currentCliente == null || this.currentCliente == undefined && this.mapaPresupuestoArticulos?.size == 0 
+
+}
+
 
 }
 

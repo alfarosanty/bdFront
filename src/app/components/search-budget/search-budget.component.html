@@ -77,7 +77,7 @@
         <div >
             <mat-form-field>
             <mat-label>Selecciona una opción</mat-label>
-            <input type="text" [(ngModel)]="articuloSeleccionado"  matInput [formControl]="myControl" [matAutocomplete]="auto" (keydown.enter)="seleccionarArticulo()">
+            <input type="text" [(ngModel)]="articuloSeleccionado"  matInput [formControl]="myControl" [matAutocomplete]="auto" (keydown.enter)="seleccionarArticulo()"     (input)="myControl.setValue(myControl.value.toUpperCase(), { emitEvent: false })">
             <mat-autocomplete #auto="matAutocomplete">
                 <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
                 {{ option }}
