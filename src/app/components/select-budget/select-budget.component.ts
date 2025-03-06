@@ -27,7 +27,7 @@ export class SelectBudgetComponent {
   mostrarPanelBusqueda = false
 
 
-  constructor(private clienteService : ClienteService,private budgetService : PresupuestoService, private router : Router, private presupuestoController : PresupuestoController) {}
+  constructor(private clienteService : ClienteService,private presupuestoService : PresupuestoService, private router : Router) {}
 
 
 
@@ -68,13 +68,13 @@ export class SelectBudgetComponent {
   buscarPresupuestosXCliente(){
     if(this.clienteBuscado){
      const clienteSeleccionado = this.clientes?.find(cliente=> cliente.razonSocial == this.clienteBuscado);
-     this.presupuestosXCliente = this.presupuestoController.get(clienteSeleccionado?.id);
+     this.presupuestosXCliente = this.presupuestoService.getByCliente(clienteSeleccionado?.id);
     }
   }
 
   buscarPresupuestoXNumero(){
 
-    this.presupuestoSeleccionado = this.presupuestoController.get(this.numPresupuesto);
+    this.presupuestoSeleccionado = this.presupuestoService.get(this.numPresupuesto);
 
   }
   }

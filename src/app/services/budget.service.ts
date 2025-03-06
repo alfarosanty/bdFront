@@ -29,12 +29,14 @@ export class PresupuestoService {
   );
   }
 
-  getAll(): Observable<Presupuesto[]> {
-    return this.http.get<Presupuesto[]>(`${baseUrl}/GetPresupuestos `);
+  getByCliente(id:any): Observable<Presupuesto[]> {
+    return this.http.get<Presupuesto[]>(`${baseUrl}/GetPresupuestoByCliente/${id} `);
   }
 
+  
+
   get(id: any): Observable<Presupuesto> {
-    return this.http.get<Presupuesto>(`${baseUrl}/GetPresupuestoById/${id}`);
+    return this.http.get<Presupuesto>(`${baseUrl}/GetPresupuestoByNumero/${id}`);
   }
 }
 
