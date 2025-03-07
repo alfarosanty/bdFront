@@ -3,8 +3,8 @@ import { Cliente } from "./cliente";
 import { PresupuestoArticulo } from "./presupuesto-articulo.model";
 
 export class Presupuesto {
-    NumeroPresupuesto?:Number
-    Fecha?:Date;
+    id?:Number
+    fecha?:Date;
     Cliente?:Cliente;
     EximirIVA?:Boolean;
     Articulos?:PresupuestoArticulo[];

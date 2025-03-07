@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Presupuesto } from '../models/presupuesto.model';
 import { Observable } from 'rxjs';
 
-const baseUrl = 'http://localhost:7166';
+const baseUrl = 'http://localhost:7166/Presupuesto';
 
 
 @Injectable({
@@ -18,7 +18,7 @@ export class PresupuestoService {
   constructor(private http: HttpClient) {}
 
   guardar(presupuesto :Presupuesto)  {
-    alert('url' + '${baseUrl}/Presupuesto');
+    alert('url' + '${baseUrl}');
   return this.http.post(`${baseUrl}/Presupuesto`, presupuesto).subscribe(
     response => {
       console.log('Respuesta de la API:', response);

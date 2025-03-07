@@ -11,6 +11,7 @@ import { ArticuloService } from 'src/app/services/articulo.service';
 import { PresupuestoService } from 'src/app/services/budget.service';
 import { ClienteService } from 'src/app/services/cliente.service';
 import { jsPDF }  from 'jspdf';
+import { ActivatedRoute, Router } from '@angular/router';
 
 
 
@@ -28,11 +29,13 @@ export class SearchBudgetComponent {
   articulos: Articulo[]=[];
   familiaMedida: string[] = [];
   mapaPresupuestoArticulos ?: Map<string,PresupuestoArticulo[]>;
+  mapaPresuXArtParaAcceder ?: Map<string,PresupuestoArticulo[]>
 
 
   currentCliente?: Cliente;
   currentArticulo ?: Articulo;
 
+  presupuestoAAcceder ?: Presupuesto
   fechaPresupuesto ?:string;
   producto = '';
   numCliente = '';
@@ -54,7 +57,7 @@ filteredOptions: Observable<string[]>= new Observable<string[]>();
 articuloSeleccionado ='';
  //END INPUT
 
-  constructor(private clienteService: ClienteService, private articuloService:ArticuloService, private presupuestoService:PresupuestoService) {}
+  constructor(private clienteService: ClienteService, private articuloService:ArticuloService, private presupuestoService:PresupuestoService, private route : ActivatedRoute) {}
 
   ngOnInit(): void {
     this.listarClientes();
@@ -79,6 +82,15 @@ articuloSeleccionado ='';
 
 
     this.filteredOptions = this.myControl.valueChanges.pipe(startWith(''),map(value => this._filter(String(value))));
+
+
+    const presupuestoId = Number(this.route.snapshot.paramMap.get('id'));
+  
+    if (presupuestoId) {
+      // Si el ID está presente, cargar los detalles del presupuesto
+      console.log('ID del presupuesto:', presupuestoId);
+      this.cargarDetallesPresupuesto(presupuestoId);
+    }
 
   }
 
@@ -124,7 +136,6 @@ listarClientes(): void {
  seleccionarCliente(): void {
     console.log('passo');
     if(this.clientes){
-      console.log(this.clientes[this.currentIndex-1]);
       this.currentCliente = this.clientes[this.currentIndex-1];
     }
 
@@ -167,7 +178,6 @@ listarClientes(): void {
   
           // Mostrar u ocultar colores según si hay artículos disponibles
           this.mostrarColores = this.articulos.length > 0;
-          console.log('mostrarColores:', this.mostrarColores);
         },
         error: (e) => console.error('Error al obtener artículos:', e)
       });
@@ -186,7 +196,6 @@ listarClientes(): void {
   
   
 agregarArticulo(){
-  console.log (this.articuloColorIndex);
   if(this.articulos){
     this.currentArticulo = this.articulos[this.articuloColorIndex];
     this.articulos = this.articulos.filter(articulo => articulo.id !== this.currentArticulo?.id);
@@ -246,7 +255,6 @@ agregarArticulo(){
     
         // Obtén solo los precios de los artículos
         let preciosDePresupuestos = presupuestosArticulos.map(presupuestoArticulo => (this.calcularPrecioConDescuento(presupuestoArticulo)) * (presupuestoArticulo.cantidad || 0));
-        console.log(preciosDePresupuestos);
     
         // Suma los precios para obtener el subtotal
         let subtotalDePrecios = preciosDePresupuestos.reduce((acumulador, precio) => {
@@ -275,7 +283,7 @@ agregarArticulo(){
     presupuesto.EximirIVA = this.eximirIVA;
     presupuesto.Articulos = [];
     if(this.fechaPresupuesto)
-        presupuesto.Fecha = new Date(this.fechaPresupuesto);
+        presupuesto.fecha = new Date(this.fechaPresupuesto);
 
 
     this.mapaPresupuestoArticulos?.forEach((valor, clave) => {
@@ -288,12 +296,10 @@ agregarArticulo(){
   
 });
     //presupuesto.articulos
-    console.log(presupuesto.Articulos?.length);
   const idPresupuesto = this.presupuestoService.guardar(presupuesto);
   if(idPresupuesto){
     //reiniciar el formulario
     //mostrar el Numero de presupuesto generado
-    console.log(idPresupuesto);
   }
     this.showBackDrop=true
   }else    
@@ -469,6 +475,56 @@ validarDatosRequeridos() : Boolean{
 
   return Object.keys((this.currentCliente || "")).length === 0 || this.currentCliente == undefined || this.mapaPresupuestoArticulos?.size == 0 
 
+}
+
+
+cargarDetallesPresupuesto(id:Number){
+
+  this.mapaPresuXArtParaAcceder = new Map()
+
+  this.presupuestoService.get(id).subscribe({
+    next: (data) => {
+      console.log(data)
+      this.presupuestoAAcceder = data;
+      console.log(this.presupuestoAAcceder);
+    },
+    error: (e) => console.error(e)
+
+  });
+
+  this.currentCliente = this.presupuestoAAcceder?.Cliente
+  console.log("Se cargó al cliente que se buscó acceder")
+  
+  
+  this.presupuestoAAcceder?.Articulos?.forEach(presuArt => {
+    const key = presuArt.articulo?.familia?.codigo + "/" + presuArt.articulo?.medida?.codigo
+    console.log("acá va una clave",key)
+    if (this.mapaPresuXArtParaAcceder?.has(key)) {
+      const listaDePresuArtActualizada =  (this.mapaPresuXArtParaAcceder.get(key) || [])
+      listaDePresuArtActualizada.push(presuArt)
+      this.mapaPresuXArtParaAcceder.set(key,listaDePresuArtActualizada)
+
+      console.log('Clave encontrada:', presuArt.articulo?.familia?.codigo + "/" + presuArt.articulo?.medida?.codigo);
+    }else{
+      this.mapaPresuXArtParaAcceder?.set(key,[presuArt])
+
+    }
+
+    if (this.mapaPresuXArtParaAcceder) {
+      if (this.mapaPresupuestoArticulos) {
+        // Si mapaPresupuestoArticulos ya está inicializado, copiamos los valores
+        for (let [key, value] of this.mapaPresuXArtParaAcceder) {
+          this.mapaPresupuestoArticulos.set(key, value);
+        }
+      } else {
+        // Si mapaPresupuestoArticulos no está inicializado, lo inicializamos y luego agregamos los valores
+        this.mapaPresupuestoArticulos = new Map();
+        for (let [key, value] of this.mapaPresuXArtParaAcceder) {
+          this.mapaPresupuestoArticulos.set(key, value);
+        }
+      }
+    }
+  });
 }
 
 

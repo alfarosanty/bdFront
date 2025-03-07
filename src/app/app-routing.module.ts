@@ -14,7 +14,9 @@ const routes: Routes = [
   { path: 'listStock', component: StockListComponent },
   { path: 'listStock/:id', component: StockDetailsComponent },
   { path:  'searchBudget', component: SearchBudgetComponent},
+  { path:  'searchBudget/:id', component: SearchBudgetComponent},
   { path:  'selectBudget', component: SelectBudgetComponent},
+
 
 ];
 

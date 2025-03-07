@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
-import { catchError, throwError } from 'rxjs';
+import { catchError, map, Observable, startWith, throwError } from 'rxjs';
 import { Cliente } from 'src/app/models/cliente';
 import { Presupuesto } from 'src/app/models/presupuesto.model';
 import { PresupuestoService } from 'src/app/services/budget.service';
@@ -18,13 +19,16 @@ export class SelectBudgetComponent {
   presupuestosXCliente?: Presupuesto[];
   presupuestoSeleccionado ?: Presupuesto;
 
-  clienteBuscado?: String;
-
   fechaPresupuesto ?:string;
   numCliente = '';
-  numPresupuesto = '';
+  idPresupuesto = '';
   currentIndex = -1;
   mostrarPanelBusqueda = false
+  myControl = new FormControl();
+  options: string[] = [];
+  filteredOptions: Observable<string[]>= new Observable<string[]>();
+  clienteSeleccionado = ''
+
 
 
   constructor(private clienteService : ClienteService,private presupuestoService : PresupuestoService, private router : Router) {}
@@ -35,12 +39,19 @@ export class SelectBudgetComponent {
     this.listarClientes();
     this.fechaPresupuesto =  new Date().toISOString().split('T')[0];;
 
+    this.filteredOptions = this.myControl.valueChanges.pipe(
+      startWith(''),
+      map(value => this._filter(value || ''))
+    );
   }
-
+  
+  private _filter(value: string): string[] {
+    const filterValue = value.toLowerCase();
+    return this.options.filter(option => option.toLowerCase().includes(filterValue));
+  }
 
   listarClientes(): void {
 
-    this.clienteBuscado = '';
     this.currentIndex = -1;
     this.clienteService.getAll().pipe(
       catchError(error => {
@@ -53,11 +64,14 @@ export class SelectBudgetComponent {
       next: (data) => {
         this.clientes = data;
         console.log(data);
+        this.options = this.clientes.map(cliente=>cliente.razonSocial ?? '')
+        console.log(this.options)
       },
       error: (e) => console.error(e)
       
     });
   }
+
 
   generarPresupuesto(){
 
@@ -66,16 +80,43 @@ export class SelectBudgetComponent {
   }
 
   buscarPresupuestosXCliente(){
-    if(this.clienteBuscado){
-     const clienteSeleccionado = this.clientes?.find(cliente=> cliente.razonSocial == this.clienteBuscado);
-     this.presupuestosXCliente = this.presupuestoService.getByCliente(clienteSeleccionado?.id);
+    console.log("se ejecutó el método")
+    console.log(this.clienteSeleccionado)
+    if(this.clienteSeleccionado){
+     const clienteBuscado = this.clientes?.find(cliente=> cliente.razonSocial == this.clienteSeleccionado);
+     console.log(clienteBuscado)
+     this.presupuestoService.getByCliente(clienteBuscado?.id).subscribe({
+      next: (data) => {
+        this.presupuestosXCliente = data;
+        console.log(this.presupuestosXCliente);
+        console.log(data)
+      },
+      error: (e) => console.error(e)
+
+    });
     }
   }
 
   buscarPresupuestoXNumero(){
 
-    this.presupuestoSeleccionado = this.presupuestoService.get(this.numPresupuesto);
+    this.presupuestoService.get(this.idPresupuesto).subscribe({
+      next: (data) => {
+        this.presupuestoSeleccionado = data;
+        console.log(this.presupuestoSeleccionado);
+      },
+      error: (e) => console.error(e)
+
+    });
 
   }
+  accederAPresupuesto() {
+    if (this.presupuestoSeleccionado) {
+      this.router.navigate(['/searchBudget', this.presupuestoSeleccionado.id]);
+    } else {
+      alert("No se seleccionó ningún presupuesto.")
+      console.log('No se ha seleccionado un presupuesto.');
+    }
+  }
+
   }
 

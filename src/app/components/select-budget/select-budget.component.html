@@ -1,43 +1,74 @@
 <div class="superior-container">
 
-    <button (click)="generarPresupuesto()">Generar Presupuesto</button>
+    <button class="boton-de-busqueda" (click)="generarPresupuesto()">Generar Presupuesto</button>
+    <button class="boton-de-busqueda" (click)="mostrarPanelBusqueda = !mostrarPanelBusqueda">
+        Buscar Presupuesto
+      </button>
 </div>
 
 <div class="inferior-container">
     <div class="inferior-izquierda-container">
 
-    <button class="boton-de-busqueda" (click)="mostrarPanelBusqueda = !mostrarPanelBusqueda">
-        Buscar Presupuesto
-      </button>
+
 
       <div *ngIf="mostrarPanelBusqueda" class="search-panel">
             <div class="search-by-client">
               <label for="clienteBuscado">Buscar por Cliente:</label>
-              <input id="clienteBuscado" type="text" [(ngModel)]="clienteBuscado" placeholder="Nombre del cliente">
-              <button (click)="buscarPresupuestosXCliente()">Buscar</button>
-        </div>
+              <div >
+                <mat-form-field>
+                <mat-label>Selecciona una opción</mat-label>
+                <input type="text" [(ngModel)]="clienteSeleccionado"  matInput [formControl]="myControl" [matAutocomplete]="auto" (keydown.enter)="buscarPresupuestosXCliente()"     (input)="myControl.setValue(myControl.value.toUpperCase(), { emitEvent: false })">
+                <mat-autocomplete #auto="matAutocomplete">
+                    <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
+                    {{ option }}
+                    </mat-option>
+                </mat-autocomplete>
+                </mat-form-field> 
+              </div>
+              <!-- Barra de presupuestos a la derecha -->
+              <div class="presupuestos-bar">
+                <h3>Presupuestos</h3>
+                <select [(ngModel)]="presupuestoSeleccionado">
+                  <option value="" disabled selected>Selecciona un presupuesto</option>
+                  <option *ngFor="let presupuesto of presupuestosXCliente" [ngValue]="presupuesto">
+                    {{ presupuesto.id }} - {{ presupuesto.fecha }}
+                  </option>
+                </select>
+              
+                <!-- Mostrar el presupuesto seleccionado (opcional) -->
+                <div class="presupuesto-seleccionado">
+                    <div>ID: {{ presupuestoSeleccionado?.id }}</div>
+                    <div>Cliente: {{ presupuestoSeleccionado?.Cliente?.razonSocial }}</div>
+                    <div>Fecha: {{ presupuestoSeleccionado?.fecha }}</div>
+                  </div>
+                  <button (click)="accederAPresupuesto()">Buscar</button>
 
-        <div class="dropdown" *ngIf="((presupuestosFiltrados || []).length) > 0">
-            <button class="dropdown-btn">Presupuestos Filtrados</button>
-            <ul class="dropdown-menu">
-              <li *ngFor="let presupuesto of presupuestosFiltrados">
-                {{ presupuesto.NumeroPresupuesto }} - {{ presupuesto.Cliente?.razonSocial }}
-              </li>
-            </ul>
-          </div>
-    </div>
-
-        <div *ngIf="mostrarPanelBusqueda" class="search-panel">
-            <div class="search-by-number">
-              <label for="numeroPresupuesto">Buscar por Número de Presupuesto:</label>
-              <input id="numeroPresupuesto" type="text" [(ngModel)]="numPresupuesto" placeholder="Número de presupuesto">
-              <button (click)="buscarPresupuestoXNumero()">Buscar</button>
-        </div> 
+              </div>
+         </div> 
     </div> 
+
 </div>
 
 <div class="inferior-derecha-container">
 
+    <div *ngIf="mostrarPanelBusqueda" class="search-panel">
+        <div class="search-by-client">
+          <label for="clienteBuscado">Buscar por número de presupuesto:</label>
+
+          <!-- Barra de presupuestos a la derecha -->
+          <div class="presupuestos-bar">
+            <input type="number" id="numPresupuesto" [(ngModel)]="idPresupuesto" placeholder="ID del presupuesto" (keydown.enter)="buscarPresupuestoXNumero()"/>
+            <div class="presupuesto-seleccionado">
+                <div>ID: {{ presupuestoSeleccionado?.id }}</div>
+                <div>Cliente: {{ presupuestoSeleccionado?.Cliente?.razonSocial }}</div>
+                <div>Fecha: {{ presupuestoSeleccionado?.fecha }}</div>
+              </div>
+
+              <button (click)="accederAPresupuesto()">Buscar</button>
+              
+        </div>
+     </div> 
+</div> 
 </div>
 
 </div>
