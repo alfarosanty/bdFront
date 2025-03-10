@@ -34,6 +34,7 @@ export class SearchBudgetComponent {
 
   currentCliente?: Cliente;
   currentArticulo ?: Articulo;
+  currentPresupuesto?: Presupuesto;
 
   presupuestoAAcceder ?: Presupuesto
   fechaPresupuesto ?:string;
@@ -108,7 +109,7 @@ listarClientes(): void {
       catchError(error => {
         // Manejo del error
         console.error('Ocurrió un error:', error);
-        alert('No se puede obtener los datos provenientes de la base de datos (ERROR DE IP)');
+        alert('No se puede obtener los datos provenientes de la base de datos ');
         return throwError(() => new Error('Hubo un problema al obtener los clientes.'));
       })
     ).subscribe({
@@ -295,6 +296,8 @@ agregarArticulo(){
   })
   
 });
+
+
     //presupuesto.articulos
   const idPresupuesto = this.presupuestoService.guardar(presupuesto);
   if(idPresupuesto){
@@ -521,6 +524,7 @@ cargarDetallesPresupuesto(id:Number){
       }
     }
   });
+
 }
 
 
