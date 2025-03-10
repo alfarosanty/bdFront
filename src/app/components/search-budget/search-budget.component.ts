@@ -513,22 +513,38 @@ cargarDetallesPresupuesto(id:Number){
     if (this.mapaPresuXArtParaAcceder) {
       if (this.mapaPresupuestoArticulos) {
         // Si mapaPresupuestoArticulos ya está inicializado, copiamos los valores
-        for (let [key, value] of this.mapaPresuXArtParaAcceder) {
-          this.mapaPresupuestoArticulos.set(key, value);
-        }
+        this.actualizarMapaPresupuestoArticulo(this.mapaPresuXArtParaAcceder)
       } else {
         // Si mapaPresupuestoArticulos no está inicializado, lo inicializamos y luego agregamos los valores
         this.mapaPresupuestoArticulos = new Map();
-        for (let [key, value] of this.mapaPresuXArtParaAcceder) {
-          this.mapaPresupuestoArticulos.set(key, value);
-        }
+        this.actualizarMapaPresupuestoArticulo(this.mapaPresuXArtParaAcceder)
       }
     }
   });
 }
 
 
+actualizarMapaPresupuestoArticulo(nuevoMap: Map<string, PresupuestoArticulo[]>){
+  for (let [key, value] of nuevoMap) {
+    if(this.mapaPresupuestoArticulos)
+    if (this.mapaPresupuestoArticulos.has(key)) {
+      const listaExistente = this.mapaPresupuestoArticulos.get(key)!;
+      
+      // Concatenar ambas listas
+      const nuevaLista =listaExistente.concat(value);
+      
+      // Actualizar el Map con la nueva lista concatenada
+      this.mapaPresupuestoArticulos.set(key, nuevaLista);
+    } else {
+      // Si no existe la clave, se agrega tal cual desde el nuevoMap
+      this.mapaPresupuestoArticulos.set(key, value);
+    }
+  }
 }
+
+
+}
+
 
 
 
