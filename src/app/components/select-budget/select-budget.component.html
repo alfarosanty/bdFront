@@ -31,15 +31,15 @@
                 <select [(ngModel)]="presupuestoSeleccionado">
                   <option value="" disabled selected>Selecciona un presupuesto</option>
                   <option *ngFor="let presupuesto of presupuestosXCliente" [ngValue]="presupuesto">
-                    {{ presupuesto.id }} - {{ presupuesto.fecha }}
+                    {{ presupuesto.id }} - {{ getFecha(presupuesto.fecha!) }}
                   </option>
                 </select>
               
                 <!-- Mostrar el presupuesto seleccionado (opcional) -->
                 <div class="presupuesto-seleccionado">
                     <div>ID: {{ presupuestoSeleccionado?.id }}</div>
-                    <div>Cliente: {{ presupuestoSeleccionado?.Cliente?.razonSocial }}</div>
-                    <div>Fecha: {{ presupuestoSeleccionado?.fecha }}</div>
+                    <div>Cliente: {{ presupuestoSeleccionado?.cliente?.razonSocial }}</div>
+                    <div>Fecha: {{ getFecha(presupuestoSeleccionado?.fecha!) }}</div>
                   </div>
                   <button (click)="accederAPresupuesto()">Buscar</button>
 
@@ -60,8 +60,8 @@
             <input type="number" id="numPresupuesto" [(ngModel)]="idPresupuesto" placeholder="ID del presupuesto" (keydown.enter)="buscarPresupuestoXNumero()"/>
             <div class="presupuesto-seleccionado">
                 <div>ID: {{ presupuestoSeleccionado?.id }}</div>
-                <div>Cliente: {{ presupuestoSeleccionado?.Cliente?.razonSocial }}</div>
-                <div>Fecha: {{ presupuestoSeleccionado?.fecha }}</div>
+                <div>Cliente: {{ presupuestoSeleccionado?.cliente?.razonSocial }}</div>
+                <div>Fecha: {{ getFecha(presupuestoSeleccionado?.fecha!) }}</div>
               </div>
 
               <button (click)="accederAPresupuesto()">Buscar</button>

@@ -62,8 +62,10 @@ articuloSeleccionado ='';
 
   ngOnInit(): void {
     this.listarClientes();
-    this.fechaPresupuesto =  new Date().toISOString().split('T')[0];;
-    this.mapaPresupuestoArticulos=new Map();
+    const hoy = new Date();
+    this.fechaPresupuesto = `${hoy.getDate().toString().padStart(2, '0')}/${(hoy.getMonth() + 1).toString().padStart(2, '0')}/${hoy.getFullYear()}`;    this.mapaPresupuestoArticulos=new Map();
+    console.log("esta es la feha en que se hace esto", this.fechaPresupuesto)
+
 
     this.articuloService.getAllFamiliaMedida().subscribe({
       next: (data) => {
@@ -146,6 +148,10 @@ listarClientes(): void {
 
   convertirAMayuscula(){
     this.codigoArticulo = this.codigoArticulo.toUpperCase();
+  }
+
+  onEximirIVAChange() {
+    console.log('Valor de Eximir IVA cambiado:', this.eximirIVA);
   }
 
   seleccionarArticulo(){
@@ -280,11 +286,11 @@ agregarArticulo(){
 
     if(!this.validarDatosRequeridos()){
     const presupuesto = new Presupuesto();
-    presupuesto.Cliente = this.currentCliente;
+    presupuesto.cliente = this.currentCliente;
     presupuesto.EximirIVA = this.eximirIVA;
     presupuesto.Articulos = [];
     if(this.fechaPresupuesto)
-        presupuesto.fecha = new Date(this.fechaPresupuesto);
+      presupuesto.fecha = new Date(this.fechaPresupuesto);
 
 
     this.mapaPresupuestoArticulos?.forEach((valor, clave) => {
@@ -294,7 +300,8 @@ agregarArticulo(){
         console.log(presuArt.articulo?.color?.descripcion + '' +presuArt.cantidad);
         presupuesto.Articulos?.push(presuArt);      
   })
-  
+    console.log("Este es el presupuesto a guardar",presupuesto);
+
 });
 
 
@@ -489,14 +496,17 @@ cargarDetallesPresupuesto(id:Number){
     next: (data) => {
       console.log(data)
       this.presupuestoAAcceder = data;
-      console.log(this.presupuestoAAcceder);
+      console.log("El presupuesto cargado es: ",this.presupuestoAAcceder);
+      this.currentCliente = this.presupuestoAAcceder.cliente
+      console.log("Se cargó al cliente que se buscó acceder ",this.currentCliente)
+
+
     },
     error: (e) => console.error(e)
 
   });
 
-  this.currentCliente = this.presupuestoAAcceder?.Cliente
-  console.log("Se cargó al cliente que se buscó acceder")
+
   
   
   this.presupuestoAAcceder?.Articulos?.forEach(presuArt => {

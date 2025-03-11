@@ -118,5 +118,24 @@ export class SelectBudgetComponent {
     }
   }
 
+  getFecha(fecha: Date): string {
+    if (typeof fecha === 'string') {
+      fecha = new Date(fecha);  // Convertimos la cadena a un objeto Date
+    }
+  
+    if (fecha instanceof Date && !isNaN(fecha.getTime())) {
+      const dia = fecha.getDate().toString().padStart(2, '0');
+      const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
+      const año = fecha.getFullYear();
+      const fechaFormateada = `${dia}/${mes}/${año}`
+      console.log(fechaFormateada)
+      
+      return fechaFormateada;
+    } else {
+      console.log('Fecha inválida o nula');
+      return '';
+    }
+  }
+  
   }
 

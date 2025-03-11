@@ -57,9 +57,9 @@
         </div>
 
         <div>
-            <input type="checkbox" [(ngModel)]="eximirIVA">
+            <input type="checkbox" [(ngModel)]="eximirIVA" (change)="onEximirIVAChange()">
             <label for="iva">Eximir pago de IVA (Ley 24.331)</label>
-        </div>
+          </div>
     </div>
 </div>
 

@@ -5,7 +5,7 @@ import { PresupuestoArticulo } from "./presupuesto-articulo.model";
 export class Presupuesto {
     id?:Number
     fecha?:Date;
-    Cliente?:Cliente;
+    cliente?:Cliente;
     EximirIVA?:Boolean;
     Articulos?:PresupuestoArticulo[];
     esPresupuestoExistente= false
