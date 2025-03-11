@@ -5,6 +5,7 @@ import { StockDetailsComponent } from './components/stock-details/stock-details.
 import { StockListComponent } from './components/stock-list/stock-list.component'
 import { SearchBudgetComponent } from './components/search-budget/search-budget.component';
 import { SelectBudgetComponent } from './components/select-budget/select-budget.component';
+import { ClientesComponent } from './components/clientes/clientes.component';
 
 
 const routes: Routes = [
@@ -16,6 +17,8 @@ const routes: Routes = [
   { path:  'searchBudget', component: SearchBudgetComponent},
   { path:  'searchBudget/:id', component: SearchBudgetComponent},
   { path:  'selectBudget', component: SelectBudgetComponent},
+  { path:  'clientes', component: ClientesComponent},
+
 
 
 ];

@@ -1,0 +1,71 @@
+.superior-container{
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5%;
+}
+
+.search-panel {
+    margin-top: 2%;
+    padding: 2%;
+    border: 1px solid #ccc;
+    border-radius: 2%;
+    width:120%;
+    display: flex;
+    
+  }
+  
+  .search-panel input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    margin-bottom: 10%;
+  }
+  
+  .search-panel button {
+    width: 130%;
+    padding: 20%;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+  }
+  
+  .search-panel button:hover {
+    background-color: #0056b3;
+  }
+
+  .boton-de-busqueda{
+    margin-top: 5%;
+  }
+
+  .presupuestos-bar {
+    width: 28%; /* Barra de presupuestos al 28% de la pantalla */
+    padding-left: 10px;
+  }
+
+  .inferior-container {
+    display: flex;
+    justify-content: space-between; /* Opcional: para añadir espacio entre los contenedores internos */
+  }
+
+  .contenedor-inferior-izquierdo{
+    width: 48%; /* O el tamaño que desees para cada contenedor interno */
+    padding: 10px;
+  }
+  .contenedor-inferior-derecho{
+    width: 48%; /* O el tamaño que desees para cada contenedor interno */
+    padding: 10px;
+    margin-bottom: 30%;
+  }
+
+  .presupuesto-seleccionado {
+    display: inline; /* Alinea el texto en una sola línea */
+  }
+
+  .presupuesto-seleccionado div {
+    width: 500%; /* El div ocupará el 80% del ancho del contenedor padre */
+    margin-bottom: 10px; /* Espaciado entre los divs */
+  }

@@ -1,0 +1,67 @@
+<div class="superior-container">
+
+    <button class="boton-de-busqueda" (click)="mostrarPanelCreacion = !mostrarPanelCreacion">Crear nuevo cliente</button>
+    <button class="boton-de-busqueda" (click)="mostrarPanelBusqueda = !mostrarPanelBusqueda">
+        Buscar Cliente
+      </button>
+</div>
+
+<div class="inferior-container">
+    <div class="inferior-izquierda-container">
+
+
+
+      <div *ngIf="mostrarPanelBusqueda" class="search-panel">
+            <div class="search-by-client">
+              <label for="clienteBuscado">Buscar por Cliente:</label>
+              <div >
+                <mat-form-field>
+                <mat-label>Selecciona una opción</mat-label>
+                <input type="text" [(ngModel)]="clienteSeleccionado"  matInput [formControl]="myControl" [matAutocomplete]="auto" (keydown.enter)="buscarCliente()"     (input)="myControl.setValue(myControl.value.toUpperCase(), { emitEvent: false })">
+                <mat-autocomplete #auto="matAutocomplete">
+                    <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
+                    {{ option }}
+                    </mat-option>
+                </mat-autocomplete>
+                </mat-form-field> 
+              </div>
+              <!-- Barra de presupuestos a la derecha -->
+              <div class="presupuestos-bar">
+                <h3>Cliente: {{currentCliente?.razonSocial}} </h3>
+
+              
+                <!-- Mostrar el presupuesto seleccionado (opcional) -->
+                <div class="presupuesto-seleccionado">
+                    <div>Razón social: {{ currentCliente?.razonSocial }}</div>
+                    <div>Condición fiscal: {{ currentCliente?.condicionFiscal?.codigo }}</div>
+                    <div>Domicilio: {{currentCliente?.domicilio }}</div>
+                    <div>C.U.I.T.: {{ currentCliente?.cuit }}</div>
+                    <div>Provincia: {{ currentCliente?.provincia }}</div>
+                    <div>Teléfono: {{ currentCliente?.telefono }}</div>
+                  </div>
+                  <button>Guardar</button>
+
+              </div>
+         </div> 
+    </div> 
+
+</div>
+
+<div class="inferior-derecha-container">
+
+    <div *ngIf="mostrarPanelBusqueda" class="search-panel">
+        <div class="search-by-client">
+          <label for="clienteBuscado">Buscar por número de cliente:</label>
+
+          <!-- Barra de presupuestos a la derecha -->
+          <div class="presupuestos-bar">
+            <input type="number" id="numPresupuesto" [(ngModel)]="idCliente" placeholder="ID del cliente" (keydown.enter)="buscarCliente()" />
+            <div class="presupuesto-seleccionado">
+              
+        </div>
+     </div> 
+</div> 
+</div>
+
+</div>
+
