@@ -1,0 +1,203 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+
+<div class="general-container">
+
+<div class="superior-container">
+<div class="selector-container">
+    <h2>Clientes</h2>
+
+    <!-- Menú desplegable de clientes -->
+    <div class="dropdown">
+        <div>
+            <label for="descuento">Numero de Cliente:</label>
+            <input type="text" id="numCliente" [(ngModel)]="numCliente" (keydown.enter)="seleccionarXnumeroCliente(); buscarPresupuestosXCliente()">
+        </div>
+
+
+        <label for="clientes">Seleccionar Cliente:</label>
+        <select  (change)="seleccionarCliente(); buscarPresupuestosXCliente()" [(ngModel)]="currentIndex">
+            <option >Seleccione un cliente</option>
+            <option *ngFor="let cliente of clientes" [value]="cliente.id" >
+                 {{cliente.razonSocial}} 
+            </option>
+          </select>
+                    
+    </div>
+
+</div>
+
+
+<div class="datosCliente-container" *ngIf="currentCliente">
+    <h3>Seleccionar presupuesto de:</h3>
+    <h3>{{currentCliente.razonSocial}}</h3>
+    <select [(ngModel)]="presupuestoSeleccionado" (change)="cargarDetallesPresupuesto(presupuestoSeleccionado?.id)"> 
+        <option value="" disabled selected>Selecciona un presupuesto</option>
+        <option *ngFor="let presupuesto of presupuestosXCliente" [ngValue]="presupuesto">
+            {{ presupuesto.id }} - {{ getFecha(presupuesto.fecha!) }}
+          </option>
+
+    </select>
+
+  </div>
+</div>
+
+
+
+<div class="inferior-container">
+    <h3>Datos del Comprobante</h3>
+
+    <div class="datos-comprobante">
+        <div class="lista-group">
+            <label>Precio Lista:</label>
+            <input type="radio" name="lista" id="lista1"> <label for="lista1">Lista1</label>
+            <input type="radio" name="lista" id="lista2"> <label for="lista2">Lista2</label>
+        </div>
+
+        <div>
+            <label for="fecha">Fecha de Emisión:</label>
+            <input type="date" id="fecha" [(ngModel)]="fechaPresupuesto">
+        </div>
+
+        <div>
+            <input type="checkbox" [(ngModel)]="eximirIVA" (change)="onEximirIVAChange()">
+            <label for="iva">Eximir pago de IVA (Ley 24.331)</label>
+          </div>
+    </div>
+</div>
+
+
+
+<div class="presupuesto-container">
+    <div class="seleccion-y-colores-container">
+    <div class="seleccion-container">
+        <div>
+            <label>Artículo:</label>
+            <input type="text" id="codigoArticulo" [(ngModel)]="codigoArticulo" (ngModelChange)="convertirAMayuscula()" (keydown.enter)="mostrarVariedadColores()" onKeyUp="javascript:this.value=this.value.toUpperCase();">
+        </div>
+
+        <!--COMBO DE PRODUCTOS CON FILTRADO-->
+        <div >
+            <mat-form-field>
+            <mat-label>Selecciona una opción</mat-label>
+            <input type="text" [(ngModel)]="articuloSeleccionado"  matInput [formControl]="myControl" [matAutocomplete]="auto" (keydown.enter)="seleccionarArticulo()"     (input)="myControl.setValue(myControl.value.toUpperCase(), { emitEvent: false })">
+            <mat-autocomplete #auto="matAutocomplete">
+                <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
+                {{ option }}
+                </mat-option>
+            </mat-autocomplete>
+            </mat-form-field> 
+
+   </div>
+
+    </div>
+<!-- Este DIV aparecerá a la derecha cuando presiones Enter -->
+    <div class="colores-container" *ngIf="mostrarColores">
+        <h3>Detalle de selección</h3>
+        <label for="colores">Color:</label> 
+    <select class="select-color" [(ngModel)]="articuloColorIndex">  
+
+        <option *ngFor="let articulo of articulos ; let i = index"  [value]="i" >
+
+                {{mostrarColoresDisponibles(articulo)}} 
+
+            
+       </option>
+    </select>        
+        <!-- Input para mostrar el valor seleccionado -->
+        <label for="cantidades">Cantidad:</label>
+        <input type="text" id="Cantidad" size="2" [(ngModel)]="cantProducto"  (keydown.enter)="agregarArticulo()">
+    </div>
+
+</div>
+
+    <div class="grilla-container">
+        <h3>Grilla de Información</h3>
+        <div class="grilla">
+            <div class="item-header">CÓDIGO</div>
+            <div class="item-header">DESCRIPCIÓN</div>
+            <div class="item-header">CANTIDAD</div>
+            <div class="item-header">PRECIO UNITARIO</div>
+            <div class="item-header">PRECIO TOTAL</div>
+            <div class="item-header">DESCUENTO </div>
+            <div class="item-header">BORRAR </div>
+
+
+
+            <div *ngFor="let entry of mapaPresupuestoArticulos | keyvalue" class="row">
+                <div class="item">{{ entry.key }}</div>
+                
+                <div class="item">{{entry.value[0].articulo?.familia?.descripcion + '' + entry.value[0].articulo?.medida?.descripcion}}
+                 <ng-container *ngFor="let detalle of entry.value">
+                     {{ (detalle.cantidad || 0) + (detalle.articulo?.color?.codigo || '') }}
+                  </ng-container>
+                </div>
+
+                <div class="item">
+
+                    <ng-container  entry.value>
+                        {{ getCantidadTotal(entry.value)  }}
+                     </ng-container>
+                    
+                </div>
+
+                <div class="item">
+
+                    <ng-container  entry.value>
+                        {{ calcularPrecioConDescuento(entry.value[0]) }}
+                     </ng-container>
+                    
+                </div>
+
+                <div class="item">
+
+                    <ng-container  entry.value>
+                        {{ getCantidadTotal(entry.value) * calcularPrecioConDescuento(entry.value[0])  }}
+                     </ng-container>
+                    
+                </div>
+
+                <div class="item">
+
+                    <input type="number" id="descuento" size="5" class="input-pequeño" [(ngModel)]="descUnitario"  (keydown.enter)="aplicarDescuentoUnitario(entry.key)"> %
+
+                </div>
+
+                 
+
+                <div class="item">
+                    <button  (click)="borrarFila(entry.key)" class="boton-borrar">
+                        <i class="fas fa-trash-alt"></i> 
+                    </button>
+                </div>         
+
+</div>
+
+<div class="grilla-totales">
+
+<div class="row-totales">
+    <div class="item">SUBTOTAL: {{ calcularPrecioSubtotal() }} </div>
+
+    <div class="item">TOTAL:   {{ calcularPrecioTotal() }} </div>
+    <div class="item">Descuento: 
+        <input type="number" id="descuento" size="5" class="input-pequeño" [(ngModel)]="descTotal"  (keydown.enter)="calcularPrecioTotal()"> %
+    </div>
+
+
+<div class="boton-generarPDF"> <button (click)="guardarPresupuesto()">Guardar</button>  </div>
+
+<div class="backdrop" *ngIf="showBackDrop">
+    <div class="button-container">
+        <button class="boton-generarPDF" type="button" (click)="generarPDF()">Generar PDF</button>
+      </div>
+    
+      <div class="checklist-container">
+        <label class="checklist-label">
+          <input type="radio" [(ngModel)]="presupuestoCliente" [value]="true" name="tipo" /> Cliente
+        </label>
+        <label class="checklist-label">
+          <input type="radio" [(ngModel)]="presupuestoCliente" [value]="false" name="tipo" /> Empleado
+        </label>
+      </div>
+
+</div>

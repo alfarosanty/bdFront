@@ -1,0 +1,258 @@
+.general-container {
+    display: flex; /* Coloca los elementos en fila */
+    flex-direction: column;
+    justify-content: space-between; /* Separa los elementos */
+    align-items: flex-start; /* Alinea los elementos arriba */
+    padding: 20px; /* Espaciado interno */
+    border-radius: 10px; /* Bordes redondeados */
+    max-width: 100%;  /* Aumenta el ancho del contenedor general */
+    width: 90%;
+    margin:auto;
+}
+
+.superior-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 5%;
+}
+
+/* Contenedor Inferior */
+.inferior-container {
+    padding: 20px;
+    border-radius: 10px;
+    display: flex; /* Para organizar los elementos en fila */
+    flex-wrap: wrap; /* Permite que los elementos pasen a otra línea si no caben */
+    justify-content: left; /* Distribuye los elementos uniformemente */
+    gap: 5%; /* Espaciado entre elementos */
+}
+
+
+
+
+.selector-container {
+    width: 80%;
+    height: 100%;
+    margin-left: 0%;
+    border: 1px solid #ccc;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilo del menú desplegable */
+.dropdown {
+    margin-bottom: 20px;
+}
+
+select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #aaa;
+    border-radius: 5px;
+}
+
+.datosCliente-container{
+    width: 50%;
+    margin-right: -60%;
+    padding: 5px;
+    border-radius: 10px;
+}
+
+
+/* Contenedor del comprobante */
+.datos-comprobante {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 20px; /* Espaciado uniforme */
+}
+
+/* Cada grupo de elementos */
+.datos-comprobante div {
+    display: flex;
+    align-items: center;
+    gap: 5%; /* Espacio entre la etiqueta y el input */
+}
+
+/* Ajuste del tamaño de los inputs */
+.datos-comprobante input,
+.datos-comprobante select {
+    width: 75%; /* Ajusta el ancho según necesites */
+}
+
+/* Para que el grupo de lista esté alineado con el texto */
+.lista-group {
+    display: flex;
+    align-items: center;
+    
+}
+
+#vendedor{
+    width:200%;
+}
+
+.presupuesto-container{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    flex-direction: column;
+}
+
+.seleccion-y-colores-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+    width: 100%;
+}
+
+.seleccion-container{
+    width: 30%;
+    height: 100%;
+    margin-left: 0%;
+    border: 1px solid #ccc;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.colores-container {
+    border: 1px solid #ccc;
+    padding: 2%;
+    width: 50%;
+    border-radius: 10px;
+
+    background-color: #f9f9f9;
+  }
+
+  .select-color {
+    width: 150px;
+    padding: 5px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    background-color: #fff;
+    font-size: 14px;
+    font-weight: bold;
+  }
+
+  .grilla-container {
+    width: 100%;
+    margin: 0 auto;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.grilla {
+    display: grid;
+    grid-template-columns: 15% 50% 9% 15% 15% 12% 10%; /* Tamaños fijos para cada celda */
+    grid-template-rows: auto; /* Alturas para filas específicas */
+
+}
+
+.grilla-total {
+    display: grid;
+    grid-template-columns: 20% 20% 20% 20% 20%; /* Tamaños fijos para cada celda */
+    grid-template-rows: auto; /* Alturas para filas específicas */
+}
+
+
+.item-header {
+   
+    color: black;
+    padding: 20px;
+    text-align: left;
+    font-size: 70%;
+    border: 1px solid black; /* Añadir borde negro */
+    font-weight: bold;
+}
+
+.item {
+   
+    color: black;
+    padding: 20px;
+    text-align: left;
+    font-size: 70%;
+    border: 1px solid black; /* Añadir borde negro */
+
+}
+
+.row {
+    display: contents; /* Importante para que las filas usen el diseño de la grilla */
+  }
+
+.row-totales {
+    display: contents; /* Usamos flexbox para alinear los elementos en fila */
+}
+
+.input-pequeño{
+    width: 60%;
+}
+
+.boton-busqueda-articulo {
+    margin-top: 10px;
+}
+
+.boton-generarPDF {
+    margin-top: 10px;
+    display: inline-block; /* Asegura que los botones se alineen horizontalmente */
+}
+
+.boton-borrar {
+    background-color: transparent;
+    border: none;
+    color: red;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.boton-borrar:hover {
+    text-decoration: underline;
+}
+
+.boton-borrar i {
+    margin-right: 5px;
+}
+
+/* Capa de fondo borroso */
+.backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    display: flex;
+    flex-direction: column; /* Establece los elementos en columna */
+    justify-content: center; /* Centra los elementos verticalmente */
+    align-items: center; /* Centra los elementos horizontalmente */
+    z-index: 10;
+  }
+  
+  /* Modal */
+  .modal {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  }
+
+  .checklist-label {
+    font-weight: bold;
+    margin-top: 10px; /* Espacio entre los radio buttons */
+    display: flex; /* Usamos Flexbox para alinear los elementos */
+    align-items: center; /* Alinea el radio button con el texto */
+    justify-content: center; /* Centra los elementos dentro de cada label */
+  }
+
+  input[type="radio"] {
+    margin-right: 5%; /* Espacio entre el radio button y el texto */
+  }
+
+  .checklist-container {
+    text-align: center; /* Centra el contenido */
+  }

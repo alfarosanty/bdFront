@@ -1,73 +1,73 @@
 <div class="superior-container">
 
-    <button class="boton-de-busqueda" (click)="generarPresupuesto()">Generar Presupuesto</button>
-    <button class="boton-de-busqueda" (click)="mostrarPanelBusqueda = !mostrarPanelBusqueda">
-        Buscar Presupuesto
-      </button>
+  <button class="boton-de-busqueda" (click)="generarPresupuesto()">Generar Presupuesto</button>
+  <button class="boton-de-busqueda" (click)="mostrarPanelBusqueda = !mostrarPanelBusqueda">
+      Buscar Presupuesto
+    </button>
 </div>
 
 <div class="inferior-container">
-    <div class="inferior-izquierda-container">
+  <div class="inferior-izquierda-container">
 
 
 
-      <div *ngIf="mostrarPanelBusqueda" class="search-panel">
-            <div class="search-by-client">
-              <label for="clienteBuscado">Buscar por Cliente:</label>
-              <div >
-                <mat-form-field>
-                <mat-label>Selecciona una opción</mat-label>
-                <input type="text" [(ngModel)]="clienteSeleccionado"  matInput [formControl]="myControl" [matAutocomplete]="auto" (keydown.enter)="buscarPresupuestosXCliente()"     (input)="myControl.setValue(myControl.value.toUpperCase(), { emitEvent: false })">
-                <mat-autocomplete #auto="matAutocomplete">
-                    <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
-                    {{ option }}
-                    </mat-option>
-                </mat-autocomplete>
-                </mat-form-field> 
-              </div>
-              <!-- Barra de presupuestos a la derecha -->
-              <div class="presupuestos-bar">
-                <h3>Presupuestos</h3>
-                <select [(ngModel)]="presupuestoSeleccionado">
-                  <option value="" disabled selected>Selecciona un presupuesto</option>
-                  <option *ngFor="let presupuesto of presupuestosXCliente" [ngValue]="presupuesto">
-                    {{ presupuesto.id }} - {{ getFecha(presupuesto.fecha!) }}
-                  </option>
-                </select>
-              
-                <!-- Mostrar el presupuesto seleccionado (opcional) -->
-                <div class="presupuesto-seleccionado">
-                    <div>ID: {{ presupuestoSeleccionado?.id }}</div>
-                    <div>Cliente: {{ presupuestoSeleccionado?.cliente?.razonSocial }}</div>
-                    <div>Fecha: {{ getFecha(presupuestoSeleccionado?.fecha!) }}</div>
-                  </div>
-                  <button (click)="accederAPresupuesto()">Buscar</button>
+    <div *ngIf="mostrarPanelBusqueda" class="search-panel">
+          <div class="search-by-client">
+            <label for="clienteBuscado">Buscar por Cliente:</label>
+            <div >
+              <mat-form-field>
+              <mat-label>Selecciona una opción</mat-label>
+              <input type="text" [(ngModel)]="clienteSeleccionado"  matInput [formControl]="myControl" [matAutocomplete]="auto" (keydown.enter)="buscarPresupuestosXCliente()"     (input)="myControl.setValue(myControl.value.toUpperCase(), { emitEvent: false })">
+              <mat-autocomplete #auto="matAutocomplete">
+                  <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
+                  {{ option }}
+                  </mat-option>
+              </mat-autocomplete>
+              </mat-form-field> 
+            </div>
+            <!-- Barra de presupuestos a la derecha -->
+            <div class="presupuestos-bar">
+              <h3>Presupuestos</h3>
+              <select [(ngModel)]="presupuestoSeleccionado">
+                <option value="" disabled selected>Selecciona un presupuesto</option>
+                <option *ngFor="let presupuesto of presupuestosXCliente" [ngValue]="presupuesto">
+                  {{ presupuesto.id }} - {{ getFecha(presupuesto.fecha!) }}
+                </option>
+              </select>
+            
+              <!-- Mostrar el presupuesto seleccionado (opcional) -->
+              <div class="presupuesto-seleccionado">
+                  <div>ID: {{ presupuestoSeleccionado?.id }}</div>
+                  <div>Cliente: {{ presupuestoSeleccionado?.cliente?.razonSocial }}</div>
+                  <div>Fecha: {{ getFecha(presupuestoSeleccionado?.fecha!) }}</div>
+                </div>
+                <button (click)="accederAPresupuesto()">Buscar</button>
 
-              </div>
-         </div> 
-    </div> 
+            </div>
+       </div> 
+  </div> 
 
 </div>
 
 <div class="inferior-derecha-container">
 
-    <div *ngIf="mostrarPanelBusqueda" class="search-panel">
-        <div class="search-by-client">
-          <label for="clienteBuscado">Buscar por número de presupuesto:</label>
+  <div *ngIf="mostrarPanelBusqueda" class="search-panel">
+      <div class="search-by-client">
+        <label for="clienteBuscado">Buscar por número de presupuesto:</label>
 
-          <!-- Barra de presupuestos a la derecha -->
-          <div class="presupuestos-bar">
-            <input type="number" id="numPresupuesto" [(ngModel)]="idPresupuesto" placeholder="ID del presupuesto" (keydown.enter)="buscarPresupuestoXNumero()"/>
-            <div class="presupuesto-seleccionado">
-                <div>ID: {{ presupuestoSeleccionado?.id }}</div>
-                <div>Cliente: {{ presupuestoSeleccionado?.cliente?.razonSocial }}</div>
-                <div>Fecha: {{ getFecha(presupuestoSeleccionado?.fecha!) }}</div>
-              </div>
+        <!-- Barra de presupuestos a la derecha -->
+        <div class="presupuestos-bar">
+          <input type="number" id="numPresupuesto" [(ngModel)]="idPresupuesto" placeholder="ID del presupuesto" (keydown.enter)="buscarPresupuestoXNumero()"/>
+          <div class="presupuesto-seleccionado">
+              <div>ID: {{ presupuestoSeleccionado?.id }}</div>
+              <div>Cliente: {{ presupuestoSeleccionado?.cliente?.razonSocial }}</div>
+              <div>Fecha: {{ getFecha(presupuestoSeleccionado?.fecha!) }}</div>
+            </div>
 
-              <button (click)="accederAPresupuesto()">Buscar</button>
-              
-        </div>
-     </div> 
+            <button (click)="accederAPresupuesto()">Buscar</button>
+            
+      </div>
+   </div> 
 </div> 
 </div>
 

@@ -19,6 +19,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { ReactiveFormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ClientesComponent } from './components/clientes/clientes.component';
+import { FacturacionComponent } from './components/facturacion/facturacion.component';
 
 @NgModule({
   declarations: [
@@ -29,6 +30,7 @@ import { ClientesComponent } from './components/clientes/clientes.component';
     SearchBudgetComponent,
     SelectBudgetComponent,
     ClientesComponent,
+    FacturacionComponent,
   ],
   imports: [
     MatSelectModule,
