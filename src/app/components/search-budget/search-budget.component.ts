@@ -282,41 +282,70 @@ agregarArticulo(){
     }
     
   
-  guardarPresupuesto(){
+    guardarPresupuesto() {
 
-    if(!this.validarDatosRequeridos()){
-    const presupuesto = new Presupuesto();
-    presupuesto.cliente = this.currentCliente;
-    presupuesto.EximirIVA = this.eximirIVA;
-    presupuesto.Articulos = [];
-    if(this.fechaPresupuesto)
-      presupuesto.fecha = new Date(this.fechaPresupuesto);
+      if (!this.currentPresupuesto) {
+        this.currentPresupuesto = {
+          cliente: undefined, // Asegúrate de establecer los valores adecuados para las propiedades
+          EximirIVA: false,
+          Articulos: [],
+          esPresupuestoExistente: false,
+          fecha: new Date() // Establece una fecha por defecto si es necesario
+        };
+      }
 
-
-    this.mapaPresupuestoArticulos?.forEach((valor, clave) => {
-      console.log(clave);
-      console.log('largooo'  + valor.length);
-      valor.forEach(presuArt => {
-        console.log(presuArt.articulo?.color?.descripcion + '' +presuArt.cantidad);
-        presupuesto.Articulos?.push(presuArt);      
-  })
-    console.log("Este es el presupuesto a guardar",presupuesto);
-
-});
-
-
-    //presupuesto.articulos
-  const idPresupuesto = this.presupuestoService.guardar(presupuesto);
-  if(idPresupuesto){
-    //reiniciar el formulario
-    //mostrar el Numero de presupuesto generado
-  }
-    this.showBackDrop=true
-  }else    
-  alert("Debe seleccionar un cliente y agregar artículos al presupuesto antes de continuar.");
-  throw new Error("Validación fallida: Cliente o presupuesto no definidos.");
-
-}
+      // Validar que todos los datos requeridos estén presentes
+      if (!this.validarDatosRequeridos()) {
+        // Asignar cliente y otros valores
+        this.currentPresupuesto!.cliente = this.currentCliente;
+        this.currentPresupuesto!.EximirIVA = this.eximirIVA;
+        this.currentPresupuesto!.Articulos = [];
+    
+        // Verificar que la fecha esté presente antes de asignar
+        if (this.fechaPresupuesto) {
+          this.currentPresupuesto!.fecha = new Date(this.fechaPresupuesto);  // Asegúrate de que this.fechaPresupuesto sea una cadena válida
+        }
+    
+        // Recorrer el mapa de artículos y agregarlos al presupuesto
+        this.mapaPresupuestoArticulos?.forEach((valor, clave) => {
+          console.log(clave);
+          console.log('largooo', valor.length);
+          valor.forEach(presuArt => {
+            console.log(presuArt.articulo?.color?.descripcion + ' ' + presuArt.cantidad);
+            this.currentPresupuesto!.Articulos?.push(presuArt);
+          });
+        });
+    
+        // Mostrar el presupuesto que se va a guardar (para depuración)
+        console.log("Este es el presupuesto a guardar", this.currentPresupuesto);
+    
+        // Verificar si es un presupuesto nuevo o uno existente
+        if (!this.currentPresupuesto?.esPresupuestoExistente) {
+          this.currentPresupuesto!.esPresupuestoExistente = true;
+          
+          // Crear un nuevo presupuesto
+          const idPresupuesto = this.presupuestoService.crear(this.currentPresupuesto!);
+          if (idPresupuesto) {
+            // Aquí puedes reiniciar el formulario y mostrar el número del presupuesto
+            console.log('Presupuesto creado con ID:', idPresupuesto);
+          }
+        } else {
+          // Si el presupuesto ya existe, actualizarlo
+          const idPresupuesto = this.presupuestoService.actualizar(this.currentPresupuesto!);
+          if (idPresupuesto) {
+            // Aquí puedes reiniciar el formulario y mostrar el número del presupuesto
+            console.log('Presupuesto actualizado con ID:', idPresupuesto);
+          }
+        }
+    
+        // Mostrar el backdrop (pantalla de espera o de carga)
+        this.showBackDrop = true;
+      } else {
+        // Mostrar alerta si no se selecciona un cliente ni se agregan artículos
+        alert("Debe seleccionar un cliente y agregar artículos al presupuesto antes de continuar.");
+        throw new Error("Validación fallida: Cliente o presupuesto no definidos.");
+      }
+    }
 
 
 generarPDF() {
