@@ -12,6 +12,8 @@ import { PresupuestoService } from 'src/app/services/budget.service';
 import { ClienteService } from 'src/app/services/cliente.service';
 import { jsPDF }  from 'jspdf';
 import { ActivatedRoute, Router } from '@angular/router';
+import * as moment from 'moment';
+
 
 
 
@@ -62,10 +64,7 @@ articuloSeleccionado ='';
 
   ngOnInit(): void {
     this.listarClientes();
-    const hoy = new Date();
-    this.fechaPresupuesto = `${hoy.getDate().toString().padStart(2, '0')}/${(hoy.getMonth() + 1).toString().padStart(2, '0')}/${hoy.getFullYear()}`;    this.mapaPresupuestoArticulos=new Map();
-    console.log("esta es la feha en que se hace esto", this.fechaPresupuesto)
-
+    this.mapaPresupuestoArticulos=new Map();
 
     this.articuloService.getAllFamiliaMedida().subscribe({
       next: (data) => {
@@ -289,12 +288,20 @@ agregarArticulo(){
           cliente: undefined, // Asegúrate de establecer los valores adecuados para las propiedades
           EximirIVA: false,
           Articulos: [],
-          esPresupuestoExistente: false,
           fecha: new Date() // Establece una fecha por defecto si es necesario
         };
       }
 
-      // Validar que todos los datos requeridos estén presentes
+      if (this.fechaPresupuesto) {
+        const fecha = this.convertirStringAFecha(this.fechaPresupuesto);
+        
+        // Asegurarse de que la fecha se ajusta a la zona horaria local (sin problemas con UTC)
+        
+        this.currentPresupuesto.fecha = fecha;
+      } else {
+        // Manejar el caso donde fechaString es undefined
+        console.log('Fecha no definida');
+      }
       if (!this.validarDatosRequeridos()) {
         // Asignar cliente y otros valores
         this.currentPresupuesto!.cliente = this.currentCliente;
@@ -302,9 +309,13 @@ agregarArticulo(){
         this.currentPresupuesto!.Articulos = [];
     
         // Verificar que la fecha esté presente antes de asignar
+        console.log(this.fechaPresupuesto)
         if (this.fechaPresupuesto) {
-          this.currentPresupuesto!.fecha = new Date(this.fechaPresupuesto);  // Asegúrate de que this.fechaPresupuesto sea una cadena válida
+          const fecha = new Date(this.fechaPresupuesto);
+          fecha.setHours(0, 0, 0, 0);
+          this.currentPresupuesto!.fecha = fecha;
         }
+        
     
         // Recorrer el mapa de artículos y agregarlos al presupuesto
         this.mapaPresupuestoArticulos?.forEach((valor, clave) => {
@@ -320,8 +331,7 @@ agregarArticulo(){
         console.log("Este es el presupuesto a guardar", this.currentPresupuesto);
     
         // Verificar si es un presupuesto nuevo o uno existente
-        if (!this.currentPresupuesto?.esPresupuestoExistente) {
-          this.currentPresupuesto!.esPresupuestoExistente = true;
+        if (!this.currentPresupuesto?.id) {
           
           // Crear un nuevo presupuesto
           const idPresupuesto = this.presupuestoService.crear(this.currentPresupuesto!);
@@ -519,7 +529,6 @@ validarDatosRequeridos() : Boolean{
 
 cargarDetallesPresupuesto(id:Number){
 
-  this.mapaPresuXArtParaAcceder = new Map()
 
   this.presupuestoService.get(id).subscribe({
     next: (data) => {
@@ -584,6 +593,17 @@ actualizarMapaPresupuestoArticulo(nuevoMap: Map<string, PresupuestoArticulo[]>){
     }
   }
 }
+
+convertirStringAFecha(fechaString: string): Date {
+  if (fechaString) {
+    const fecha = moment(fechaString, 'DD-MM-YYYY').toDate();
+    return fecha;
+  } else {
+    console.log('Fecha no válida');
+    return new Date(); // O null si prefieres algo diferente
+  }
+}
+
 
 
 }

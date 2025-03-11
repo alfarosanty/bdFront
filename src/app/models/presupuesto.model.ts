@@ -8,5 +8,4 @@ export class Presupuesto {
     cliente?:Cliente;
     EximirIVA?:Boolean;
     Articulos?:PresupuestoArticulo[];
-    esPresupuestoExistente= false
 }
