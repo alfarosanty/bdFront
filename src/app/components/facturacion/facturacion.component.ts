@@ -6,11 +6,13 @@ import * as moment from 'moment';
 import { catchError, map, Observable, startWith, throwError } from 'rxjs';
 import { Articulo } from 'src/app/models/articulo.model';
 import { Cliente } from 'src/app/models/cliente';
+import { Factura } from 'src/app/models/factura.model';
 import { PresupuestoArticulo } from 'src/app/models/presupuesto-articulo.model';
 import { Presupuesto } from 'src/app/models/presupuesto.model';
 import { ArticuloService } from 'src/app/services/articulo.service';
 import { PresupuestoService } from 'src/app/services/budget.service';
 import { ClienteService } from 'src/app/services/cliente.service';
+import { FacturaService } from 'src/app/services/factura.service';
 
 @Component({
   selector: 'app-facturacion',
@@ -29,6 +31,7 @@ export class FacturacionComponent {
   currentCliente?: Cliente;
   currentArticulo ?: Articulo;
   currentPresupuesto?: Presupuesto;
+  currentFactura?: Factura;
 
   presupuestoAAcceder ?: Presupuesto
   fechaPresupuesto ?:string;
@@ -52,7 +55,7 @@ filteredOptions: Observable<string[]>= new Observable<string[]>();
 articuloSeleccionado ='';
  //END INPUT
 
-  constructor(private clienteService: ClienteService, private articuloService:ArticuloService, private presupuestoService:PresupuestoService, private route : ActivatedRoute) {}
+  constructor(private clienteService: ClienteService, private articuloService:ArticuloService, private presupuestoService:PresupuestoService, private facturaService:FacturaService , private route : ActivatedRoute) {}
 
   ngOnInit(): void {
     this.listarClientes();
@@ -267,10 +270,10 @@ agregarArticulo(){
     }
     
   
-    guardarPresupuesto() {
+    guardarFactura() {
 
-      if (!this.currentPresupuesto) {
-        this.currentPresupuesto = {
+      if (!this.currentFactura) {
+        this.currentFactura = {
           cliente: undefined, // Asegúrate de establecer los valores adecuados para las propiedades
           EximirIVA: false,
           Articulos: [],
@@ -283,16 +286,16 @@ agregarArticulo(){
         
         // Asegurarse de que la fecha se ajusta a la zona horaria local (sin problemas con UTC)
         
-        this.currentPresupuesto.fecha = fecha;
+        this.currentFactura.fecha = fecha;
       } else {
         // Manejar el caso donde fechaString es undefined
         console.log('Fecha no definida');
       }
       if (!this.validarDatosRequeridos()) {
         // Asignar cliente y otros valores
-        this.currentPresupuesto!.cliente = this.currentCliente;
-        this.currentPresupuesto!.EximirIVA = this.eximirIVA;
-        this.currentPresupuesto!.Articulos = [];
+        this.currentFactura!.cliente = this.currentCliente;
+        this.currentFactura!.EximirIVA = this.eximirIVA;
+        this.currentFactura!.Articulos = [];
     
         // Verificar que la fecha esté presente antes de asignar
         console.log(this.fechaPresupuesto)
@@ -309,36 +312,21 @@ agregarArticulo(){
           console.log('largooo', valor.length);
           valor.forEach(presuArt => {
             console.log(presuArt.articulo?.color?.descripcion + ' ' + presuArt.cantidad);
-            this.currentPresupuesto!.Articulos?.push(presuArt);
+            this.currentFactura!.Articulos?.push(presuArt);
           });
         });
     
-        // Mostrar el presupuesto que se va a guardar (para depuración)
-        console.log("Este es el presupuesto a guardar", this.currentPresupuesto);
+        // Mostrar la factura que se va a guardar (para depuración)
+        console.log("Este es la factura a guardar", this.currentFactura);
     
         // Verificar si es un presupuesto nuevo o uno existente
-        if (!this.currentPresupuesto?.id) {
-          
-          // Crear un nuevo presupuesto
-          const idPresupuesto = this.presupuestoService.crear(this.currentPresupuesto!);
-          if (idPresupuesto) {
-            // Aquí puedes reiniciar el formulario y mostrar el número del presupuesto
-            console.log('Presupuesto creado con ID:', idPresupuesto);
-          }
-        } else {
-          // Si el presupuesto ya existe, actualizarlo
-          const idPresupuesto = this.presupuestoService.actualizar(this.currentPresupuesto!);
-          if (idPresupuesto) {
-            // Aquí puedes reiniciar el formulario y mostrar el número del presupuesto
-            console.log('Presupuesto actualizado con ID:', idPresupuesto);
-          }
-        }
+        this.facturaService.crear(this.currentFactura);
     
         // Mostrar el backdrop (pantalla de espera o de carga)
         this.showBackDrop = true;
       } else {
         // Mostrar alerta si no se selecciona un cliente ni se agregan artículos
-        alert("Debe seleccionar un cliente y agregar artículos al presupuesto antes de continuar.");
+        alert("Debe seleccionar un cliente y agregar artículos a la factura antes de continuar.");
         throw new Error("Validación fallida: Cliente o presupuesto no definidos.");
       }
     }

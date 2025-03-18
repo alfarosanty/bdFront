@@ -99,5 +99,13 @@ export class ClientesComponent {
     }
   }
 
+  actualizarCliente(){
+    if(this.currentCliente){
+      console.log("CLIENTE A ACTUALIZAR ", this.currentCliente); // Mostrar el cliente a actualizar
+      this.clienteService.actualizar(this.currentCliente)
+    }
+    else alert("no se pudo actualizar al cliente")
+}
+
 
 }

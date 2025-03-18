@@ -39,7 +39,7 @@
                     <div>Provincia: {{ currentCliente?.provincia }}</div>
                     <div>Teléfono: {{ currentCliente?.telefono }}</div>
                   </div>
-                  <button>Guardar</button>
+                  <button (click)="actualizarCliente()">Guardar</button>
 
               </div>
          </div> 
@@ -60,7 +60,38 @@
               
         </div>
      </div> 
-</div> 
+     
+     <div>
+      <label>Razón social:</label>
+      <input type="text" [(ngModel)]="currentCliente!.razonSocial">
+    </div>
+
+    <div>
+      <label>Condición fiscal:</label>
+      <input type="text" [(ngModel)]="currentCliente!.condicionFiscal!.codigo">
+    </div>
+
+    <div>
+      <label>Domicilio:</label>
+      <input type="text" [(ngModel)]="currentCliente!.domicilio">
+    </div>
+
+    <div>
+      <label>C.U.I.T.:</label>
+      <input type="text" [(ngModel)]="currentCliente!.cuit">
+    </div>
+
+    <div>
+      <label>Provincia:</label>
+      <input type="text" [(ngModel)]="currentCliente!.provincia">
+    </div>
+
+    <div>
+      <label>Teléfono:</label>
+      <input type="text" [(ngModel)]="currentCliente!.telefono">
+    </div>
+
+    </div> 
 </div>
 
 </div>

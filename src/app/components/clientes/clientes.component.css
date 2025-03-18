@@ -69,3 +69,9 @@
     width: 500%; /* El div ocupará el 80% del ancho del contenedor padre */
     margin-bottom: 10px; /* Espaciado entre los divs */
   }
+
+  .boton-de-guardado{
+    width: 30%;
+    background-color: white;
+    color: #0056b3;
+  }

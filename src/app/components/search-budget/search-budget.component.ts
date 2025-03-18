@@ -201,31 +201,53 @@ listarClientes(): void {
     }
   
   
-agregarArticulo(){
-  if(this.articulos){
-    this.currentArticulo = this.articulos[this.articuloColorIndex];
-    this.articulos = this.articulos.filter(articulo => articulo.id !== this.currentArticulo?.id);
-
-  }
-
-    if(this.currentArticulo){
-    const claveMapa :string = this.currentArticulo?.familia?.codigo + "/" + this.currentArticulo.medida?.codigo;
-    console.log(claveMapa)
-
-
-    var pa :PresupuestoArticulo[] = [];
-
-    if(this.mapaPresupuestoArticulos?.has(claveMapa))
-      pa  = this.mapaPresupuestoArticulos.get(claveMapa) as PresupuestoArticulo[]
+    agregarArticulo() {
+      if (this.articulos) {
+        this.currentArticulo = this.articulos[this.articuloColorIndex];
+        this.articulos = this.articulos.filter(articulo => articulo.id !== this.currentArticulo?.id);
+      }
     
-      pa.push({articulo: this.currentArticulo,cantidad: Number(this.cantProducto), PrecioUnitario: this.currentArticulo.precio1});
-
-      this.mapaPresupuestoArticulos?.set(claveMapa,pa);
-
-      console.log(this.mapaPresupuestoArticulos);
-           
+      if (this.currentArticulo) {
+        const claveMapa: string = this.currentArticulo?.familia?.codigo + "/" + this.currentArticulo.medida?.codigo;
+        console.log(claveMapa);
+    
+        let pa: PresupuestoArticulo[] = [];
+    
+        if (this.mapaPresupuestoArticulos?.has(claveMapa)) {
+          pa = this.mapaPresupuestoArticulos.get(claveMapa) as PresupuestoArticulo[];
+          
+          // Buscar si el artículo ya existe en el array
+          const articuloExistente = pa.find(a => a.articulo?.id === this.currentArticulo?.id);
+          
+          if (articuloExistente) {
+            // Sobreescribir la cantidad en lugar de sumarla
+            articuloExistente.cantidad = Number(this.cantProducto);
+            articuloExistente.PrecioUnitario = this.currentArticulo.precio1;
+          } else {
+            // Si no existe, agregarlo como un nuevo artículo
+            pa.push({
+              articulo: this.currentArticulo,
+              cantidad: Number(this.cantProducto),
+              PrecioUnitario: this.currentArticulo.precio1
+            });
+          }
+        } else {
+          // Si no existe la clave, simplemente creamos el artículo por primera vez
+          pa.push({
+            articulo: this.currentArticulo,
+            cantidad: Number(this.cantProducto),
+            PrecioUnitario: this.currentArticulo.precio1
+          });
+        }
+    
+        this.mapaPresupuestoArticulos?.set(claveMapa, pa);
+    
+        console.log(this.mapaPresupuestoArticulos);
+      }
     }
-  }
+    
+    
+    
 
   getCantidadTotal(presupuestoArticulos: PresupuestoArticulo[]): number {
     return (presupuestoArticulos
@@ -252,6 +274,36 @@ agregarArticulo(){
     this.mapaPresupuestoArticulos?.delete(key);
   
     }
+
+  editarFila(key:any){
+
+    this.codigoArticulo = key
+    this.articulos = [];
+    console.log('viene con ' + this.codigoArticulo);
+  
+    // Verifica si hay un código de artículo
+    if (this.codigoArticulo) {
+      // Separa el código en familia y medida
+      this.familiaMedida = this.codigoArticulo.split('/');
+  
+      // Llama al servicio para obtener artículos según la familia y medida
+      this.articuloService.getByFamiliaMedida(this.familiaMedida[0], this.familiaMedida[1]).subscribe({
+        next: (data) => {
+          this.articulos = data;
+          console.log("Volvió de la base con " + this.articulos.length + " artículos."); 
+            // Remover colores ya cargados 
+          // Mostrar u ocultar colores según si hay artículos disponibles
+          this.mostrarColores = this.articulos.length > 0;
+        },
+        error: (e) => console.error('Error al obtener artículos:', e)
+      });
+  
+    } else {
+      // Si no hay código de artículo, ocultar los colores
+      this.mostrarColores = false;
+      console.log('No hay código de artículo. mostrarColores:', this.mostrarColores);
+    }
+  }
 
 
   calcularPrecioSubtotal() : number{
@@ -604,6 +656,21 @@ convertirStringAFecha(fechaString: string): Date {
   }
 }
 
+cantidadActualDepoducto():string {
+  if (this.currentArticulo) {
+    const claveMapa: string = this.currentArticulo?.familia?.codigo + "/" + this.currentArticulo.medida?.codigo;
+    
+    if (this.mapaPresupuestoArticulos?.has(claveMapa)) {
+      const pa = this.mapaPresupuestoArticulos.get(claveMapa) as PresupuestoArticulo[];
+      const articuloExistente = pa.find(a => a.articulo?.id === this.currentArticulo?.id);
+      
+      if (articuloExistente) {
+        return articuloExistente!.cantidad!.toString(); // Devuelve la cantidad actual como string para mostrarla
+      }
+    }
+  }
+  return '0'; // Devuelve '0' si no existe el artículo
+} 
 
 
 }

@@ -145,7 +145,7 @@ select {
 
 .grilla {
     display: grid;
-    grid-template-columns: 15% 50% 9% 15% 15% 12% 10%; /* Tamaños fijos para cada celda */
+    grid-template-columns: 15% 50% 9% 15% 15% 12% 10% 10%; /* Tamaños fijos para cada celda */
     grid-template-rows: auto; /* Alturas para filas específicas */
 
 }

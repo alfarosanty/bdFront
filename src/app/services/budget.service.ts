@@ -19,7 +19,7 @@ export class PresupuestoService {
 
   crear(presupuesto :Presupuesto)  {
     alert('url' + '${baseUrl}');
-  return this.http.post(`${baseUrl}/Presupuesto`, presupuesto).subscribe(
+  return this.http.post(`${baseUrl}`, presupuesto).subscribe(
     response => {
       console.log('Respuesta de la API:', response);
     },
