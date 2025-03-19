@@ -7,5 +7,5 @@ export class Presupuesto {
     fecha?:Date;
     cliente?:Cliente;
     EximirIVA?:Boolean;
-    Articulos?:PresupuestoArticulo[];
+    articulos?:PresupuestoArticulo[];
 }

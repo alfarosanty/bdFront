@@ -222,13 +222,13 @@ listarClientes(): void {
           if (articuloExistente) {
             // Sobreescribir la cantidad en lugar de sumarla
             articuloExistente.cantidad = Number(this.cantProducto);
-            articuloExistente.PrecioUnitario = this.currentArticulo.precio1;
+            articuloExistente.precioUnitario = this.currentArticulo.precio1;
           } else {
             // Si no existe, agregarlo como un nuevo artículo
             pa.push({
               articulo: this.currentArticulo,
               cantidad: Number(this.cantProducto),
-              PrecioUnitario: this.currentArticulo.precio1
+              precioUnitario: this.currentArticulo.precio1
             });
           }
         } else {
@@ -236,7 +236,7 @@ listarClientes(): void {
           pa.push({
             articulo: this.currentArticulo,
             cantidad: Number(this.cantProducto),
-            PrecioUnitario: this.currentArticulo.precio1
+            precioUnitario: this.currentArticulo.precio1
           });
         }
     
@@ -266,7 +266,7 @@ listarClientes(): void {
   }
 
   calcularPrecioConDescuento(presupuestoArticulo: any): number {
-    return (presupuestoArticulo.PrecioUnitario - (presupuestoArticulo.PrecioUnitario * ((presupuestoArticulo.descuento || 0) * 0.01)));
+    return (presupuestoArticulo.precioUnitario - (presupuestoArticulo.precioUnitario * ((presupuestoArticulo.descuento || 0) * 0.01)));
   }
 
   borrarFila(key : any){
@@ -291,7 +291,6 @@ listarClientes(): void {
         next: (data) => {
           this.articulos = data;
           console.log("Volvió de la base con " + this.articulos.length + " artículos."); 
-            // Remover colores ya cargados 
           // Mostrar u ocultar colores según si hay artículos disponibles
           this.mostrarColores = this.articulos.length > 0;
         },
@@ -339,7 +338,7 @@ listarClientes(): void {
         this.currentPresupuesto = {
           cliente: undefined, // Asegúrate de establecer los valores adecuados para las propiedades
           EximirIVA: false,
-          Articulos: [],
+          articulos: [],
           fecha: new Date() // Establece una fecha por defecto si es necesario
         };
       }
@@ -358,7 +357,7 @@ listarClientes(): void {
         // Asignar cliente y otros valores
         this.currentPresupuesto!.cliente = this.currentCliente;
         this.currentPresupuesto!.EximirIVA = this.eximirIVA;
-        this.currentPresupuesto!.Articulos = [];
+        this.currentPresupuesto!.articulos = [];
     
         // Verificar que la fecha esté presente antes de asignar
         console.log(this.fechaPresupuesto)
@@ -375,7 +374,7 @@ listarClientes(): void {
           console.log('largooo', valor.length);
           valor.forEach(presuArt => {
             console.log(presuArt.articulo?.color?.descripcion + ' ' + presuArt.cantidad);
-            this.currentPresupuesto!.Articulos?.push(presuArt);
+            this.currentPresupuesto!.articulos?.push(presuArt);
           });
         });
     
@@ -462,7 +461,7 @@ if(this.presupuestoCliente){
       clave,
       totalCantidad,
       descripcionFija + " " + descripcionCompleta,
-      (presupuestosArticulos[0].PrecioUnitario || 0).toFixed(2),
+      (presupuestosArticulos[0].precioUnitario || 0).toFixed(2),
       (this.calcularPrecioConDescuento(presupuestosArticulos[0]) * (totalCantidad || 0)).toFixed(2)
     ]);
   });
@@ -565,7 +564,7 @@ if(this.presupuestoCliente){
 }
 
   // Guardar o descargar el PDF
-  doc.save(`Presupuesto_${new Date().toISOString().split('T')[0]}.pdf`);
+  doc.save(`Presupuesto_${this.currentCliente?.razonSocial}_${new Date().toISOString().split('T')[0]}.pdf`);
 
 }
 
@@ -578,52 +577,46 @@ validarDatosRequeridos() : Boolean{
 
 }
 
-
-cargarDetallesPresupuesto(id:Number){
-
-
+cargarDetallesPresupuesto(id: Number) {
   this.presupuestoService.get(id).subscribe({
     next: (data) => {
-      console.log(data)
+      console.log(data);
       this.presupuestoAAcceder = data;
-      console.log("El presupuesto cargado es: ",this.presupuestoAAcceder);
-      this.currentCliente = this.presupuestoAAcceder.cliente
-      console.log("Se cargó al cliente que se buscó acceder ",this.currentCliente)
+      console.log("El presupuesto cargado es: ", this.presupuestoAAcceder);
+      this.currentCliente = this.presupuestoAAcceder.cliente;
+      console.log("Se cargó al cliente que se buscó acceder ", this.currentCliente);
 
-
+      // Llamar a procesarMapaDeArticulos cuando los datos se hayan cargado
+      this.procesarMapaDeArticulos();
     },
     error: (e) => console.error(e)
-
   });
+}
 
-
-  
-  
-  this.presupuestoAAcceder?.Articulos?.forEach(presuArt => {
-    const key = presuArt.articulo?.familia?.codigo + "/" + presuArt.articulo?.medida?.codigo
-    console.log("acá va una clave",key)
+procesarMapaDeArticulos() {
+  console.log("procesarMapaDeArticulos se llama bien");
+  if(this.presupuestoAAcceder)
+  console.log(this.presupuestoAAcceder.articulos)
+  this.mapaPresuXArtParaAcceder = new Map()
+  this.presupuestoAAcceder?.articulos?.forEach(presuArt => {
+    const key = presuArt.articulo?.familia?.codigo + "/" + presuArt.articulo?.medida?.codigo;
+    console.log("acá va una clave", key);
+    
     if (this.mapaPresuXArtParaAcceder?.has(key)) {
-      const listaDePresuArtActualizada =  (this.mapaPresuXArtParaAcceder.get(key) || [])
-      listaDePresuArtActualizada.push(presuArt)
-      this.mapaPresuXArtParaAcceder.set(key,listaDePresuArtActualizada)
+      const listaDePresuArtActualizada = (this.mapaPresuXArtParaAcceder.get(key) || []);
+      listaDePresuArtActualizada.push(presuArt);
+      this.mapaPresuXArtParaAcceder.set(key, listaDePresuArtActualizada);
 
-      console.log('Clave encontrada:', presuArt.articulo?.familia?.codigo + "/" + presuArt.articulo?.medida?.codigo);
-    }else{
-      this.mapaPresuXArtParaAcceder?.set(key,[presuArt])
+      console.log('Código encontrada:', key);
+    } else {
+      this.mapaPresuXArtParaAcceder?.set(key, [presuArt]);
+      console.log("El mapa no tenia el codigo", key)
+    } 
 
-    }
-
-    if (this.mapaPresuXArtParaAcceder) {
-      if (this.mapaPresupuestoArticulos) {
-        // Si mapaPresupuestoArticulos ya está inicializado, copiamos los valores
-        this.actualizarMapaPresupuestoArticulo(this.mapaPresuXArtParaAcceder)
-      } else {
-        // Si mapaPresupuestoArticulos no está inicializado, lo inicializamos y luego agregamos los valores
-        this.mapaPresupuestoArticulos = new Map();
-        this.actualizarMapaPresupuestoArticulo(this.mapaPresuXArtParaAcceder)
-      }
-    }
-  });
+    this.mapaPresupuestoArticulos = new Map();
+    this.actualizarMapaPresupuestoArticulo(this.mapaPresuXArtParaAcceder!);
+    console.log("ACÁ ESTÁ EL MAPA CON EL PRESUPUEST CARGADO", this.mapaPresupuestoArticulos)
+      });
 
 }
 
@@ -662,7 +655,7 @@ cantidadActualDepoducto():string {
     
     if (this.mapaPresupuestoArticulos?.has(claveMapa)) {
       const pa = this.mapaPresupuestoArticulos.get(claveMapa) as PresupuestoArticulo[];
-      const articuloExistente = pa.find(a => a.articulo?.id === this.currentArticulo?.id);
+      const articuloExistente = pa.find(a => a.articulo?.id == this.currentArticulo?.id);
       
       if (articuloExistente) {
         return articuloExistente!.cantidad!.toString(); // Devuelve la cantidad actual como string para mostrarla
@@ -672,6 +665,12 @@ cantidadActualDepoducto():string {
   return '0'; // Devuelve '0' si no existe el artículo
 } 
 
+actualizarArticuloSeleccionado(){
+  if (this.articulos && this.articulos.length > 0) {
+    this.currentArticulo = this.articulos[this.articuloColorIndex]; // Actualiza el artículo seleccionado
+    console.log('Artículo seleccionado:', this.currentArticulo); // Para verificar que se selecciona correctamente
+  }
+}
 
 }
 

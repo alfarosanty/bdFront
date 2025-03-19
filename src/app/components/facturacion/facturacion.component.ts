@@ -207,7 +207,7 @@ agregarArticulo(){
     if(this.mapaPresupuestoArticulos?.has(claveMapa))
       pa  = this.mapaPresupuestoArticulos.get(claveMapa) as PresupuestoArticulo[]
     
-      pa.push({articulo: this.currentArticulo,cantidad: Number(this.cantProducto), PrecioUnitario: this.currentArticulo.precio1});
+      pa.push({articulo: this.currentArticulo,cantidad: Number(this.cantProducto), precioUnitario: this.currentArticulo.precio1});
 
       this.mapaPresupuestoArticulos?.set(claveMapa,pa);
 
@@ -384,7 +384,7 @@ if(this.presupuestoCliente){
       clave,
       totalCantidad,
       descripcionFija + " " + descripcionCompleta,
-      (presupuestosArticulos[0].PrecioUnitario || 0).toFixed(2),
+      (presupuestosArticulos[0].precioUnitario || 0).toFixed(2),
       (this.calcularPrecioConDescuento(presupuestosArticulos[0]) * (totalCantidad || 0)).toFixed(2)
     ]);
   });
@@ -521,7 +521,7 @@ if(id){
 
   
   
-  this.presupuestoAAcceder?.Articulos?.forEach(presuArt => {
+  this.presupuestoAAcceder?.articulos?.forEach(presuArt => {
     const key = presuArt.articulo?.familia?.codigo + "/" + presuArt.articulo?.medida?.codigo
     console.log("acá va una clave",key)
     if (this.mapaPresuXArtParaAcceder?.has(key)) {

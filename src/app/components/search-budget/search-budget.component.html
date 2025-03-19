@@ -92,7 +92,7 @@
     <div class="colores-container" *ngIf="mostrarColores">
         <h3>Detalle de selección</h3>
         <label for="colores">Color:</label> 
-    <select class="select-color" [(ngModel)]="articuloColorIndex">  
+    <select class="select-color" [(ngModel)]="articuloColorIndex" (click)="actualizarArticuloSeleccionado()">  
 
         <option *ngFor="let articulo of articulos ; let i = index"  [value]="i" >
 
