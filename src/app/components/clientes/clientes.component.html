@@ -39,11 +39,36 @@
                     <div>Provincia: {{ currentCliente?.provincia }}</div>
                     <div>Teléfono: {{ currentCliente?.telefono }}</div>
                   </div>
-                  <button (click)="actualizarCliente()">Guardar</button>
+                  <button (click)="actualizarCliente()">Actualizar</button>
 
               </div>
          </div> 
     </div> 
+
+
+    <div *ngIf="mostrarPanelCreacion" class="search-panel">
+      <div class="search-by-client">
+        <label for="clienteBuscado">Cliente a crear:</label>
+        
+        <!-- Barra de presupuestos a la derecha -->
+        <div class="presupuestos-bar">
+          <h3>Cliente: {{currentCliente?.razonSocial}} </h3>
+
+        
+          <!-- Mostrar el presupuesto seleccionado (opcional) -->
+          <div class="presupuesto-seleccionado">
+              <div>Razón social: {{ currentCliente?.razonSocial }}</div>
+              <div>Condición fiscal: {{ currentCliente?.condicionFiscal?.codigo }}</div>
+              <div>Domicilio: {{currentCliente?.domicilio }}</div>
+              <div>C.U.I.T.: {{ currentCliente?.cuit }}</div>
+              <div>Provincia: {{ currentCliente?.provincia }}</div>
+              <div>Teléfono: {{ currentCliente?.telefono }}</div>
+            </div>
+            <button (click)="guardarCliente()">Guardar</button>
+
+        </div>
+   </div> 
+</div>
 
 </div>
 
@@ -63,35 +88,80 @@
      
      <div>
       <label>Razón social:</label>
-      <input type="text" [(ngModel)]="currentCliente!.razonSocial">
+      <input  type="text" [(ngModel)]="currentCliente!.razonSocial">
     </div>
 
     <div>
       <label>Condición fiscal:</label>
-      <input type="text" [(ngModel)]="currentCliente!.condicionFiscal!.codigo">
+      <input type="text" [(ngModel)]="currentCliente!.condicionFiscal!.codigo" style="text-transform: uppercase;">
     </div>
 
     <div>
       <label>Domicilio:</label>
-      <input type="text" [(ngModel)]="currentCliente!.domicilio">
+      <input type="text" [(ngModel)]="currentCliente!.domicilio" style="text-transform: uppercase;">
     </div>
 
     <div>
       <label>C.U.I.T.:</label>
-      <input type="text" [(ngModel)]="currentCliente!.cuit">
+      <input type="text" [(ngModel)]="currentCliente!.cuit" style="text-transform: uppercase;">
     </div>
 
     <div>
       <label>Provincia:</label>
-      <input type="text" [(ngModel)]="currentCliente!.provincia">
+      <input type="text" [(ngModel)]="currentCliente!.provincia" style="text-transform: uppercase;">
     </div>
 
     <div>
       <label>Teléfono:</label>
-      <input type="text" [(ngModel)]="currentCliente!.telefono">
+      <input type="text" [(ngModel)]="currentCliente!.telefono" style="text-transform: uppercase;">
     </div>
 
     </div> 
+</div>
+
+
+
+
+
+
+
+<div *ngIf="mostrarPanelCreacion" class="search-panel">
+  <div class="search-by-client">
+    <label for="clienteBuscado">Crear nuevo cliente</label>
+
+    <!-- Barra de presupuestos a la derecha -->
+<div>
+<label>Razón social:</label>
+<input type="text" [(ngModel)]="currentCliente!.razonSocial" (ngModelChange)="currentCliente!.razonSocial = $event.toUpperCase()">
+</div>
+
+<div>
+<label>Condición fiscal:</label>
+<input type="text" [(ngModel)]="currentCliente!.condicionFiscal!.codigo" (ngModelChange)="currentCliente!.condicionFiscal!.codigo= $event.toUpperCase()">
+</div>
+
+<div>
+<label>Domicilio:</label>
+<input type="text" [(ngModel)]="currentCliente!.domicilio" (ngModelChange)="currentCliente!.domicilio = $event.toUpperCase()">
+</div>
+
+<div>
+<label>C.U.I.T.:</label>
+<input type="text" [(ngModel)]="currentCliente!.cuit" (ngModelChange)="currentCliente!.cuit = $event.toUpperCase()">
+</div>
+
+<div>
+<label>Provincia:</label>
+<input type="text" [(ngModel)]="currentCliente!.provincia" (ngModelChange)="currentCliente!.provincia = $event.toUpperCase()">
+</div>
+
+<div>
+<label>Teléfono:</label>
+<input type="text" [(ngModel)]="currentCliente!.telefono" (ngModelChange)="currentCliente!.telefono = $event.toUpperCase()">
+</div>
+
+</div> 
+
 </div>
 
 </div>

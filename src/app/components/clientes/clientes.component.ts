@@ -41,6 +41,8 @@ export class ClientesComponent {
       startWith(''),
       map(value => this._filter(value || ''))
     );
+
+    this.currentCliente = new Cliente()
   }
   
   private _filter(value: string): string[] {
@@ -103,8 +105,18 @@ export class ClientesComponent {
     if(this.currentCliente){
       console.log("CLIENTE A ACTUALIZAR ", this.currentCliente); // Mostrar el cliente a actualizar
       this.clienteService.actualizar(this.currentCliente)
+      console.log("CLIENTE ACTUALIZADO")
     }
     else alert("no se pudo actualizar al cliente")
+}
+
+guardarCliente(){
+  if(this.currentCliente){
+    console.log("CLIENTE A GUARDAR ", this.currentCliente); // Mostrar el cliente a actualizar
+    this.clienteService.guardar(this.currentCliente)
+    console.log("CLIENTE ACTUALIZADO")
+  }
+  else alert("no se pudo actualizar al cliente")
 }
 
 
