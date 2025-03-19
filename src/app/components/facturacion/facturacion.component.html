@@ -31,7 +31,7 @@
 <div class="datosCliente-container" *ngIf="currentCliente">
     <h3>Seleccionar presupuesto de:</h3>
     <h3>{{currentCliente.razonSocial}}</h3>
-    <select [(ngModel)]="presupuestoSeleccionado" (change)="cargarDetallesPresupuesto(presupuestoSeleccionado?.id)"> 
+    <select [(ngModel)]="presupuestoSeleccionado" (change)="cargarDetallesPresupuesto((presupuestoSeleccionado?.id??0))"> 
         <option value="" disabled selected>Selecciona un presupuesto</option>
         <option *ngFor="let presupuesto of presupuestosXCliente" [ngValue]="presupuesto">
             {{ presupuesto.id }} - {{ getFecha(presupuesto.fecha!) }}
@@ -121,6 +121,7 @@
             <div class="item-header">PRECIO TOTAL</div>
             <div class="item-header">DESCUENTO </div>
             <div class="item-header">BORRAR </div>
+            <div class="item-header">EDITAR </div>
 
 
 
@@ -169,7 +170,12 @@
                     <button  (click)="borrarFila(entry.key)" class="boton-borrar">
                         <i class="fas fa-trash-alt"></i> 
                     </button>
-                </div>         
+                </div>   
+                <div class="item">
+                    <button  (click)="editarFila(entry.key)" class="boton-borrar">
+                        <i class="fas fa-edit" style="color: #003366;"></i> 
+                    </button>
+                </div>        
 
 </div>
 
