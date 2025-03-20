@@ -142,7 +142,7 @@
                 <div class="item">
 
                     <ng-container  entry.value>
-                        {{ calcularPrecioConDescuento(entry.value[0]) }}
+                        {{ calcularPrecioConDescuento(entry.value[0]) | number:'1.2-2'  }}
                      </ng-container>
                     
                 </div>
@@ -150,7 +150,7 @@
                 <div class="item">
 
                     <ng-container  entry.value>
-                        {{ getCantidadTotal(entry.value) * calcularPrecioConDescuento(entry.value[0])  }}
+                        {{ getCantidadTotal(entry.value) * calcularPrecioConDescuento(entry.value[0]) | number:'1.2-2'  }}
                      </ng-container>
                     
                 </div>
@@ -180,9 +180,9 @@
 <div class="grilla-totales">
 
 <div class="row-totales">
-    <div class="item">SUBTOTAL: {{ calcularPrecioSubtotal() }} </div>
+    <div class="item">SUBTOTAL: {{calcularPrecioSubtotal() | number:'1.2-2' }} </div>
 
-    <div class="item">TOTAL:   {{ calcularPrecioTotal() }} </div>
+    <div class="item">TOTAL:   {{ calcularPrecioTotal() | number:'1.2-2' }} </div>
     <div class="item">Descuento: 
         <input type="number" id="descuento" size="5" class="input-pequeño" [(ngModel)]="descTotal"  (keydown.enter)="calcularPrecioTotal()"> %
     </div>

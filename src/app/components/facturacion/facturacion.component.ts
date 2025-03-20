@@ -322,10 +322,10 @@ listarClientes(): void {
 
       if (!this.currentFactura) {
         this.currentFactura = {
-          cliente: undefined, // Asegúrate de establecer los valores adecuados para las propiedades
+          Cliente: undefined, // Asegúrate de establecer los valores adecuados para las propiedades
           EximirIVA: false,
-          Articulos: [],
-          fecha: new Date() // Establece una fecha por defecto si es necesario
+        //  Articulos: [],
+          Fecha: new Date() // Establece una fecha por defecto si es necesario
         };
       }
 
@@ -334,16 +334,17 @@ listarClientes(): void {
         
         // Asegurarse de que la fecha se ajusta a la zona horaria local (sin problemas con UTC)
         
-        this.currentFactura.fecha = fecha;
+        this.currentFactura.Fecha = fecha;
       } else {
         // Manejar el caso donde fechaString es undefined
         console.log('Fecha no definida');
       }
       if (!this.validarDatosRequeridos()) {
         // Asignar cliente y otros valores
-        this.currentFactura!.cliente = this.currentCliente;
-        this.currentFactura!.EximirIVA = this.eximirIVA;
-        this.currentFactura!.Articulos = [];
+        this.currentFactura.Cliente = this.currentCliente;
+        this.currentFactura.EximirIVA = this.eximirIVA;
+      //  this.currentFactura.Articulos = [];
+      //  this.currentFactura.Presupuesto = this.currentPresupuesto
     
         // Verificar que la fecha esté presente antes de asignar
         console.log(this.fechaPresupuesto)
@@ -360,7 +361,7 @@ listarClientes(): void {
           console.log('largooo', valor.length);
           valor.forEach(presuArt => {
             console.log(presuArt.articulo?.color?.descripcion + ' ' + presuArt.cantidad);
-            this.currentFactura!.Articulos?.push(presuArt);
+          //  this.currentFactura!.Articulos?.push(presuArt);
           });
         });
     
@@ -380,7 +381,7 @@ listarClientes(): void {
     }
 
 
-    generarPDF() {
+  generarPDF() {
       this.showBackDrop = false;
       const doc = new jsPDF();
     

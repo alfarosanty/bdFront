@@ -13,8 +13,9 @@ export class FacturaService {
   constructor(private http: HttpClient) { }
 
   crear(factura :Factura)  {
-    alert('url' + '${baseUrl}');
-  return this.http.post(`${baseUrl}/Factura`, factura).subscribe(
+    alert('url ' + baseUrl);
+    alert(factura);
+  return this.http.post(`${baseUrl}`, factura).subscribe(
     response => {
       console.log('Respuesta de la API:', response);
     },
