@@ -6,6 +6,7 @@ import * as moment from 'moment';
 import { catchError, map, Observable, startWith, throwError } from 'rxjs';
 import { Articulo } from 'src/app/models/articulo.model';
 import { Cliente } from 'src/app/models/cliente';
+import { FacturaArticulo } from 'src/app/models/factura-articulo.model';
 import { Factura } from 'src/app/models/factura.model';
 import { PresupuestoArticulo } from 'src/app/models/presupuesto-articulo.model';
 import { Presupuesto } from 'src/app/models/presupuesto.model';
@@ -68,10 +69,7 @@ articuloSeleccionado ='';
           let item = this.articulos[i];
           if(item.familia && item.familia.descripcion && item.medida && item.medida.descripcion)
             this.options.push(item.familia?.codigo+'/'+item.medida.codigo +' '+item.familia?.descripcion + item.medida.descripcion);
-          console.log(item);
           }
-          console.log('items options ' +  this.options.length);       
-        console.log(data);
       },
       error: (e) => console.error(e)
     });
@@ -105,7 +103,6 @@ listarClientes(): void {
     ).subscribe({
       next: (data) => {
         this.clientes = data;
-        console.log(data);
       },
       error: (e) => console.error(e)
       
@@ -116,7 +113,6 @@ listarClientes(): void {
      this.clienteService.get(this.numCliente).subscribe({
       next: (data) => {
         this.currentCliente = data;
-        console.log(this.currentCliente);
       },
       error: (e) => console.error(e)
 
@@ -125,12 +121,10 @@ listarClientes(): void {
   
 
  seleccionarCliente(): void {
-    console.log('passo');
     if(this.clientes){
       this.currentCliente = this.clientes[this.currentIndex-1];
     }
 
-    console.log(this.currentCliente)
       
   }
 
@@ -152,7 +146,6 @@ listarClientes(): void {
 
   mostrarVariedadColores() {
     this.articulos = [];
-    console.log('viene con ' + this.codigoArticulo);
   
     // Verifica si hay un código de artículo
     if (this.codigoArticulo) {
@@ -163,7 +156,6 @@ listarClientes(): void {
       this.articuloService.getByFamiliaMedida(this.familiaMedida[0], this.familiaMedida[1]).subscribe({
         next: (data) => {
           this.articulos = data;
-          console.log("Volvió de la base con " + this.articulos.length + " artículos."); 
             // Remover colores ya cargados
           var idspa = this.mapaPresupuestoArticulos?.get(this.codigoArticulo)?.map(pa => pa.articulo?.id);
   
@@ -180,7 +172,6 @@ listarClientes(): void {
     } else {
       // Si no hay código de artículo, ocultar los colores
       this.mostrarColores = false;
-      console.log('No hay código de artículo. mostrarColores:', this.mostrarColores);
     }
   }
   
@@ -198,7 +189,6 @@ listarClientes(): void {
     
     if (this.currentArticulo) {
       const claveMapa: string = this.currentArticulo?.familia?.codigo + "/" + this.currentArticulo.medida?.codigo;
-      console.log(claveMapa);
     
       let pa: PresupuestoArticulo[] = [];
       
@@ -231,7 +221,6 @@ listarClientes(): void {
     
         this.mapaPresupuestoArticulos?.set(claveMapa, pa);
     
-        console.log(this.mapaPresupuestoArticulos);
       }
     }
 
@@ -265,7 +254,6 @@ listarClientes(): void {
 
       this.codigoArticulo = key
       this.articulos = [];
-      console.log('viene con ' + this.codigoArticulo);
     
       // Verifica si hay un código de artículo
       if (this.codigoArticulo) {
@@ -286,7 +274,6 @@ listarClientes(): void {
       } else {
         // Si no hay código de artículo, ocultar los colores
         this.mostrarColores = false;
-        console.log('No hay código de artículo. mostrarColores:', this.mostrarColores);
       }
     }
 
@@ -324,7 +311,7 @@ listarClientes(): void {
         this.currentFactura = {
           Cliente: undefined, // Asegúrate de establecer los valores adecuados para las propiedades
           EximirIVA: false,
-        //  Articulos: [],
+          Articulos: [],
           Fecha: new Date() // Establece una fecha por defecto si es necesario
         };
       }
@@ -343,9 +330,8 @@ listarClientes(): void {
         // Asignar cliente y otros valores
         this.currentFactura.Cliente = this.currentCliente;
         this.currentFactura.EximirIVA = this.eximirIVA;
-      //  this.currentFactura.Articulos = [];
-      //  this.currentFactura.Presupuesto = this.currentPresupuesto
-    
+        this.currentFactura.Articulos = [];
+        if(this.currentPresupuesto){console.log(this.currentPresupuesto); this.currentFactura.Presupuesto = this.currentPresupuesto}else this.currentFactura.Presupuesto=null
         // Verificar que la fecha esté presente antes de asignar
         console.log(this.fechaPresupuesto)
         if (this.fechaPresupuesto) {
@@ -355,16 +341,18 @@ listarClientes(): void {
         }
         
     
-        // Recorrer el mapa de artículos y agregarlos al presupuesto
-        this.mapaPresupuestoArticulos?.forEach((valor, clave) => {
-          console.log(clave);
-          console.log('largooo', valor.length);
-          valor.forEach(presuArt => {
-            console.log(presuArt.articulo?.color?.descripcion + ' ' + presuArt.cantidad);
-          //  this.currentFactura!.Articulos?.push(presuArt);
-          });
-        });
-    
+this.mapaPresupuestoArticulos?.forEach((valor, clave) => {
+  // Para cada artículo de presupuesto en el mapa
+  valor.forEach(presuArt => {
+    const facturaArticulo: FacturaArticulo = {
+      ...presuArt,
+      factura: null
+    };
+    this.currentFactura!.Articulos?.push(facturaArticulo);
+  });
+});
+
+        
         // Mostrar la factura que se va a guardar (para depuración)
         console.log("Este es la factura a guardar", this.currentFactura);
     
@@ -493,10 +481,10 @@ validarDatosRequeridos() : Boolean{
 cargarDetallesPresupuesto(id: Number) {
   this.presupuestoService.get(id).subscribe({
     next: (data) => {
-      console.log(data);
       this.presupuestoAAcceder = data;
       console.log("El presupuesto cargado es: ", this.presupuestoAAcceder);
       this.currentCliente = this.presupuestoAAcceder.cliente;
+      this.currentPresupuesto = this.presupuestoAAcceder
       console.log("Se cargó al cliente que se buscó acceder ", this.currentCliente);
 
       // Llamar a procesarMapaDeArticulos cuando los datos se hayan cargado
@@ -507,28 +495,22 @@ cargarDetallesPresupuesto(id: Number) {
 }
 
 procesarMapaDeArticulos() {
-  console.log("procesarMapaDeArticulos se llama bien");
   if(this.presupuestoAAcceder)
-  console.log(this.presupuestoAAcceder.articulos)
   this.mapaPresuXArtParaAcceder = new Map()
   this.presupuestoAAcceder?.articulos?.forEach(presuArt => {
     const key = presuArt.articulo?.familia?.codigo + "/" + presuArt.articulo?.medida?.codigo;
-    console.log("acá va una clave", key);
     
     if (this.mapaPresuXArtParaAcceder?.has(key)) {
       const listaDePresuArtActualizada = (this.mapaPresuXArtParaAcceder.get(key) || []);
       listaDePresuArtActualizada.push(presuArt);
       this.mapaPresuXArtParaAcceder.set(key, listaDePresuArtActualizada);
 
-      console.log('Código encontrada:', key);
     } else {
       this.mapaPresuXArtParaAcceder?.set(key, [presuArt]);
-      console.log("El mapa no tenia el codigo", key)
     } 
 
     this.mapaPresupuestoArticulos = new Map();
     this.actualizarMapaPresupuestoArticulo(this.mapaPresuXArtParaAcceder!);
-    console.log("ACÁ ESTÁ EL MAPA CON EL PRESUPUEST CARGADO", this.mapaPresupuestoArticulos)
       });
 
 }
@@ -581,7 +563,6 @@ cantidadActualDepoducto():string {
 actualizarArticuloSeleccionado(){
   if (this.articulos && this.articulos.length > 0) {
     this.currentArticulo = this.articulos[this.articuloColorIndex]; // Actualiza el artículo seleccionado
-    console.log('Artículo seleccionado:', this.currentArticulo); // Para verificar que se selecciona correctamente
   }
 }
 
@@ -603,14 +584,10 @@ getFecha(fecha: Date): string {
 }
 
 buscarPresupuestosXCliente(){
-  console.log("se ejecutó el método")
-  console.log(this.currentCliente)
   if(this.currentCliente){
    this.presupuestoService.getByCliente(this.currentCliente?.id).subscribe({
     next: (data) => {
       this.presupuestosXCliente = data;
-      console.log(this.presupuestosXCliente);
-      console.log(data)
     },
     error: (e) => console.error(e)
 

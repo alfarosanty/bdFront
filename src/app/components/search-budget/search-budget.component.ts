@@ -39,7 +39,8 @@ export class SearchBudgetComponent {
   currentPresupuesto?: Presupuesto;
 
   presupuestoAAcceder ?: Presupuesto
-  fechaPresupuesto ?:string;
+  fechaPresupuesto?: string;  // Tu modelo original
+  fechaPresupuestoDate?: Date;  // Variable temporal para el input
   producto = '';
   numCliente = '';
   codigoArticulo = '';
@@ -94,6 +95,7 @@ articuloSeleccionado ='';
       this.cargarDetallesPresupuesto(presupuestoId);
     }
 
+
   }
 
   private _filter(value: string): string[] {
@@ -127,7 +129,6 @@ listarClientes(): void {
      this.clienteService.get(this.numCliente).subscribe({
       next: (data) => {
         this.currentCliente = data;
-        console.log(this.currentCliente);
       },
       error: (e) => console.error(e)
 
@@ -136,12 +137,10 @@ listarClientes(): void {
   
 
  seleccionarCliente(): void {
-    console.log('passo');
     if(this.clientes){
       this.currentCliente = this.clientes[this.currentIndex-1];
     }
 
-    console.log(this.currentCliente)
       
   }
 
@@ -163,7 +162,6 @@ listarClientes(): void {
 
   mostrarVariedadColores() {
     this.articulos = [];
-    console.log('viene con ' + this.codigoArticulo);
   
     // Verifica si hay un código de artículo
     if (this.codigoArticulo) {
@@ -174,7 +172,6 @@ listarClientes(): void {
       this.articuloService.getByFamiliaMedida(this.familiaMedida[0], this.familiaMedida[1]).subscribe({
         next: (data) => {
           this.articulos = data;
-          console.log("Volvió de la base con " + this.articulos.length + " artículos."); 
             // Remover colores ya cargados
           var idspa = this.mapaPresupuestoArticulos?.get(this.codigoArticulo)?.map(pa => pa.articulo?.id);
   
@@ -191,7 +188,6 @@ listarClientes(): void {
     } else {
       // Si no hay código de artículo, ocultar los colores
       this.mostrarColores = false;
-      console.log('No hay código de artículo. mostrarColores:', this.mostrarColores);
     }
   }
   
@@ -209,7 +205,6 @@ listarClientes(): void {
     
     if (this.currentArticulo) {
       const claveMapa: string = this.currentArticulo?.familia?.codigo + "/" + this.currentArticulo.medida?.codigo;
-      console.log(claveMapa);
     
       let pa: PresupuestoArticulo[] = [];
       
@@ -242,7 +237,6 @@ listarClientes(): void {
     
         this.mapaPresupuestoArticulos?.set(claveMapa, pa);
     
-        console.log(this.mapaPresupuestoArticulos);
       }
     }
     
@@ -277,7 +271,6 @@ listarClientes(): void {
 
     this.codigoArticulo = key
     this.articulos = [];
-    console.log('viene con ' + this.codigoArticulo);
   
     // Verifica si hay un código de artículo
     if (this.codigoArticulo) {
@@ -288,7 +281,6 @@ listarClientes(): void {
       this.articuloService.getByFamiliaMedida(this.familiaMedida[0], this.familiaMedida[1]).subscribe({
         next: (data) => {
           this.articulos = data;
-          console.log("Volvió de la base con " + this.articulos.length + " artículos."); 
           // Mostrar u ocultar colores según si hay artículos disponibles
           this.mostrarColores = this.articulos.length > 0;
         },
@@ -298,7 +290,6 @@ listarClientes(): void {
     } else {
       // Si no hay código de artículo, ocultar los colores
       this.mostrarColores = false;
-      console.log('No hay código de artículo. mostrarColores:', this.mostrarColores);
     }
   }
 
@@ -341,35 +332,20 @@ listarClientes(): void {
         };
       }
 
-      if (this.fechaPresupuesto) {
-        const fecha = this.convertirStringAFecha(this.fechaPresupuesto);
-        
-        // Asegurarse de que la fecha se ajusta a la zona horaria local (sin problemas con UTC)
-        
-        this.currentPresupuesto.fecha = fecha;
-      } else {
-        // Manejar el caso donde fechaString es undefined
-        console.log('Fecha no definida');
-      }
+
       if (!this.validarDatosRequeridos()) {
         // Asignar cliente y otros valores
+        this.currentPresupuesto.id=this.presupuestoAAcceder?.id
         this.currentPresupuesto!.cliente = this.currentCliente;
         this.currentPresupuesto!.EximirIVA = this.eximirIVA;
         this.currentPresupuesto!.articulos = [];
+        this.currentPresupuesto.fecha = this.fechaPresupuestoDate
     
         // Verificar que la fecha esté presente antes de asignar
-        console.log(this.fechaPresupuesto)
-        if (this.fechaPresupuesto) {
-          const fecha = new Date(this.fechaPresupuesto);
-          fecha.setHours(0, 0, 0, 0);
-          this.currentPresupuesto!.fecha = fecha;
-        }
-        
+     
     
         // Recorrer el mapa de artículos y agregarlos al presupuesto
         this.mapaPresupuestoArticulos?.forEach((valor, clave) => {
-          console.log(clave);
-          console.log('largooo', valor.length);
           valor.forEach(presuArt => {
             console.log(presuArt.articulo?.color?.descripcion + ' ' + presuArt.cantidad);
             this.currentPresupuesto!.articulos?.push(presuArt);
@@ -534,28 +510,22 @@ cargarDetallesPresupuesto(id: Number) {
 }
 
 procesarMapaDeArticulos() {
-  console.log("procesarMapaDeArticulos se llama bien");
   if(this.presupuestoAAcceder)
-  console.log(this.presupuestoAAcceder.articulos)
   this.mapaPresuXArtParaAcceder = new Map()
   this.presupuestoAAcceder?.articulos?.forEach(presuArt => {
     const key = presuArt.articulo?.familia?.codigo + "/" + presuArt.articulo?.medida?.codigo;
-    console.log("acá va una clave", key);
     
     if (this.mapaPresuXArtParaAcceder?.has(key)) {
       const listaDePresuArtActualizada = (this.mapaPresuXArtParaAcceder.get(key) || []);
       listaDePresuArtActualizada.push(presuArt);
       this.mapaPresuXArtParaAcceder.set(key, listaDePresuArtActualizada);
 
-      console.log('Código encontrada:', key);
     } else {
       this.mapaPresuXArtParaAcceder?.set(key, [presuArt]);
-      console.log("El mapa no tenia el codigo", key)
     } 
 
     this.mapaPresupuestoArticulos = new Map();
     this.actualizarMapaPresupuestoArticulo(this.mapaPresuXArtParaAcceder!);
-    console.log("ACÁ ESTÁ EL MAPA CON EL PRESUPUEST CARGADO", this.mapaPresupuestoArticulos)
       });
 
 }
@@ -579,13 +549,14 @@ actualizarMapaPresupuestoArticulo(nuevoMap: Map<string, PresupuestoArticulo[]>){
   }
 }
 
-convertirStringAFecha(fechaString: string): Date {
+convertirStringAFecha(fechaString: string): void {
   if (fechaString) {
+    console.log(fechaString)
     const fecha = moment(fechaString, 'DD-MM-YYYY').toDate();
-    return fecha;
+    this.fechaPresupuestoDate = fecha;
   } else {
     console.log('Fecha no válida');
-    return new Date(); // O null si prefieres algo diferente
+    this.fechaPresupuestoDate= new Date(); // O null si prefieres algo diferente
   }
 }
 
@@ -608,7 +579,6 @@ cantidadActualDepoducto():string {
 actualizarArticuloSeleccionado(){
   if (this.articulos && this.articulos.length > 0) {
     this.currentArticulo = this.articulos[this.articuloColorIndex]; // Actualiza el artículo seleccionado
-    console.log('Artículo seleccionado:', this.currentArticulo); // Para verificar que se selecciona correctamente
   }
 }
 

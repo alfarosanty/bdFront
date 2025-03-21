@@ -19,7 +19,7 @@ export class PresupuestoService {
 
   crear(presupuesto :Presupuesto)  {
     alert('url' + baseUrl);
-  return this.http.post(`${baseUrl}`, presupuesto).subscribe(
+  return this.http.post(`${baseUrl}/crear`, presupuesto).subscribe(
     response => {
       console.log('Respuesta de la API:', response);
     },
@@ -30,8 +30,8 @@ export class PresupuestoService {
   }
 
   actualizar(presupuesto :Presupuesto)  {
-    alert('url' + '${baseUrl}');
-   return this.http.post(`${baseUrl}/Presupuesto`, presupuesto).subscribe(
+    alert('url' + baseUrl);
+   return this.http.post(`${baseUrl}/actualizar`, presupuesto).subscribe(
     response => {
       console.log('Respuesta de la API:', response);
     },

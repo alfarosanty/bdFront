@@ -53,7 +53,7 @@
 
         <div>
             <label for="fecha">Fecha de Emisión:</label>
-            <input type="date" id="fecha" [(ngModel)]="fechaPresupuesto">
+            <input type="date" id="fecha" [value]="fechaPresupuesto" (change)="convertirStringAFecha((fechaPresupuesto || ''))">
         </div>
 
         <div>

@@ -1,12 +1,13 @@
 import { Cliente } from "./cliente";
+import { FacturaArticulo } from "./factura-articulo.model";
 import { PresupuestoArticulo } from "./presupuesto-articulo.model";
 import { Presupuesto } from "./presupuesto.model";
 
 export class Factura {
-    id?:Number
+    id?:number
     Fecha?:Date;
     Cliente?:Cliente;
     EximirIVA?:Boolean;
-//    Articulos?:PresupuestoArticulo[];
-//    Presupuesto?:Presupuesto;
+    Articulos?:FacturaArticulo[];
+    Presupuesto?:Presupuesto | null;
 }
