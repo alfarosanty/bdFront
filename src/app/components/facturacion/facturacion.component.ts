@@ -35,7 +35,7 @@ export class FacturacionComponent {
   currentFactura?: Factura;
 
   presupuestoAAcceder ?: Presupuesto
-  fechaPresupuesto ?:string;
+  fechaFactura ?:Date;
   producto = '';
   numCliente = '';
   codigoArticulo = '';
@@ -315,30 +315,15 @@ listarClientes(): void {
           Fecha: new Date() // Establece una fecha por defecto si es necesario
         };
       }
-
-      if (this.fechaPresupuesto) {
-        const fecha = this.convertirStringAFecha(this.fechaPresupuesto);
-        
-        // Asegurarse de que la fecha se ajusta a la zona horaria local (sin problemas con UTC)
-        
-        this.currentFactura.Fecha = fecha;
-      } else {
-        // Manejar el caso donde fechaString es undefined
-        console.log('Fecha no definida');
-      }
       if (!this.validarDatosRequeridos()) {
         // Asignar cliente y otros valores
         this.currentFactura.Cliente = this.currentCliente;
         this.currentFactura.EximirIVA = this.eximirIVA;
+        if(this.fechaFactura != undefined){this.currentFactura.Fecha = this.fechaFactura}
         this.currentFactura.Articulos = [];
         if(this.currentPresupuesto){console.log(this.currentPresupuesto); this.currentFactura.Presupuesto = this.currentPresupuesto}else this.currentFactura.Presupuesto=null
         // Verificar que la fecha esté presente antes de asignar
-        console.log(this.fechaPresupuesto)
-        if (this.fechaPresupuesto) {
-          const fecha = new Date(this.fechaPresupuesto);
-          fecha.setHours(0, 0, 0, 0);
-          this.currentPresupuesto!.fecha = fecha;
-        }
+
         
     
 this.mapaPresupuestoArticulos?.forEach((valor, clave) => {
@@ -389,7 +374,7 @@ this.mapaPresupuestoArticulos?.forEach((valor, clave) => {
       doc.setFontSize(12);
       doc.text('Presupuesto', 10, 10);
       doc.setFontSize(9);
-      doc.text(`Fecha: ${this.fechaPresupuesto}`, 10, 20);
+      doc.text(`Fecha: ${this.fechaFactura}`, 10, 20);
     
       // Imagen
       const marginRight = 10;
@@ -534,16 +519,6 @@ actualizarMapaPresupuestoArticulo(nuevoMap: Map<string, PresupuestoArticulo[]>){
   }
 }
 
-convertirStringAFecha(fechaString: string): Date {
-  if (fechaString) {
-    const fecha = moment(fechaString, 'DD-MM-YYYY').toDate();
-    return fecha;
-  } else {
-    console.log('Fecha no válida');
-    return new Date(); // O null si prefieres algo diferente
-  }
-}
-
 cantidadActualDepoducto():string {
   if (this.currentArticulo) {
     const claveMapa: string = this.currentArticulo?.familia?.codigo + "/" + this.currentArticulo.medida?.codigo;
@@ -593,6 +568,10 @@ buscarPresupuestosXCliente(){
 
   });
   }
+}
+
+mostrarFecha(){
+  console.log(this.fechaFactura)
 }
 
 

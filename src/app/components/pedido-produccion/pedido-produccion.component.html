@@ -5,21 +5,16 @@
 
 <div class="superior-container">
 <div class="selector-container">
-    <h2>Clientes</h2>
+    <h2>TALLERES</h2>
 
     <!-- Menú desplegable de clientes -->
     <div class="dropdown">
-        <div>
-            <label for="descuento">Numero de Cliente:</label>
-            <input type="text" id="numCliente" [(ngModel)]="numCliente" (keydown.enter)="seleccionarXnumeroCliente()">
-        </div>
 
-
-        <label for="clientes">Seleccionar Cliente:</label>
+        <label for="clientes">Seleccionar Taller:</label>
         <select  (change)="seleccionarCliente()" [(ngModel)]="currentIndex">
             <option >Seleccione un cliente</option>
-            <option *ngFor="let cliente of clientes" [value]="cliente.id" >
-                 {{cliente.razonSocial}} 
+            <option *ngFor="let taller of talleres" [value]="taller.id" >
+                 {{taller.razonSocial}} 
             </option>
           </select>
                     
@@ -28,38 +23,34 @@
 </div>
 
 
-<div class="datosCliente-container" *ngIf="currentCliente">
-    <h3>Datos del Cliente</h3>
-    <p><strong>Razón Social:</strong> {{ currentCliente.razonSocial }}</p>
-    <p><strong>Domicilio:</strong> {{ currentCliente.domicilio }}</p>
-    <p><strong>Localidad:</strong> {{ currentCliente.localidad }}</p>
-    <p><strong>Teléfono:</strong> {{ currentCliente.telefono }}</p>
-    <p><strong>I.V.A:</strong> {{ currentCliente.condicionFiscal?.descripcion }}</p>
-    <p><strong>CUIT:</strong> {{ currentCliente.cuit }}</p>
+<div class="datosCliente-container" *ngIf="currentTaller">
+    <h3>Seleccionar presupuesto de:</h3>
+    <h3>{{currentTaller.razonSocial}}</h3>
+    <select [(ngModel)]="ordenDePedidoSeleccionado"> 
+
+<!--    <select [(ngModel)]="ordenDePedidoSeleccionado" (change)="cargarDetallesPedidoProduccion((ordenDePedidoSeleccionado?.id??0))">  -->
+        <option value="" disabled selected>Seleccionar orden de pedido de: </option>
+        <option *ngFor="let ordenDePedido of ordenesDePedidoXTaller" [ngValue]="ordenDePedido">
+            {{ ordenDePedido.id }} - {{ getFecha(ordenDePedido.fecha!) }}
+          </option>
+
+    </select>
+
   </div>
+
 </div>
 
-
-
 <div class="inferior-container">
-    <h3>Datos del Comprobante</h3>
+    <h3>Datos del Pedido</h3>
 
     <div class="datos-comprobante">
-        <div class="lista-group">
-            <label>Precio Lista:</label>
-            <input type="radio" name="lista" id="lista1"> <label for="lista1">Lista1</label>
-            <input type="radio" name="lista" id="lista2"> <label for="lista2">Lista2</label>
-        </div>
+
 
         <div>
             <label for="fecha">Fecha de Emisión:</label>
-            <input type="date" id="fecha" [(ngModel)]="fechaPresupuesto" (change)="mostrarFecha()"> 
+            <input type="date" id="fecha" [(ngModel)]="fechaPedidoProduccion" (change)="mostrarFecha()"> 
         </div>
 
-        <div>
-            <input type="checkbox" [(ngModel)]="eximirIVA" (change)="onEximirIVAChange()">
-            <label for="iva">Eximir pago de IVA (Ley 24.331)</label>
-          </div>
     </div>
 </div>
 
@@ -114,12 +105,8 @@
             <div class="item-header">CÓDIGO</div>
             <div class="item-header">DESCRIPCIÓN</div>
             <div class="item-header">CANTIDAD</div>
-            <div class="item-header">PRECIO UNITARIO</div>
-            <div class="item-header">PRECIO TOTAL</div>
-            <div class="item-header">DESCUENTO </div>
-            <div class="item-header">BORRAR </div>
-            <div class="item-header">EDITAR </div>
-
+            <div class="item-header">BORRAR</div>
+            <div class="item-header">EDITAR</div>
 
 
             <div *ngFor="let entry of mapaPresupuestoArticulos | keyvalue" class="row">
@@ -140,30 +127,6 @@
                 </div>
 
                 <div class="item">
-
-                    <ng-container  entry.value>
-                        {{ calcularPrecioConDescuento(entry.value[0]) | number:'1.2-2'  }}
-                     </ng-container>
-                    
-                </div>
-
-                <div class="item">
-
-                    <ng-container  entry.value>
-                        {{ getCantidadTotal(entry.value) * calcularPrecioConDescuento(entry.value[0]) | number:'1.2-2'  }}
-                     </ng-container>
-                    
-                </div>
-
-                <div class="item">
-
-                    <input type="number" id="descuento" size="5" class="input-pequeño" [(ngModel)]="descUnitario"  (keydown.enter)="aplicarDescuentoUnitario(entry.key)"> %
-
-                </div>
-
-                 
-
-                <div class="item">
                     <button  (click)="borrarFila(entry.key)" class="boton-borrar">
                         <i class="fas fa-trash-alt"></i> 
                     </button>
@@ -173,35 +136,10 @@
                     <button  (click)="editarFila(entry.key)" class="boton-borrar">
                         <i class="fas fa-edit" style="color: #003366;"></i> 
                     </button>
-                </div>      
+                </div>    
 
-</div>
-
-<div class="grilla-totales">
-
-<div class="row-totales">
-    <div class="item">SUBTOTAL: {{calcularPrecioSubtotal() | number:'1.2-2' }} </div>
-
-    <div class="item">TOTAL:   {{ calcularPrecioTotal() | number:'1.2-2' }} </div>
-    <div class="item">Descuento: 
-        <input type="number" id="descuento" size="5" class="input-pequeño" [(ngModel)]="descTotal"  (keydown.enter)="calcularPrecioTotal()"> %
     </div>
 
 
-<div class="boton-generarPDF"> <button (click)="guardarPresupuesto()">Guardar</button>  </div>
+<div class="boton-generarPDF"> <button (click)="generarOrdenDePedido(); generarPDF()">Generar Pedido</button>  </div>
 
-<div class="backdrop" *ngIf="showBackDrop">
-    <div class="button-container">
-        <button class="boton-generarPDF" type="button" (click)="generarPDF()">Generar PDF</button>
-      </div>
-    
-      <div class="checklist-container">
-        <label class="checklist-label">
-          <input type="radio" [(ngModel)]="presupuestoCliente" [value]="true" name="tipo" /> Cliente
-        </label>
-        <label class="checklist-label">
-          <input type="radio" [(ngModel)]="presupuestoCliente" [value]="false" name="tipo" /> Empleado
-        </label>
-      </div>
-
-</div>

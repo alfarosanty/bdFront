@@ -56,7 +56,7 @@
 
         <div>
             <label for="fecha">Fecha de Emisión:</label>
-            <input type="date" id="fecha" [(ngModel)]="fechaPresupuesto">
+            <input type="date" id="fecha" [(ngModel)]="fechaFactura" (change)="mostrarFecha()"> 
         </div>
 
         <div>

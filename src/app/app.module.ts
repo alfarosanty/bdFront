@@ -20,6 +20,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ClientesComponent } from './components/clientes/clientes.component';
 import { FacturacionComponent } from './components/facturacion/facturacion.component';
+import { PedidoProduccionComponent } from './components/pedido-produccion/pedido-produccion.component';
 
 @NgModule({
   declarations: [
@@ -31,6 +32,7 @@ import { FacturacionComponent } from './components/facturacion/facturacion.compo
     SelectBudgetComponent,
     ClientesComponent,
     FacturacionComponent,
+    PedidoProduccionComponent,
   ],
   imports: [
     MatSelectModule,

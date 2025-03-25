@@ -13,57 +13,50 @@ import { ClienteService } from 'src/app/services/cliente.service';
 import { jsPDF }  from 'jspdf';
 import { ActivatedRoute, Router } from '@angular/router';
 import * as moment from 'moment';
-
-
-
-
-
+import { ProduccionService } from 'src/app/services/produccion.service';
+import { Taller } from 'src/app/models/taller.model';
+import { PedidoProduccion } from 'src/app/models/pedido-produccion.model';
 
 @Component({
-  selector: 'app-search-budget',
-  templateUrl: './search-budget.component.html',
-  styleUrls: ['./search-budget.component.css']
+  selector: 'app-pedido-produccion',
+  templateUrl: './pedido-produccion.component.html',
+  styleUrls: ['./pedido-produccion.component.css']
 })
-export class SearchBudgetComponent {
-//DATOS DEL PRESUPUESTO
+export class PedidoProduccionComponent {
 
-  clientes?: Cliente[];
+  talleres?: Taller[];
   articulos: Articulo[]=[];
   familiaMedida: string[] = [];
+  ordenesDePedidoXTaller: PedidoProduccion[] =[];
   mapaPresupuestoArticulos ?: Map<string,PresupuestoArticulo[]>;
   mapaPresuXArtParaAcceder ?: Map<string,PresupuestoArticulo[]>
 
-
-  currentCliente?: Cliente;
+  ordenDePedidoSeleccionado?: PedidoProduccion
+  currentTaller?: Taller;
   currentArticulo ?: Articulo;
-  currentPresupuesto?: Presupuesto;
+  currentPedidoProduccion?: PedidoProduccion;
 
   presupuestoAAcceder ?: Presupuesto
-  fechaPresupuesto?: Date;
+  fechaPedidoProduccion?: Date;
   producto = '';
-  numCliente = '';
   codigoArticulo = '';
   cantProducto = '';
-  descUnitario = '';
-  descTotal = '';
   mostrarColores = false;
-  eximirIVA = false;
-  presupuestoCliente = true;
-  showBackDrop=false;
+
   currentIndex = -1;
   articuloColorIndex = -1;
 
   //INPUT BUSQUEDA
   myControl = new FormControl();
   options: string[] = [];
-filteredOptions: Observable<string[]>= new Observable<string[]>();
-articuloSeleccionado ='';
+  filteredOptions: Observable<string[]>= new Observable<string[]>();
+  articuloSeleccionado ='';
  //END INPUT
 
-  constructor(private clienteService: ClienteService, private articuloService:ArticuloService, private presupuestoService:PresupuestoService, private route : ActivatedRoute) {}
+  constructor(private produccionService:ProduccionService, private articuloService:ArticuloService, private presupuestoService:PresupuestoService, private route : ActivatedRoute) {}
 
   ngOnInit(): void {
-    this.listarClientes();
+    this.listarTalleres();
     this.mapaPresupuestoArticulos=new Map();
 
     this.articuloService.getAllFamiliaMedida().subscribe({
@@ -88,13 +81,12 @@ articuloSeleccionado ='';
 
     const presupuestoId = Number(this.route.snapshot.paramMap.get('id'));
   
-    if (presupuestoId) {
+  /*  if (presupuestoId) {
       // Si el ID está presente, cargar los detalles del presupuesto
       console.log('ID del presupuesto:', presupuestoId);
       this.cargarDetallesPresupuesto(presupuestoId);
     }
-
-
+  */
   }
 
   private _filter(value: string): string[] {
@@ -103,11 +95,11 @@ articuloSeleccionado ='';
   }
 
 
-listarClientes(): void {
+listarTalleres(): void {
 
-    this.currentCliente = {};
+    this.currentTaller = {};
     this.currentIndex = -1;
-    this.clienteService.getAll().pipe(
+    this.produccionService.getAll().pipe(
       catchError(error => {
         // Manejo del error
         console.error('Ocurrió un error:', error);
@@ -116,28 +108,18 @@ listarClientes(): void {
       })
     ).subscribe({
       next: (data) => {
-        this.clientes = data;
+        this.talleres = data;
         console.log(data);
       },
       error: (e) => console.error(e)
       
     });
   }
-
-  seleccionarXnumeroCliente() {
-     this.clienteService.get(this.numCliente).subscribe({
-      next: (data) => {
-        this.currentCliente = data;
-      },
-      error: (e) => console.error(e)
-
-    });
-  }
-  
+ 
 
  seleccionarCliente(): void {
-    if(this.clientes){
-      this.currentCliente = this.clientes[this.currentIndex-1];
+    if(this.talleres){
+      this.currentTaller = this.talleres[this.currentIndex-1];
     }
 
       
@@ -147,9 +129,7 @@ listarClientes(): void {
     this.codigoArticulo = this.codigoArticulo.toUpperCase();
   }
 
-  onEximirIVAChange() {
-    console.log('Valor de Eximir IVA cambiado:', this.eximirIVA);
-  }
+
 
   seleccionarArticulo(){
     const codigoAritculoSeleccionado = this.articuloSeleccionado.split(' ');
@@ -246,18 +226,21 @@ listarClientes(): void {
       .reduce((total, cantidad) => (total || 0) + (cantidad || 0), 0) || 0) ;  // Suma las cantidades
   }
 
-  aplicarDescuentoUnitario(key : any){
-    
-  var pa :PresupuestoArticulo[] = [];
-
-  pa =  this.mapaPresupuestoArticulos?.get(key) as PresupuestoArticulo[]
-
-  pa.forEach(presupuesto =>{presupuesto.descuento = Number(this.descUnitario)})
-
-  }
-
-  calcularPrecioConDescuento(presupuestoArticulo: any): number {
-    return (presupuestoArticulo.precioUnitario - (presupuestoArticulo.precioUnitario * ((presupuestoArticulo.descuento || 0) * 0.01)));
+  getFecha(fecha: Date): string {
+    if (typeof fecha === 'string') {
+      fecha = new Date(fecha);  // Convertimos la cadena a un objeto Date
+    }
+  
+    if (fecha instanceof Date && !isNaN(fecha.getTime())) {
+      const dia = fecha.getDate().toString().padStart(2, '0');
+      const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
+      const año = fecha.getFullYear();
+      const fechaFormateada = `${dia}/${mes}/${año}`
+      
+      return fechaFormateada;
+    } else {
+      return '';
+    }
   }
 
   borrarFila(key : any){
@@ -291,41 +274,13 @@ listarClientes(): void {
       this.mostrarColores = false;
     }
   }
-
-
-  calcularPrecioSubtotal() : number{
-      if (this.mapaPresupuestoArticulos) {
-        // Aplana las listas de artículos
-        let presupuestosArticulos = Array.from(this.mapaPresupuestoArticulos.values()).flatMap(Lista => Lista);
-    
-        // Obtén solo los precios de los artículos
-        let preciosDePresupuestos = presupuestosArticulos.map(presupuestoArticulo => (this.calcularPrecioConDescuento(presupuestoArticulo)) * (presupuestoArticulo.cantidad || 0));
-    
-        // Suma los precios para obtener el subtotal
-        let subtotalDePrecios = preciosDePresupuestos.reduce((acumulador, precio) => {
-          return (acumulador || 0) + (precio || 0);  // Suma los precios al acumulador
-        }, 0);
-    
-        return subtotalDePrecios; 
-      }
-    
-      return 0; 
-    }
-
-
-  calcularPrecioTotal() : number{
-
-    var descuento = 0.01 * Number(this.descTotal)
-    return this.calcularPrecioSubtotal() - (this.calcularPrecioSubtotal() * descuento )
-    }
     
   
-    guardarPresupuesto() {
+    generarOrdenDePedido() {
 
-      if (!this.currentPresupuesto) {
-        this.currentPresupuesto = {
-          cliente: undefined, // Asegúrate de establecer los valores adecuados para las propiedades
-          EximirIVA: false,
+      if (!this.currentPedidoProduccion) {
+        this.currentPedidoProduccion = {
+          taller: undefined, // Asegúrate de establecer los valores adecuados para las propiedades
           articulos: [],
           fecha: new Date() // Establece una fecha por defecto si es necesario
         };
@@ -334,47 +289,25 @@ listarClientes(): void {
 
       if (!this.validarDatosRequeridos()) {
         // Asignar cliente y otros valores
-        this.currentPresupuesto.id=this.presupuestoAAcceder?.id
-        this.currentPresupuesto!.cliente = this.currentCliente;
-        this.currentPresupuesto!.EximirIVA = this.eximirIVA;
-        this.currentPresupuesto!.articulos = [];
-        if(this.fechaPresupuesto != undefined){this.currentPresupuesto.fecha = this.fechaPresupuesto}
+        this.currentPedidoProduccion!.id=this.presupuestoAAcceder?.id
+        this.currentPedidoProduccion!.articulos = [];
+        if(this.fechaPedidoProduccion != undefined){this.currentPedidoProduccion!.fecha = this.fechaPedidoProduccion}
      
     
         // Recorrer el mapa de artículos y agregarlos al presupuesto
         this.mapaPresupuestoArticulos?.forEach((valor, clave) => {
           valor.forEach(presuArt => {
             console.log(presuArt.articulo?.color?.descripcion + ' ' + presuArt.cantidad);
-            this.currentPresupuesto!.articulos?.push(presuArt);
+            this.currentPedidoProduccion!.articulos?.push(presuArt);
           });
         });
     
         // Mostrar el presupuesto que se va a guardar (para depuración)
-        console.log("Este es el presupuesto a guardar", this.currentPresupuesto);
+        console.log("Este es la orden de produccion generada", this.currentPedidoProduccion);
     
-        // Verificar si es un presupuesto nuevo o uno existente
-        if (!this.currentPresupuesto?.id) {
-          
-          // Crear un nuevo presupuesto
-          const idPresupuesto = this.presupuestoService.crear(this.currentPresupuesto!);
-          if (idPresupuesto) {
-            // Aquí puedes reiniciar el formulario y mostrar el número del presupuesto
-            console.log('Presupuesto creado con ID:', idPresupuesto);
-          }
-        } else {
-          // Si el presupuesto ya existe, actualizarlo
-          const idPresupuesto = this.presupuestoService.actualizar(this.currentPresupuesto!);
-          if (idPresupuesto) {
-            // Aquí puedes reiniciar el formulario y mostrar el número del presupuesto
-            console.log('Presupuesto actualizado con ID:', idPresupuesto);
-          }
-        }
-    
-        // Mostrar el backdrop (pantalla de espera o de carga)
-        this.showBackDrop = true;
       } else {
         // Mostrar alerta si no se selecciona un cliente ni se agregan artículos
-        alert("Debe seleccionar un cliente y agregar artículos al presupuesto antes de continuar.");
+        alert("Debe seleccionar un taller y agregar artículos al presupuesto antes de continuar.");
         throw new Error("Validación fallida: Cliente o presupuesto no definidos.");
       }
     }
@@ -382,7 +315,6 @@ listarClientes(): void {
     
 
 generarPDF() {
-  this.showBackDrop = false;
   const doc = new jsPDF();
 
   const pageHeight = doc.internal.pageSize.height;
@@ -399,9 +331,9 @@ generarPDF() {
 
   // Encabezado
   doc.setFontSize(12);
-  doc.text('Presupuesto', 10, 10);
+  doc.text('Pedido de producción', 10, 10);
   doc.setFontSize(9);
-  doc.text(`Fecha: ${this.fechaPresupuesto}`, 10, 20);
+  doc.text(`Fecha: ${this.fechaPedidoProduccion}`, 10, 20);
 
   // Imagen
   const marginRight = 10;
@@ -412,10 +344,10 @@ generarPDF() {
   doc.addImage(imagenBase64, 'PNG', imageX, 10, imageWidth, imageHeight);
 
   // Datos del Cliente
-  if (this.currentCliente) {
-    doc.text(`Cliente: ${this.currentCliente.razonSocial}`, 10, 30);
-    doc.text(`Dirección: ${this.currentCliente.domicilio}`, 10, 40);
-    doc.text(`Teléfono: ${this.currentCliente.telefono}`, 10, 50);
+  if (this.currentTaller) {
+    doc.text(`Cliente: ${this.currentTaller.razonSocial}`, 10, 30);
+    doc.text(`Dirección: ${this.currentTaller.direccion}`, 10, 40);
+    doc.text(`Teléfono: ${this.currentTaller.telefono}`, 10, 50);
   }
 
   // Datos a la derecha
@@ -423,8 +355,8 @@ generarPDF() {
   doc.text('Loria 1140 - Lomas de Zamora', rightMargin, 40);
   doc.text('Teléfono: 11-6958-2829', rightMargin, 50);
 
-  const columnas = this.presupuestoCliente ? ['Código', 'Cantidad', 'Descripción', 'Precio Unitario', 'Subtotal'] : ['Código', 'Cantidad', 'Descripción'];
-  const columnWidths = this.presupuestoCliente ? [35, 15, 100, 25, 25] : [35, 15, 145];
+  const columnas = ['Código', 'Cantidad', 'Descripción'];
+  const columnWidths =[35, 20, 130];
 
   const dibujarEncabezadosTabla = () => {
     doc.setFillColor(211, 211, 211);
@@ -434,9 +366,9 @@ generarPDF() {
     doc.setFont('Helvetica', 'normal');
 
 // Verifica si no es presupuestoCliente, si es así, usa negrita
-if (!this.presupuestoCliente) {
+
   doc.setFont('Helvetica', 'bold'); // Cambia a negrita si no es presupuestoCliente
-}
+
     columnas.forEach((columna, index) => {
       const x = 10 + columnWidths.slice(0, index).reduce((a, b) => a + b, 0);
       doc.text(columna, x, startY);
@@ -446,6 +378,7 @@ if (!this.presupuestoCliente) {
     startY += 10;
   };
 
+  //GENERACIÓN DE LA GRILLA
   dibujarEncabezadosTabla();
 
   this.mapaPresupuestoArticulos?.forEach((presupuestosArticulos, clave) => {
@@ -454,11 +387,8 @@ if (!this.presupuestoCliente) {
     const cantidades = presupuestosArticulos.map(pa => pa.cantidad);
     const totalCantidad = cantidades.reduce((acc, c) => (acc || 0) + (c || 0), 0);
     const descripcion = presupuestosArticulos[0].articulo?.descripcion || '';
-    const descripcionCompleta = presupuestosArticulos.map(pa => `${pa.cantidad || 0}${pa.articulo?.color?.codigo || ''}`).join('');
-    const precioUnitario = this.presupuestoCliente ? (presupuestosArticulos[0].precioUnitario || 0).toFixed(2) : '';
-    const subtotal = this.presupuestoCliente ? (this.calcularPrecioConDescuento(presupuestosArticulos[0]) * (totalCantidad || 0)).toFixed(2) : '';
-
-    const fila = this.presupuestoCliente ? [clave, totalCantidad, descripcion + ' ' + descripcionCompleta, precioUnitario, subtotal] : [clave, totalCantidad, descripcion + ' ' + descripcionCompleta];
+    const descripcionCompleta = presupuestosArticulos.map(pa => `${pa.cantidad || 0}${pa.articulo?.color?.codigo + " " || ''}`).join('');
+    const fila =[clave, totalCantidad, descripcion + ' ' + descripcionCompleta];
 
     fila.forEach((valor, index) => {
       const x = 10 + columnWidths.slice(0, index).reduce((a, b) => a + b, 0);
@@ -468,17 +398,8 @@ if (!this.presupuestoCliente) {
 
     startY += 10;
   });
-
-  if(this.presupuestoCliente){
-      // Calcular el total
-  const total = String(this.calcularPrecioTotal());
-
-  // Agregar el total debajo de la tabla
-  doc.text(`Total: $${total}`, 190, startY);
-  }
-
   // Guardar el archivo
-  doc.save(`Presupuesto_${this.currentCliente?.razonSocial}_${new Date().toISOString().split('T')[0]}.pdf`);
+  doc.save(`Presupuesto_${this.currentTaller?.razonSocial}_${new Date().toISOString().split('T')[0]}.pdf`);
 }
 
 
@@ -486,10 +407,10 @@ if (!this.presupuestoCliente) {
 
 validarDatosRequeridos() : Boolean{
 
-  return Object.keys((this.currentCliente || "")).length === 0 || this.currentCliente == undefined || this.mapaPresupuestoArticulos?.size == 0 
+  return Object.keys((this.currentTaller || "")).length === 0 || this.currentTaller == undefined || this.mapaPresupuestoArticulos?.size == 0 
 
 }
-
+/*
 cargarDetallesPresupuesto(id: Number) {
   this.presupuestoService.get(id).subscribe({
     next: (data) => {
@@ -505,7 +426,7 @@ cargarDetallesPresupuesto(id: Number) {
     error: (e) => console.error(e)
   });
 }
-
+*/
 procesarMapaDeArticulos() {
   if(this.presupuestoAAcceder)
   this.mapaPresuXArtParaAcceder = new Map()
@@ -568,11 +489,7 @@ actualizarArticuloSeleccionado(){
 }
 
 mostrarFecha(){
-  console.log(this.fechaPresupuesto)
+  console.log(this.fechaPedidoProduccion)
 }
+
 }
-
-
-
-
-
