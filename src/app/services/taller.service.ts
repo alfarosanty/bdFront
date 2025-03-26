@@ -8,7 +8,7 @@ const baseUrl = 'http://localhost:7166/Taller';
 @Injectable({
   providedIn: 'root'
 })
-export class ProduccionService {
+export class TallerService {
 
   constructor(private http: HttpClient) { }
 

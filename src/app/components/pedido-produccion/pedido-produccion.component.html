@@ -11,8 +11,8 @@
     <div class="dropdown">
 
         <label for="clientes">Seleccionar Taller:</label>
-        <select  (change)="seleccionarCliente()" [(ngModel)]="currentIndex">
-            <option >Seleccione un cliente</option>
+        <select  (change)="seleccionarTaller(); buscarOrdenXTaller()" [(ngModel)]="currentIndex">
+            <option >Seleccione un Taller</option>
             <option *ngFor="let taller of talleres" [value]="taller.id" >
                  {{taller.razonSocial}} 
             </option>
@@ -24,12 +24,11 @@
 
 
 <div class="datosCliente-container" *ngIf="currentTaller">
-    <h3>Seleccionar presupuesto de:</h3>
+    <h3>Selecciona una orden de pedido de:</h3>
     <h3>{{currentTaller.razonSocial}}</h3>
-    <select [(ngModel)]="ordenDePedidoSeleccionado"> 
 
-<!--    <select [(ngModel)]="ordenDePedidoSeleccionado" (change)="cargarDetallesPedidoProduccion((ordenDePedidoSeleccionado?.id??0))">  -->
-        <option value="" disabled selected>Seleccionar orden de pedido de: </option>
+    <select [(ngModel)]="ordenDePedidoSeleccionado" (change)="cargarDetallesPedidoProduccion((ordenDePedidoSeleccionado?.id??0))"> 
+        <option value="" disabled selected>Selecciona una orden de pedido de:</option>
         <option *ngFor="let ordenDePedido of ordenesDePedidoXTaller" [ngValue]="ordenDePedido">
             {{ ordenDePedido.id }} - {{ getFecha(ordenDePedido.fecha!) }}
           </option>

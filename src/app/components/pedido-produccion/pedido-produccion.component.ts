@@ -13,9 +13,10 @@ import { ClienteService } from 'src/app/services/cliente.service';
 import { jsPDF }  from 'jspdf';
 import { ActivatedRoute, Router } from '@angular/router';
 import * as moment from 'moment';
-import { ProduccionService } from 'src/app/services/produccion.service';
 import { Taller } from 'src/app/models/taller.model';
 import { PedidoProduccion } from 'src/app/models/pedido-produccion.model';
+import { OrdenProduccionService } from 'src/app/services/orden-produccion.service';
+import { TallerService } from 'src/app/services/taller.service';
 
 @Component({
   selector: 'app-pedido-produccion',
@@ -36,7 +37,7 @@ export class PedidoProduccionComponent {
   currentArticulo ?: Articulo;
   currentPedidoProduccion?: PedidoProduccion;
 
-  presupuestoAAcceder ?: Presupuesto
+  pedidoProduccionAAcceder ?: PedidoProduccion
   fechaPedidoProduccion?: Date;
   producto = '';
   codigoArticulo = '';
@@ -53,7 +54,7 @@ export class PedidoProduccionComponent {
   articuloSeleccionado ='';
  //END INPUT
 
-  constructor(private produccionService:ProduccionService, private articuloService:ArticuloService, private presupuestoService:PresupuestoService, private route : ActivatedRoute) {}
+  constructor(private tallerService:TallerService, private articuloService:ArticuloService, private ordenDeProduccionService:OrdenProduccionService, private route : ActivatedRoute) {}
 
   ngOnInit(): void {
     this.listarTalleres();
@@ -78,15 +79,6 @@ export class PedidoProduccionComponent {
 
     this.filteredOptions = this.myControl.valueChanges.pipe(startWith(''),map(value => this._filter(String(value))));
 
-
-    const presupuestoId = Number(this.route.snapshot.paramMap.get('id'));
-  
-  /*  if (presupuestoId) {
-      // Si el ID está presente, cargar los detalles del presupuesto
-      console.log('ID del presupuesto:', presupuestoId);
-      this.cargarDetallesPresupuesto(presupuestoId);
-    }
-  */
   }
 
   private _filter(value: string): string[] {
@@ -99,7 +91,7 @@ listarTalleres(): void {
 
     this.currentTaller = {};
     this.currentIndex = -1;
-    this.produccionService.getAll().pipe(
+    this.tallerService.getAll().pipe(
       catchError(error => {
         // Manejo del error
         console.error('Ocurrió un error:', error);
@@ -117,12 +109,25 @@ listarTalleres(): void {
   }
  
 
- seleccionarCliente(): void {
+ seleccionarTaller(): void {
     if(this.talleres){
       this.currentTaller = this.talleres[this.currentIndex-1];
+      console.log(this.currentTaller)
     }
 
       
+  }
+  buscarOrdenXTaller(){
+    if(this.currentTaller){
+     this.ordenDeProduccionService.getByTaller(this.currentTaller?.id).subscribe({
+      next: (data) => {
+        this.ordenesDePedidoXTaller = data;
+        console.log("LAS ORDENES DE PRODUCCION DE " + this.currentTaller?.razonSocial + " SON:",this.ordenesDePedidoXTaller)
+      },
+      error: (e) => console.error(e)
+  
+    });
+    }
   }
 
   convertirAMayuscula(){
@@ -288,13 +293,14 @@ listarTalleres(): void {
 
 
       if (!this.validarDatosRequeridos()) {
-        // Asignar cliente y otros valores
-        this.currentPedidoProduccion!.id=this.presupuestoAAcceder?.id
+        // Asignar taller y otros valores
+        this.currentPedidoProduccion.taller=this.currentTaller
+        this.currentPedidoProduccion!.id=this.pedidoProduccionAAcceder?.id
         this.currentPedidoProduccion!.articulos = [];
         if(this.fechaPedidoProduccion != undefined){this.currentPedidoProduccion!.fecha = this.fechaPedidoProduccion}
      
     
-        // Recorrer el mapa de artículos y agregarlos al presupuesto
+        // Recorrer el mapa de artículos y agregarlos a la orden
         this.mapaPresupuestoArticulos?.forEach((valor, clave) => {
           valor.forEach(presuArt => {
             console.log(presuArt.articulo?.color?.descripcion + ' ' + presuArt.cantidad);
@@ -304,6 +310,24 @@ listarTalleres(): void {
     
         // Mostrar el presupuesto que se va a guardar (para depuración)
         console.log("Este es la orden de produccion generada", this.currentPedidoProduccion);
+
+        if (!this.currentPedidoProduccion?.id) {
+          
+          // Crear un nuevo presupuesto
+          const idPedidoProduccion = this.ordenDeProduccionService.crear(this.currentPedidoProduccion!);
+          if (idPedidoProduccion) {
+            // Aquí puedes reiniciar el formulario y mostrar el número del presupuesto
+            console.log('Presupuesto creado con ID:', idPedidoProduccion);
+          }
+        } else {
+          // Si el presupuesto ya existe, actualizarlo
+          const idPedidoProduccion = this.ordenDeProduccionService.actualizar(this.currentPedidoProduccion!);
+          if (idPedidoProduccion) {
+            // Aquí puedes reiniciar el formulario y mostrar el número del presupuesto
+            console.log('Presupuesto actualizado con ID:', idPedidoProduccion);
+          }
+        }
+    
     
       } else {
         // Mostrar alerta si no se selecciona un cliente ni se agregan artículos
@@ -410,15 +434,15 @@ validarDatosRequeridos() : Boolean{
   return Object.keys((this.currentTaller || "")).length === 0 || this.currentTaller == undefined || this.mapaPresupuestoArticulos?.size == 0 
 
 }
-/*
-cargarDetallesPresupuesto(id: Number) {
-  this.presupuestoService.get(id).subscribe({
+
+cargarDetallesPedidoProduccion(id: Number) {
+  this.ordenDeProduccionService.get(id).subscribe({
     next: (data) => {
       console.log(data);
-      this.presupuestoAAcceder = data;
-      console.log("El presupuesto cargado es: ", this.presupuestoAAcceder);
-      this.currentCliente = this.presupuestoAAcceder.cliente;
-      console.log("Se cargó al cliente que se buscó acceder ", this.currentCliente);
+      this.pedidoProduccionAAcceder = data;
+      console.log("El presupuesto cargado es: ", this.pedidoProduccionAAcceder);
+      this.currentTaller = this.pedidoProduccionAAcceder?.taller;
+      console.log("Se cargó al cliente que se buscó acceder ", this.currentTaller);
 
       // Llamar a procesarMapaDeArticulos cuando los datos se hayan cargado
       this.procesarMapaDeArticulos();
@@ -426,20 +450,21 @@ cargarDetallesPresupuesto(id: Number) {
     error: (e) => console.error(e)
   });
 }
-*/
+
+
 procesarMapaDeArticulos() {
-  if(this.presupuestoAAcceder)
+  if(this.pedidoProduccionAAcceder)
   this.mapaPresuXArtParaAcceder = new Map()
-  this.presupuestoAAcceder?.articulos?.forEach(presuArt => {
-    const key = presuArt.articulo?.familia?.codigo + "/" + presuArt.articulo?.medida?.codigo;
+  this.pedidoProduccionAAcceder?.articulos?.forEach(pedidoArt => {
+    const key = pedidoArt.articulo?.familia?.codigo + "/" + pedidoArt.articulo?.medida?.codigo;
     
     if (this.mapaPresuXArtParaAcceder?.has(key)) {
-      const listaDePresuArtActualizada = (this.mapaPresuXArtParaAcceder.get(key) || []);
-      listaDePresuArtActualizada.push(presuArt);
-      this.mapaPresuXArtParaAcceder.set(key, listaDePresuArtActualizada);
+      const listaDePedidoArtActualizada = (this.mapaPresuXArtParaAcceder.get(key) || []);
+      listaDePedidoArtActualizada.push(pedidoArt);
+      this.mapaPresuXArtParaAcceder.set(key, listaDePedidoArtActualizada);
 
     } else {
-      this.mapaPresuXArtParaAcceder?.set(key, [presuArt]);
+      this.mapaPresuXArtParaAcceder?.set(key, [pedidoArt]);
     } 
 
     this.mapaPresupuestoArticulos = new Map();
