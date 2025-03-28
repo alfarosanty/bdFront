@@ -8,6 +8,7 @@ import { SelectBudgetComponent } from './components/select-budget/select-budget.
 import { ClientesComponent } from './components/clientes/clientes.component';
 import { FacturacionComponent } from './components/facturacion/facturacion.component';
 import { PedidoProduccionComponent } from './components/pedido-produccion/pedido-produccion.component';
+import { IngresoComponent } from './components/ingreso/ingreso.component';
 
 
 const routes: Routes = [
@@ -22,6 +23,8 @@ const routes: Routes = [
   { path:  'clientes', component: ClientesComponent},
   { path:  'facturacion', component: FacturacionComponent},
   { path:  'pedidoProduccion', component: PedidoProduccionComponent},
+  { path:  'ingreso', component: IngresoComponent},
+
 
 
 

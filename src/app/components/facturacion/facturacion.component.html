@@ -130,7 +130,7 @@
                 
                 <div class="item">{{entry.value[0].articulo?.familia?.descripcion + '' + entry.value[0].articulo?.medida?.descripcion}}
                  <ng-container *ngFor="let detalle of entry.value">
-                     {{ (detalle.cantidad || 0) + (detalle.articulo?.color?.codigo || '') }}
+                     {{ (detalle.cantidadActual || 0) + (detalle.articulo?.color?.codigo || '') }}
                   </ng-container>
                 </div>
 

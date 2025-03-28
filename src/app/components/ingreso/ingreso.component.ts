@@ -17,14 +17,16 @@ import { Taller } from 'src/app/models/taller.model';
 import { PedidoProduccion } from 'src/app/models/pedido-produccion.model';
 import { OrdenProduccionService } from 'src/app/services/orden-produccion.service';
 import { TallerService } from 'src/app/services/taller.service';
+import { IngresoService } from 'src/app/services/ingreso.service';
 
 @Component({
-  selector: 'app-pedido-produccion',
-  templateUrl: './pedido-produccion.component.html',
-  styleUrls: ['./pedido-produccion.component.css']
+  selector: 'app-ingreso',
+  templateUrl: './ingreso.component.html',
+  styleUrls: ['./ingreso.component.css']
 })
-export class PedidoProduccionComponent {
+export class IngresoComponent {
 
+  
   talleres?: Taller[];
   articulos: Articulo[]=[];
   familiaMedida: string[] = [];
@@ -39,7 +41,6 @@ export class PedidoProduccionComponent {
 
   pedidoProduccionAAcceder ?: PedidoProduccion
   fechaPedidoProduccion?: Date;
-  estadoPedido = 3;
   producto = '';
   codigoArticulo = '';
   cantProducto = '';
@@ -55,7 +56,7 @@ export class PedidoProduccionComponent {
   articuloSeleccionado ='';
  //END INPUT
 
-  constructor(private tallerService:TallerService, private articuloService:ArticuloService, private ordenDeProduccionService:OrdenProduccionService, private route : ActivatedRoute) {}
+  constructor(private tallerService:TallerService, private articuloService:ArticuloService, private ingresoService:IngresoService, private route : ActivatedRoute) {}
 
   ngOnInit(): void {
     this.listarTalleres();
@@ -120,7 +121,7 @@ listarTalleres(): void {
   }
   buscarOrdenXTaller(){
     if(this.currentTaller){
-     this.ordenDeProduccionService.getByTaller(this.currentTaller?.id).subscribe({
+     this.ingresoService.getByTaller(this.currentTaller?.id).subscribe({
       next: (data) => {
         this.ordenesDePedidoXTaller = data;
         console.log("LAS ORDENES DE PRODUCCION DE " + this.currentTaller?.razonSocial + " SON:",this.ordenesDePedidoXTaller)
@@ -297,7 +298,6 @@ listarTalleres(): void {
         // Asignar taller y otros valores
         this.currentPedidoProduccion.taller=this.currentTaller
         this.currentPedidoProduccion!.id=this.pedidoProduccionAAcceder?.id
-        this.currentPedidoProduccion.idEstadoPedidoProduccion = this.estadoPedido
         this.currentPedidoProduccion!.articulos = [];
         if(this.fechaPedidoProduccion != undefined){this.currentPedidoProduccion!.fecha = this.fechaPedidoProduccion}
      
@@ -305,18 +305,7 @@ listarTalleres(): void {
         // Recorrer el mapa de artículos y agregarlos a la orden
         this.mapaPresupuestoArticulos?.forEach((valor, clave) => {
           valor.forEach(presuArt => {
-            presuArt.cantidad = presuArt.cantidadActual
             console.log(presuArt.articulo?.color?.descripcion + ' ' + presuArt.cantidadActual);
-
-            if (presuArt.cantidadPendiente != null) {
-              if (presuArt.cantidadActual === presuArt.cantidadOriginal) {
-              } else {
-                presuArt.cantidadPendiente = presuArt.cantidadPendiente - ((presuArt.cantidadOriginal || 0) - (presuArt.cantidadActual || 0));
-              }
-            } else {
-              presuArt.cantidadPendiente = presuArt.cantidadActual;
-            }
-
             this.currentPedidoProduccion!.articulos?.push(presuArt);
           });
         });
@@ -326,14 +315,14 @@ listarTalleres(): void {
         if (!this.currentPedidoProduccion?.id) {
           
           // Crear un nuevo orden de pedido
-          const idPedidoProduccion = this.ordenDeProduccionService.crear(this.currentPedidoProduccion!);
+          const idPedidoProduccion = this.ingresoService.crear(this.currentPedidoProduccion!);
           if (idPedidoProduccion) {
             // Aquí puedes reiniciar el formulario y mostrar el número del presupuesto
             console.log('Orden de pedido creada');
           }
         } else {
           // Si el presupuesto ya existe, actualizarlo
-          const idPedidoProduccion = this.ordenDeProduccionService.actualizar(this.currentPedidoProduccion!);
+          const idPedidoProduccion = this.ingresoService.actualizar(this.currentPedidoProduccion!);
           if (idPedidoProduccion) {
             // Aquí puedes reiniciar el formulario y mostrar el número del presupuesto
             console.log('Presupuesto actualizado con ID:', idPedidoProduccion);
@@ -448,7 +437,7 @@ validarDatosRequeridos() : Boolean{
 }
 
 cargarDetallesPedidoProduccion(id: Number) {
-  this.ordenDeProduccionService.get(id).subscribe({
+  this.ingresoService.get(id).subscribe({
     next: (data) => {
       console.log(data);
       this.pedidoProduccionAAcceder = data;
@@ -468,13 +457,8 @@ procesarMapaDeArticulos() {
   if(this.pedidoProduccionAAcceder)
   this.mapaPresuXArtParaAcceder = new Map()
   this.pedidoProduccionAAcceder?.articulos?.forEach(pedidoArt => {
-    console.log("ESTE ARTICULO LO CARGO DE LA BD",pedidoArt)
     const key = pedidoArt.articulo?.familia?.codigo + "/" + pedidoArt.articulo?.medida?.codigo;
-
-    pedidoArt.cantidadOriginal = pedidoArt.cantidad
-    pedidoArt.cantidadActual = pedidoArt.cantidad
-
-
+    
     if (this.mapaPresuXArtParaAcceder?.has(key)) {
       const listaDePedidoArtActualizada = (this.mapaPresuXArtParaAcceder.get(key) || []);
       listaDePedidoArtActualizada.push(pedidoArt);
@@ -487,8 +471,6 @@ procesarMapaDeArticulos() {
     this.mapaPresupuestoArticulos = new Map();
     this.actualizarMapaPresupuestoArticulo(this.mapaPresuXArtParaAcceder!);
       });
-
-    console.log("ASÍ QUEDO EL MAPA CON LOS ARTICULOS ANTERIORES CARGADOS", this.mapaPresupuestoArticulos)
 
 }
 

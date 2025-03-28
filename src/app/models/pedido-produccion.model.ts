@@ -6,5 +6,6 @@ export class PedidoProduccion {
     id?: Number
     fecha?: Date
     taller?: Taller
+    idEstadoPedidoProduccion ?: Number
     articulos?: PresupuestoArticulo[]
 }

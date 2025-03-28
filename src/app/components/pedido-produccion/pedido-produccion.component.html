@@ -50,6 +50,14 @@
             <input type="date" id="fecha" [(ngModel)]="fechaPedidoProduccion" (change)="mostrarFecha()"> 
         </div>
 
+        <div>
+            <label for="estado">Estado del Pedido:</label>
+            <select id="estado" [(ngModel)]="estadoPedido">
+                <option [value]="3">CREADO</option>
+                <option [value]="2">EN TALLER</option>
+            </select>
+        </div>
+
     </div>
 </div>
 
@@ -113,7 +121,7 @@
                 
                 <div class="item">{{entry.value[0].articulo?.familia?.descripcion + '' + entry.value[0].articulo?.medida?.descripcion}}
                  <ng-container *ngFor="let detalle of entry.value">
-                     {{ (detalle.cantidad || 0) + (detalle.articulo?.color?.codigo || '') }}
+                     {{ (detalle.cantidadActual || 0) + (detalle.articulo?.color?.codigo || '') }}
                   </ng-container>
                 </div>
 

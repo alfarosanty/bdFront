@@ -200,13 +200,13 @@ listarClientes(): void {
           
       if (articuloExistente) {
       // Sobreescribir la cantidad en lugar de sumarla
-        articuloExistente.cantidad = Number(this.cantProducto);
+        articuloExistente.cantidadActual = Number(this.cantProducto);
         articuloExistente.precioUnitario = this.currentArticulo.precio1;
           } else {
             // Si no existe, agregarlo como un nuevo artículo
             pa.push({
               articulo: this.currentArticulo,
-              cantidad: Number(this.cantProducto),
+              cantidadActual: Number(this.cantProducto),
               precioUnitario: this.currentArticulo.precio1
             });
           }
@@ -214,7 +214,7 @@ listarClientes(): void {
           // Si no existe la clave, simplemente creamos el artículo por primera vez
           pa.push({
             articulo: this.currentArticulo,
-            cantidad: Number(this.cantProducto),
+            cantidadActual: Number(this.cantProducto),
             precioUnitario: this.currentArticulo.precio1
           });
         }
@@ -226,7 +226,7 @@ listarClientes(): void {
 
   getCantidadTotal(presupuestoArticulos: PresupuestoArticulo[]): number {
     return (presupuestoArticulos
-      .map(articulo => articulo.cantidad)  // Extrae la propiedad 'cantidad'
+      .map(articulo => articulo.cantidadActual)  // Extrae la propiedad 'cantidad'
       .reduce((total, cantidad) => (total || 0) + (cantidad || 0), 0) || 0) ;  // Suma las cantidades
   }
 
@@ -284,7 +284,7 @@ listarClientes(): void {
         let presupuestosArticulos = Array.from(this.mapaPresupuestoArticulos.values()).flatMap(Lista => Lista);
     
         // Obtén solo los precios de los artículos
-        let preciosDePresupuestos = presupuestosArticulos.map(presupuestoArticulo => (this.calcularPrecioConDescuento(presupuestoArticulo)) * (presupuestoArticulo.cantidad || 0));
+        let preciosDePresupuestos = presupuestosArticulos.map(presupuestoArticulo => (this.calcularPrecioConDescuento(presupuestoArticulo)) * (presupuestoArticulo.cantidadActual || 0));
     
         // Suma los precios para obtener el subtotal
         let subtotalDePrecios = preciosDePresupuestos.reduce((acumulador, precio) => {
@@ -424,10 +424,10 @@ this.mapaPresupuestoArticulos?.forEach((valor, clave) => {
       this.mapaPresupuestoArticulos?.forEach((presupuestosArticulos, clave) => {
         if (startY + 10 > maxY) agregarNuevaPagina();
     
-        const cantidades = presupuestosArticulos.map(pa => pa.cantidad);
+        const cantidades = presupuestosArticulos.map(pa => pa.cantidadActual);
         const totalCantidad = cantidades.reduce((acc, c) => (acc || 0) + (c || 0), 0);
         const descripcion = presupuestosArticulos[0].articulo?.descripcion || '';
-        const descripcionCompleta = presupuestosArticulos.map(pa => `${pa.cantidad || 0}${pa.articulo?.color?.codigo || ''}`).join('');
+        const descripcionCompleta = presupuestosArticulos.map(pa => `${pa.cantidadActual || 0}${pa.articulo?.color?.codigo || ''}`).join('');
         const precioUnitario = this.presupuestoCliente ? (presupuestosArticulos[0].precioUnitario || 0).toFixed(2) : '';
         const subtotal = this.presupuestoCliente ? (this.calcularPrecioConDescuento(presupuestosArticulos[0]) * (totalCantidad || 0)).toFixed(2) : '';
     
@@ -528,7 +528,7 @@ cantidadActualDepoducto():string {
       const articuloExistente = pa.find(a => a.articulo?.id == this.currentArticulo?.id);
       
       if (articuloExistente) {
-        return articuloExistente!.cantidad!.toString(); // Devuelve la cantidad actual como string para mostrarla
+        return articuloExistente!.cantidadActual!.toString(); // Devuelve la cantidad actual como string para mostrarla
       }
     }
   }

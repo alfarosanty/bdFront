@@ -21,6 +21,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ClientesComponent } from './components/clientes/clientes.component';
 import { FacturacionComponent } from './components/facturacion/facturacion.component';
 import { PedidoProduccionComponent } from './components/pedido-produccion/pedido-produccion.component';
+import { IngresoComponent } from './components/ingreso/ingreso.component';
 
 @NgModule({
   declarations: [
@@ -33,6 +34,7 @@ import { PedidoProduccionComponent } from './components/pedido-produccion/pedido
     ClientesComponent,
     FacturacionComponent,
     PedidoProduccionComponent,
+    IngresoComponent,
   ],
   imports: [
     MatSelectModule,
