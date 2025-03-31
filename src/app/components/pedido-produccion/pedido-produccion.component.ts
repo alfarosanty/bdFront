@@ -309,7 +309,7 @@ listarTalleres(): void {
             console.log(presuArt.articulo?.color?.descripcion + ' ' + presuArt.cantidadActual);
 
             if (presuArt.cantidadPendiente != null) {
-              if (presuArt.cantidadActual === presuArt.cantidadOriginal) {
+              if (presuArt.cantidadActual == presuArt.cantidadOriginal) {
               } else {
                 presuArt.cantidadPendiente = presuArt.cantidadPendiente - ((presuArt.cantidadOriginal || 0) - (presuArt.cantidadActual || 0));
               }
@@ -336,7 +336,7 @@ listarTalleres(): void {
           const idPedidoProduccion = this.ordenDeProduccionService.actualizar(this.currentPedidoProduccion!);
           if (idPedidoProduccion) {
             // Aquí puedes reiniciar el formulario y mostrar el número del presupuesto
-            console.log('Presupuesto actualizado con ID:', idPedidoProduccion);
+            console.log('Orden de pedido actualizada');
           }
         }
     

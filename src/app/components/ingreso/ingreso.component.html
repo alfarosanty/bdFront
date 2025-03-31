@@ -11,7 +11,7 @@
     <div class="dropdown">
 
         <label for="clientes">Seleccionar Taller:</label>
-        <select  (change)="seleccionarTaller(); buscarOrdenXTaller()" [(ngModel)]="currentIndex">
+        <select  (change)="seleccionarTaller(); buscarIngresosXTaller()" [(ngModel)]="currentIndex">
             <option >Seleccione un Taller</option>
             <option *ngFor="let taller of talleres" [value]="taller.id" >
                  {{taller.razonSocial}} 
@@ -27,10 +27,10 @@
     <h3>Selecciona una orden de ingreso de:</h3>
     <h3>{{currentTaller.razonSocial}}</h3>
 
-    <select [(ngModel)]="ordenDePedidoSeleccionado" (change)="cargarDetallesPedidoProduccion((ordenDePedidoSeleccionado?.id??0))"> 
+    <select [(ngModel)]="ingresoMercaderiaSeleccionado" (change)="cargarDetallesIngresoMercaderia((ingresoMercaderiaSeleccionado?.id??0))"> 
         <option value="" disabled selected>Selecciona una orden de ingreso de:</option>
-        <option *ngFor="let ordenDePedido of ordenesDePedidoXTaller" [ngValue]="ordenDePedido">
-            {{ ordenDePedido.id }} - {{ getFecha(ordenDePedido.fecha!) }}
+        <option *ngFor="let ingresoMercaderia of ingresosMercaderiaXTaller" [ngValue]="ingresoMercaderia">
+            {{ ingresoMercaderia.id }} - {{ getFecha(ingresoMercaderia.fecha!) }}
           </option>
 
     </select>
@@ -47,7 +47,7 @@
 
         <div>
             <label for="fecha">Fecha de Emisión:</label>
-            <input type="date" id="fecha" [(ngModel)]="fechaPedidoProduccion" (change)="mostrarFecha()"> 
+            <input type="date" id="fecha" [(ngModel)]="fechaIngresoMercaderia" (change)="mostrarFecha()"> 
         </div>
 
     </div>
@@ -140,5 +140,5 @@
     </div>
 
 
-<div class="boton-generarPDF"> <button (click)="generarOrdenDePedido(); generarPDF()">Generar Pedido</button>  </div>
+<div class="boton-generarPDF"> <button (click)="generarOrdenDePedido(); generarPDF(); aplicarIngresoAPedidosProduccion()">Generar Pedido</button>  </div>
 

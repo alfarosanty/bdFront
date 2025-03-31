@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { PedidoProduccion } from '../models/pedido-produccion.model';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { IngresoMercaderia } from '../models/ingreso-mercaderia.model';
 
 const baseUrl = 'http://localhost:7166/Ingreso';
 
@@ -13,9 +14,9 @@ export class IngresoService {
 
   constructor(private http:HttpClient) {}
 
-  crear(ordenDePedido :PedidoProduccion)  {
+  crear(ingresoMercaderia : IngresoMercaderia)  {
     alert('url' + baseUrl);
-  return this.http.post(`${baseUrl}/crear`, ordenDePedido).subscribe(
+  return this.http.post(`${baseUrl}/crear`, ingresoMercaderia).subscribe(
     response => {
       console.log('Respuesta de la API:', response);
     },
@@ -25,9 +26,9 @@ export class IngresoService {
   );
   }
 
-  actualizar(ordenDePedido :PedidoProduccion)  {
+  actualizar(ingresoMercaderia :IngresoMercaderia)  {
     alert('url' + baseUrl);
-   return this.http.post(`${baseUrl}/actualizar`, ordenDePedido).subscribe(
+   return this.http.post(`${baseUrl}/actualizar`, ingresoMercaderia).subscribe(
     response => {
       console.log('Respuesta de la API:', response);
     },
@@ -38,11 +39,11 @@ export class IngresoService {
   }
 
   getByTaller(id:any): Observable<PedidoProduccion[]> {
-    return this.http.get<PedidoProduccion[]>(`${baseUrl}/GetPedidoProduccionByTaller/${id} `);
+    return this.http.get<PedidoProduccion[]>(`${baseUrl}/GetIngresoByTaller/${id} `);
   }
 
   
   get(id: any): Observable<PedidoProduccion> {
-    return this.http.get<PedidoProduccion>(`${baseUrl}/GetPedidoProduccionByNumero/${id}`);
+    return this.http.get<PedidoProduccion>(`${baseUrl}/GetIngresoByNumero/${id}`);
   }
 }

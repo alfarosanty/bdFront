@@ -18,6 +18,7 @@ import { PedidoProduccion } from 'src/app/models/pedido-produccion.model';
 import { OrdenProduccionService } from 'src/app/services/orden-produccion.service';
 import { TallerService } from 'src/app/services/taller.service';
 import { IngresoService } from 'src/app/services/ingreso.service';
+import { IngresoMercaderia } from 'src/app/models/ingreso-mercaderia.model';
 
 @Component({
   selector: 'app-ingreso',
@@ -30,17 +31,18 @@ export class IngresoComponent {
   talleres?: Taller[];
   articulos: Articulo[]=[];
   familiaMedida: string[] = [];
-  ordenesDePedidoXTaller: PedidoProduccion[] =[];
+  ingresosMercaderiaXTaller: IngresoMercaderia[] =[];
+  pedidosProduccionXTaller: PedidoProduccion[] = [];
   mapaPresupuestoArticulos ?: Map<string,PresupuestoArticulo[]>;
   mapaPresuXArtParaAcceder ?: Map<string,PresupuestoArticulo[]>
 
-  ordenDePedidoSeleccionado?: PedidoProduccion
+  ingresoMercaderiaSeleccionado?: PedidoProduccion
   currentTaller?: Taller;
   currentArticulo ?: Articulo;
-  currentPedidoProduccion?: PedidoProduccion;
+  currentIngresoMercaderia?: PedidoProduccion;
 
-  pedidoProduccionAAcceder ?: PedidoProduccion
-  fechaPedidoProduccion?: Date;
+  ingresoMercaderiaAAcceder ?: PedidoProduccion
+  fechaIngresoMercaderia?: Date;
   producto = '';
   codigoArticulo = '';
   cantProducto = '';
@@ -56,7 +58,7 @@ export class IngresoComponent {
   articuloSeleccionado ='';
  //END INPUT
 
-  constructor(private tallerService:TallerService, private articuloService:ArticuloService, private ingresoService:IngresoService, private route : ActivatedRoute) {}
+  constructor(private tallerService:TallerService, private articuloService:ArticuloService, private ingresoService:IngresoService, private ordenProduccionService: OrdenProduccionService , private route : ActivatedRoute) {}
 
   ngOnInit(): void {
     this.listarTalleres();
@@ -119,12 +121,25 @@ listarTalleres(): void {
 
       
   }
-  buscarOrdenXTaller(){
+  buscarIngresosXTaller(){
     if(this.currentTaller){
      this.ingresoService.getByTaller(this.currentTaller?.id).subscribe({
       next: (data) => {
-        this.ordenesDePedidoXTaller = data;
-        console.log("LAS ORDENES DE PRODUCCION DE " + this.currentTaller?.razonSocial + " SON:",this.ordenesDePedidoXTaller)
+        this.ingresosMercaderiaXTaller = data;
+        console.log("LAS ORDENES DE PRODUCCION DE " + this.currentTaller?.razonSocial + " SON:",this.ingresosMercaderiaXTaller)
+      },
+      error: (e) => console.error(e)
+  
+    });
+    }
+  }
+
+  buscarOrdenXTaller(){
+    if(this.currentTaller){
+     this.ordenProduccionService.getByTaller(this.currentTaller?.id).subscribe({
+      next: (data) => {
+        this.pedidosProduccionXTaller = data;
+        console.log("LAS ORDENES DE PRODUCCION DE " + this.currentTaller?.razonSocial + " SON:",this.pedidosProduccionXTaller)
       },
       error: (e) => console.error(e)
   
@@ -285,8 +300,8 @@ listarTalleres(): void {
   
     generarOrdenDePedido() {
 
-      if (!this.currentPedidoProduccion) {
-        this.currentPedidoProduccion = {
+      if (!this.currentIngresoMercaderia) {
+        this.currentIngresoMercaderia = {
           taller: undefined, // Asegúrate de establecer los valores adecuados para las propiedades
           articulos: [],
           fecha: new Date() // Establece una fecha por defecto si es necesario
@@ -296,33 +311,34 @@ listarTalleres(): void {
 
       if (!this.validarDatosRequeridos()) {
         // Asignar taller y otros valores
-        this.currentPedidoProduccion.taller=this.currentTaller
-        this.currentPedidoProduccion!.id=this.pedidoProduccionAAcceder?.id
-        this.currentPedidoProduccion!.articulos = [];
-        if(this.fechaPedidoProduccion != undefined){this.currentPedidoProduccion!.fecha = this.fechaPedidoProduccion}
+        this.currentIngresoMercaderia.taller=this.currentTaller
+        this.currentIngresoMercaderia!.id=this.ingresoMercaderiaAAcceder?.id
+        this.currentIngresoMercaderia!.articulos = [];
+        if(this.fechaIngresoMercaderia != undefined){this.currentIngresoMercaderia!.fecha = this.fechaIngresoMercaderia}
      
     
         // Recorrer el mapa de artículos y agregarlos a la orden
         this.mapaPresupuestoArticulos?.forEach((valor, clave) => {
           valor.forEach(presuArt => {
             console.log(presuArt.articulo?.color?.descripcion + ' ' + presuArt.cantidadActual);
-            this.currentPedidoProduccion!.articulos?.push(presuArt);
+            presuArt.cantidad = presuArt.cantidadActual;
+            this.currentIngresoMercaderia!.articulos?.push(presuArt);
           });
         });
     
-        console.log("Este es la orden de produccion generada", this.currentPedidoProduccion);
+        console.log("Este es la orden de produccion generada", this.currentIngresoMercaderia);
 
-        if (!this.currentPedidoProduccion?.id) {
+        if (!this.currentIngresoMercaderia?.id) {
           
           // Crear un nuevo orden de pedido
-          const idPedidoProduccion = this.ingresoService.crear(this.currentPedidoProduccion!);
+          const idPedidoProduccion = this.ingresoService.crear(this.currentIngresoMercaderia!);
           if (idPedidoProduccion) {
             // Aquí puedes reiniciar el formulario y mostrar el número del presupuesto
             console.log('Orden de pedido creada');
           }
         } else {
           // Si el presupuesto ya existe, actualizarlo
-          const idPedidoProduccion = this.ingresoService.actualizar(this.currentPedidoProduccion!);
+          const idPedidoProduccion = this.ingresoService.actualizar(this.currentIngresoMercaderia!);
           if (idPedidoProduccion) {
             // Aquí puedes reiniciar el formulario y mostrar el número del presupuesto
             console.log('Presupuesto actualizado con ID:', idPedidoProduccion);
@@ -358,7 +374,7 @@ generarPDF() {
   doc.setFontSize(12);
   doc.text('Pedido de producción', 10, 10);
   doc.setFontSize(9);
-  doc.text(`Fecha: ${this.fechaPedidoProduccion}`, 10, 20);
+  doc.text(`Fecha: ${this.fechaIngresoMercaderia}`, 10, 20);
 
   // Imagen
   const marginRight = 10;
@@ -436,13 +452,13 @@ validarDatosRequeridos() : Boolean{
 
 }
 
-cargarDetallesPedidoProduccion(id: Number) {
+cargarDetallesIngresoMercaderia(id: Number) {
   this.ingresoService.get(id).subscribe({
     next: (data) => {
       console.log(data);
-      this.pedidoProduccionAAcceder = data;
-      console.log("El presupuesto cargado es: ", this.pedidoProduccionAAcceder);
-      this.currentTaller = this.pedidoProduccionAAcceder?.taller;
+      this.ingresoMercaderiaAAcceder = data;
+      console.log("El presupuesto cargado es: ", this.ingresoMercaderiaAAcceder);
+      this.currentTaller = this.ingresoMercaderiaAAcceder?.taller;
       console.log("Se cargó al taller que se buscó acceder ", this.currentTaller);
 
       // Llamar a procesarMapaDeArticulos cuando los datos se hayan cargado
@@ -454,9 +470,10 @@ cargarDetallesPedidoProduccion(id: Number) {
 
 
 procesarMapaDeArticulos() {
-  if(this.pedidoProduccionAAcceder)
+  if(this.ingresoMercaderiaAAcceder)
   this.mapaPresuXArtParaAcceder = new Map()
-  this.pedidoProduccionAAcceder?.articulos?.forEach(pedidoArt => {
+  this.ingresoMercaderiaAAcceder?.articulos?.forEach(pedidoArt => {
+    pedidoArt.cantidadActual = pedidoArt.cantidad
     const key = pedidoArt.articulo?.familia?.codigo + "/" + pedidoArt.articulo?.medida?.codigo;
     
     if (this.mapaPresuXArtParaAcceder?.has(key)) {
@@ -515,7 +532,11 @@ actualizarArticuloSeleccionado(){
 }
 
 mostrarFecha(){
-  console.log(this.fechaPedidoProduccion)
+  console.log(this.fechaIngresoMercaderia)
+}
+
+aplicarIngresoAPedidosProduccion(){
+  
 }
 
 }
