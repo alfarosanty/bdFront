@@ -468,7 +468,6 @@ procesarMapaDeArticulos() {
   if(this.pedidoProduccionAAcceder)
   this.mapaPresuXArtParaAcceder = new Map()
   this.pedidoProduccionAAcceder?.articulos?.forEach(pedidoArt => {
-    console.log("ESTE ARTICULO LO CARGO DE LA BD",pedidoArt)
     const key = pedidoArt.articulo?.familia?.codigo + "/" + pedidoArt.articulo?.medida?.codigo;
 
     pedidoArt.cantidadOriginal = pedidoArt.cantidad

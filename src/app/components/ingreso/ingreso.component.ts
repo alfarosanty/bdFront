@@ -19,6 +19,7 @@ import { OrdenProduccionService } from 'src/app/services/orden-produccion.servic
 import { TallerService } from 'src/app/services/taller.service';
 import { IngresoService } from 'src/app/services/ingreso.service';
 import { IngresoMercaderia } from 'src/app/models/ingreso-mercaderia.model';
+import { RegistroDescuento } from 'src/app/models/registro-descuento.model';
 
 @Component({
   selector: 'app-ingreso',
@@ -34,14 +35,16 @@ export class IngresoComponent {
   ingresosMercaderiaXTaller: IngresoMercaderia[] =[];
   pedidosProduccionXTaller: PedidoProduccion[] = [];
   mapaPresupuestoArticulos ?: Map<string,PresupuestoArticulo[]>;
-  mapaPresuXArtParaAcceder ?: Map<string,PresupuestoArticulo[]>
+  mapaPresuXArtParaAcceder ?: Map<string,PresupuestoArticulo[]>;
+  mapaArticulosModificados ?: Map<string,RegistroDescuento> = new Map();
 
   ingresoMercaderiaSeleccionado?: PedidoProduccion
   currentTaller?: Taller;
   currentArticulo ?: Articulo;
-  currentIngresoMercaderia?: PedidoProduccion;
+  currentIngresoMercaderia?: IngresoMercaderia;
+  curentPedidoProduccion ?: PedidoProduccion
 
-  ingresoMercaderiaAAcceder ?: PedidoProduccion
+  ingresoMercaderiaAAcceder ?: IngresoMercaderia
   fechaIngresoMercaderia?: Date;
   producto = '';
   codigoArticulo = '';
@@ -327,7 +330,7 @@ listarTalleres(): void {
         });
     
         console.log("Este es la orden de produccion generada", this.currentIngresoMercaderia);
-
+/*
         if (!this.currentIngresoMercaderia?.id) {
           
           // Crear un nuevo orden de pedido
@@ -350,7 +353,7 @@ listarTalleres(): void {
         // Mostrar alerta si no se selecciona un cliente ni se agregan artículos
         alert("Debe seleccionar un taller y agregar artículos al presupuesto antes de continuar.");
         throw new Error("Validación fallida: Cliente o presupuesto no definidos.");
-      }
+      */}
     }
 
     
@@ -536,7 +539,79 @@ mostrarFecha(){
 }
 
 aplicarIngresoAPedidosProduccion(){
-  
+
+  this.ordenProduccionService.getByTaller(this.currentTaller?.id).subscribe({
+    next: (data) => {
+      console.log(data);
+      this.pedidosProduccionXTaller = data;
+      console.log("Taller que se buscó pedidos de producción ", this.currentTaller);
+      console.log("Los pedidos de producción son los siguientes: ", this.pedidosProduccionXTaller);
+      this.aclararProductoPendentesDisminuidos();
+      this.aplicarDescuentoAArticulosDePedidosProduccion();
+
+      // Llamar a procesarMapaDeArticulos cuando los datos se hayan cargado
+    },
+    error: (e) => console.error(e)
+  });
+
+}
+
+
+
+aplicarDescuentoAArticulosDePedidosProduccion(){
+  if (!this.currentIngresoMercaderia || !this.pedidosProduccionXTaller) return;
+
+  this.pedidosProduccionXTaller.sort((a, b) =>(new Date(a.fecha!).getTime()) - (new Date(b.fecha!).getTime()));
+
+
+for (let articuloIngreso of this.currentIngresoMercaderia.articulos ??[]) {
+  console.log("ESTE ES EL ARTÍCULO INGRESADO A DESCONTAR", articuloIngreso)
+  let cantidadRestante = articuloIngreso.cantidad;
+
+  for (let pedidoProduccion of this.pedidosProduccionXTaller) {
+    
+    let articuloADescontar = (pedidoProduccion.articulos ?? []).find(presuArt => presuArt.articulo!.id === articuloIngreso.articulo?.id);
+    console.log("SE ENCONTRÓ EL ARTICULO EN EL PEDIDO PRODUCCION", articuloADescontar)
+    let cantidadADescontar = Math.min((articuloADescontar?.cantidadPendiente??0), (cantidadRestante??0));
+    articuloADescontar!.cantidadPendiente! -= cantidadADescontar;
+    cantidadRestante! -= cantidadADescontar;
+
+    console.log(pedidoProduccion)
+
+//    this.ordenProduccionService.actualizar(pedidoProduccion)
+
+    if (cantidadRestante! <= 0) break;
+    }
+  }
+}
+
+aclararProductoPendentesDisminuidos(){
+
+  if (!this.currentIngresoMercaderia || !this.pedidosProduccionXTaller) return;
+
+  this.pedidosProduccionXTaller.sort((a, b) =>(new Date(a.fecha!).getTime()) - (new Date(b.fecha!).getTime()));
+  console.log("ACÁ ESTÁN LOS PEDIDOS PRODUCCION ORDENADOS DE MÁS ANTIGUO A MENOS:",  this.pedidosProduccionXTaller.map(pedido => new Date(pedido.fecha ?? 0).toLocaleString()))
+
+for (let articuloIngreso of this.currentIngresoMercaderia.articulos ??[]) {
+  console.log("ESTE ES EL ARTÍCULO INGRESADO A DESCONTAR", articuloIngreso)
+  let cantidadRestante = articuloIngreso.cantidad;
+
+  for (let pedidoProduccion of this.pedidosProduccionXTaller) {
+    
+    let articuloADescontar = (pedidoProduccion.articulos ?? []).find(presuArt => presuArt.articulo!.id === articuloIngreso.articulo?.id);
+    console.log("SE ENCONTRÓ EL ARTICULO EN EL PEDIDO PRODUCCION", articuloADescontar)
+    let cantidadADescontar = Math.min((articuloADescontar?.cantidadPendiente??0), (cantidadRestante??0));
+    articuloADescontar!.cantidadPendiente! -= cantidadADescontar;
+    cantidadRestante! -= cantidadADescontar;
+
+    console.log(pedidoProduccion)
+
+//    this.ordenProduccionService.actualizar(pedidoProduccion)
+
+    if (cantidadRestante! <= 0) break;
+    }
+  }
+
 }
 
 }
