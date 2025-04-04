@@ -655,13 +655,14 @@ aclararProductoPendentesDisminuidos() {
   console.log("ENTRA A LA FUNCION")
  await this.aclararProductoPendentesDisminuidos()
   console.log("SALE DE LA FUNCION")
-
+alert(this.mapaArticulosModificados)
 console.log(this.mapaArticulosModificados)
-
-  if (!this.mapaArticulosModificados || this.mapaArticulosModificados.size === 0) {
+/*
+  if (!this.mapaArticulosModificados || this.mapaArticulosModificados.size == 0) {
     console.log("No hay datos para generar el PDF.");
-    return;
-  }
+    
+    //return;
+  }*/
 
 
   const doc = new jsPDF();
@@ -672,7 +673,7 @@ console.log(this.mapaArticulosModificados)
   currentY += 10;
 
   // Recorremos cada key del mapa
-  this.mapaArticulosModificados.forEach((articulos, key) => {
+  this.mapaArticulosModificados?.forEach((articulos, key) => {
     doc.setFontSize(12);
     doc.text(`Pedido de Producción: ${key}`, 14, currentY);
     currentY += 10;
