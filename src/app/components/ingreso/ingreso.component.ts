@@ -547,8 +547,8 @@ aplicarIngresoAPedidosProduccion(){
       this.pedidosProduccionXTaller = data;
       console.log("Taller que se buscó pedidos de producción ", this.currentTaller);
       console.log("Los pedidos de producción son los siguientes: ", this.pedidosProduccionXTaller);
-      this.aclararProductoPendentesDisminuidos();
-      this.aplicarDescuentoAArticulosDePedidosProduccion();
+      this.generarPDFcontrolPendientes();
+    //  this.aplicarDescuentoAArticulosDePedidosProduccion();
 
       // Llamar a procesarMapaDeArticulos cuando los datos se hayan cargado
     },
@@ -563,16 +563,17 @@ aplicarDescuentoAArticulosDePedidosProduccion(){
   if (!this.currentIngresoMercaderia || !this.pedidosProduccionXTaller) return;
 
   this.pedidosProduccionXTaller.sort((a, b) =>(new Date(a.fecha!).getTime()) - (new Date(b.fecha!).getTime()));
+  const pedidosAAgregarIngresos = this.pedidosProduccionXTaller.filter(pedido=>pedido.idEstadoPedidoProduccion == 2)
 
 
 for (let articuloIngreso of this.currentIngresoMercaderia.articulos ??[]) {
   console.log("ESTE ES EL ARTÍCULO INGRESADO A DESCONTAR", (articuloIngreso.articulo?.familia?.codigo ?? '') + '/' +  (articuloIngreso.articulo?.medida?.codigo ?? ''))
   let cantidadRestante = articuloIngreso.cantidad;
 
-  for (let pedidoProduccion of this.pedidosProduccionXTaller) {
+  for (let pedidoProduccion of pedidosAAgregarIngresos) {
     
     let articuloADescontar = (pedidoProduccion.articulos ?? []).find(presuArt => presuArt.articulo!.id === articuloIngreso.articulo?.id);
-    if(!articuloADescontar){break}
+    if(!articuloADescontar){continue}
     console.log("SE ENCONTRÓ EL ARTICULO EN EL PEDIDO PRODUCCION", (articuloADescontar.articulo?.familia?.codigo ?? '') + '/' + (articuloADescontar.articulo?.medida?.codigo ?? ''))
     let cantidadADescontar = Math.min((articuloADescontar?.cantidadPendiente??0), (cantidadRestante??0));
     articuloADescontar.cantidadPendiente! -= cantidadADescontar;
@@ -594,23 +595,21 @@ aclararProductoPendentesDisminuidos() {
 
   // Ordenar pedidos por fecha (de más antiguo a más reciente)
   this.pedidosProduccionXTaller.sort((a, b) => (new Date(a.fecha!).getTime()) - (new Date(b.fecha!).getTime()));
+  const pedidosAAgregarIngresos = this.pedidosProduccionXTaller.filter(pedido=>pedido.idEstadoPedidoProduccion == 2)
 
-  console.log("Pedidos Producción ordenados:", this.pedidosProduccionXTaller.map(pedido => new Date(pedido.fecha ?? 0).toLocaleString()));
+  console.log("Pedidos Producción ordenados:", pedidosAAgregarIngresos.map(pedido => new Date(pedido.fecha ?? 0).toLocaleString()));
 
   for (let articuloIngreso of this.currentIngresoMercaderia.articulos ?? []) {
-    console.log("ESTE ES EL ARTÍCULO INGRESADO A DESCONTAR", 
-      (articuloIngreso.articulo?.familia?.codigo ?? '') + '/' +  
-      (articuloIngreso.articulo?.medida?.codigo ?? '') + " " +
-      (articuloIngreso.articulo?.color?.descripcion ?? '')
+    console.log("ESTE ES EL ARTÍCULO INGRESADO A DESCONTAR",(articuloIngreso.articulo?.familia?.codigo ?? '') + '/' +(articuloIngreso.articulo?.medida?.codigo ?? '')+" "+(articuloIngreso.articulo?.color?.descripcion ?? '')
     );    
 
     let cantidadRestante = articuloIngreso.cantidad;
     let cantidadInicial = cantidadRestante; // Cantidad inicial ingresada
 
-    for (let pedidoProduccion of this.pedidosProduccionXTaller) {
+    for (let pedidoProduccion of pedidosAAgregarIngresos) {
 
       let articuloADescontar = (pedidoProduccion.articulos ?? []).find(presuArt => presuArt.articulo!.id == articuloIngreso.articulo?.id);
-      if(!articuloADescontar)continue
+      if(!articuloADescontar){continue}
       console.log(`SE ENCONTRÓ EL ARTICULO EN EL PEDIDO PRODUCCION N°${pedidoProduccion.id}: ` + `${articuloADescontar.articulo?.familia?.codigo ?? ''}/` + `${articuloADescontar.articulo?.medida?.codigo ?? ''}`); 
 
       let cantidadPendienteAntes = articuloADescontar.cantidadPendiente ?? 0;
@@ -623,7 +622,7 @@ aclararProductoPendentesDisminuidos() {
 
       const key = `#${pedidoProduccion.id} - ${this.formatearFecha(pedidoProduccion.fecha!)}`
       const nuevoValor ={
-        articulo : articuloIngreso,
+        articuloAfectado : articuloIngreso.articulo,
         pendienteAntes: cantidadPendienteAntes,
         descontado: cantidadADescontar,
         pendienteDespues: cantidadPendienteDespues
@@ -636,12 +635,27 @@ aclararProductoPendentesDisminuidos() {
         // Si ya existe, agregamos el nuevo artículo a la lista existente
         this.mapaArticulosModificados!.get(key)?.push(nuevoValor);
     }
+    
+    if (cantidadRestante! <= 0) break;
 }
 
 
       // Si ya no queda más cantidad por descontar, salir del bucle
-      if (cantidadRestante! <= 0) break;
     }
+
+
+    const mapaOrdenado = new Map(
+      Array.from(this.mapaArticulosModificados!.entries()).sort(([keyA], [keyB]) => {
+        const numA = parseInt(keyA.split(' ')[0].replace('#', ''));
+        const numB = parseInt(keyB.split(' ')[0].replace('#', ''));
+        return numA - numB;
+      })
+    );
+    
+    // Reasignamos el mapa original por el ordenado
+    this.mapaArticulosModificados = mapaOrdenado;
+
+    console.log(this.mapaArticulosModificados)
 
   }
 
@@ -651,18 +665,17 @@ aclararProductoPendentesDisminuidos() {
   }
   
 
- async generarPDFcontrolPendientes(){
+ generarPDFcontrolPendientes(){
   console.log("ENTRA A LA FUNCION")
- await this.aclararProductoPendentesDisminuidos()
+  this.aclararProductoPendentesDisminuidos()
   console.log("SALE DE LA FUNCION")
-alert(this.mapaArticulosModificados)
-console.log(this.mapaArticulosModificados)
-/*
+  console.log(this.mapaArticulosModificados)
+
   if (!this.mapaArticulosModificados || this.mapaArticulosModificados.size == 0) {
     console.log("No hay datos para generar el PDF.");
     
     //return;
-  }*/
+  }
 
 
   const doc = new jsPDF();
@@ -673,27 +686,38 @@ console.log(this.mapaArticulosModificados)
   currentY += 10;
 
   // Recorremos cada key del mapa
-  this.mapaArticulosModificados?.forEach((articulos, key) => {
+  this.mapaArticulosModificados?.forEach((articulos, clave) => {
+    if (currentY + 10 > doc.internal.pageSize.height) {
+      doc.addPage();
+      currentY = 15;
+    }
+  
     doc.setFontSize(12);
-    doc.text(`Pedido de Producción: ${key}`, 14, currentY);
+    doc.text(`Pedido de Producción: ${clave}`, 14, currentY);
     currentY += 10;
-
-    const bodyData = articulos.map(articulo => [
-      articulo.articuloAfectado?.familia?.codigo + "/" +  articulo.articuloAfectado?.medida?.codigo + " " + articulo.articuloAfectado?.color?.codigo ?? 'N/A',
-      articulo.pendienteAntes??0,
-      articulo.descontado??0,
-      articulo.pendienteDespués ?? 0
-    ]);
-
+    console.log(articulos.map(articulo=>articulo.articuloAfectado))
+    const bodyData = articulos.map(articulo => {
+      const a = articulo.articuloAfectado; // o articulo.articuloAfectado según cómo lo tengas
+      const descripcion = `${a?.familia?.codigo ?? 'N/A'}/${a?.medida?.codigo ?? 'N/A'} ${a?.color?.codigo ?? 'N/A'}`;
+      
+      return [
+        descripcion,
+        articulo.pendienteAntes ?? 0,
+        articulo.descontado ?? 0,
+        articulo.pendienteDespues ?? 0
+      ];
+    });
+  
     autoTable(doc, {
       startY: currentY,
       head: [['Artículo', 'Pendiente Antes', 'Descontado', 'Pendiente Después']],
       body: bodyData,
       theme: 'grid',
     });
-
+  
     currentY = (doc as any).lastAutoTable.finalY + 10;
   });
+  
 
   // Guardar el PDF
   doc.save('ControlPendientes.pdf');

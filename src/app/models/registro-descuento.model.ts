@@ -4,5 +4,5 @@ export class RegistroDescuento {
     articuloAfectado?: Articulo;
     pendienteAntes?: number;
     descontado?: number;
-    pendienteDespués?: number;
+    pendienteDespues?: number;
 }
