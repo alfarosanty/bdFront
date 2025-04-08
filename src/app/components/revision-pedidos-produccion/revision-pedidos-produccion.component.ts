@@ -147,6 +147,14 @@ listarTalleres(): void {
       this.pedidosProdXTallerFiltrados = this.pedidosProduccionXTaller.filter(pedido=>pedido.idEstadoPedidoProduccion==this.estadoPedido)
   }
 
+  sumatoriaCantidadTotal(pedido: PedidoProduccion): number|undefined {
+    return pedido.articulos?.reduce((total, articulo) => total + articulo.cantidad!, 0);
+  }
+
+  sumatoriaCantidadPendienteTotal(pedido: PedidoProduccion): number|undefined {
+    return pedido.articulos?.reduce((total, articulo) => total + articulo.cantidadPendiente!, 0);
+  }  
+
   convertirAMayuscula(){
     this.codigoArticulo = this.codigoArticulo.toUpperCase();
   }

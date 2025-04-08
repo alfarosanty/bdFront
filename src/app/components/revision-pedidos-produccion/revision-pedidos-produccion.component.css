@@ -145,14 +145,14 @@ select {
 
 .grilla {
     display: grid;
-    grid-template-columns: 15% 60% 15% 15%; /* Tamaños fijos para cada celda */
+    grid-template-columns: 15% 60% 15% 15% 15%; /* Tamaños fijos para cada celda */
     grid-template-rows: auto; /* Alturas para filas específicas */
 
 }
 
 .grilla-total {
     display: grid;
-    grid-template-columns: 20% 20% 20% 20%; /* Tamaños fijos para cada celda */
+    grid-template-columns: 20% 20% 20% 20% 20%; /* Tamaños fijos para cada celda */
     grid-template-rows: auto; /* Alturas para filas específicas */
 }
 

@@ -52,26 +52,21 @@
     <div class="grilla-container">
         <div class="grilla">
             <div class="item-header">CÓDIGO</div>
-            <div class="item-header">DESCRIPCIÓN</div>
             <div class="item-header">CANTIDAD</div>
             <div class="item-header">CANT PENDIENTE</div>
+            <div class="item-header">MOSTRAR GRILLA</div>
+            <div class="item-header">GENERAR PDF</div>
+
 
         <div *ngFor="let pedido of pedidosProdXTallerFiltrados; let i = index">
 
-            <div *ngFor="let entry of mapaPresupuestoArticulos | keyvalue" class="row">
-                <div class="item">{{ entry.key }}</div>
+            <div class="row">
+                <div class="item">{{ pedido.id }} - {{ formatearFecha(pedido.fecha) }}</div>
                 
-                <div class="item">{{entry.value[0].articulo?.familia?.descripcion + '' + entry.value[0].articulo?.medida?.descripcion}}
-                 <ng-container *ngFor="let detalle of entry.value">
-                     {{ (detalle.cantidadActual || 0) + (detalle.articulo?.color?.codigo || '') }}
-                  </ng-container>
+                <div class="item"> {{ sumatoriaCantidadTotal(pedido) }}
                 </div>
 
-                <div class="item">
-
-                    <ng-container  entry.value>
-                        {{ getCantidadTotal(entry.value)  }}
-                     </ng-container>
+                <div class="item">  {{ sumatoriaCantidadPendienteTotal(pedido) }}
                     
                 </div>
 
