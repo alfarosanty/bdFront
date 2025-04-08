@@ -148,5 +148,5 @@
     </div>
 
 
-<div class="boton-generarPDF"> <button (click)="generarOrdenDePedido(); generarPDF()">Generar Pedido</button>  </div>
+<div class="boton-generarPDF" *ngIf="mostrarBotonGuardar"> <button (click)="generarOrdenDePedido()">Generar Pedido</button>  </div>
 

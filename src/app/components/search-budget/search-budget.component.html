@@ -127,7 +127,7 @@
                 
                 <div class="item">{{entry.value[0].articulo?.familia?.descripcion + '' + entry.value[0].articulo?.medida?.descripcion}}
                  <ng-container *ngFor="let detalle of entry.value">
-                     {{ (detalle.cantidadActual || 0) + (detalle.articulo?.color?.codigo || '') }}
+                     {{ (detalle.cantidad || 0) + (detalle.articulo?.color?.codigo || '') }}
                   </ng-container>
                 </div>
 
@@ -188,7 +188,7 @@
     </div>
 
 
-<div class="boton-generarPDF"> <button (click)="guardarPresupuesto()">Guardar</button>  </div>
+<div class="boton-generarPDF" *ngIf="mostrarBotonGuardar"> <button (click)="guardarPresupuesto()">Guardar</button>  </div>
 
 <div class="backdrop" *ngIf="showBackDrop">
     <div class="button-container">

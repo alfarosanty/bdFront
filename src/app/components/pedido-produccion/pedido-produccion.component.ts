@@ -44,6 +44,8 @@ export class PedidoProduccionComponent {
   codigoArticulo = '';
   cantProducto = '';
   mostrarColores = false;
+  mostrarBotonGuardar = true;
+
 
   currentIndex = -1;
   articuloColorIndex = -1;
@@ -77,7 +79,7 @@ export class PedidoProduccionComponent {
     });
 
 
-
+    this.fechaPedidoProduccion=new Date()
     this.filteredOptions = this.myControl.valueChanges.pipe(startWith(''),map(value => this._filter(String(value))));
 
   }
@@ -326,17 +328,26 @@ listarTalleres(): void {
         if (!this.currentPedidoProduccion?.id) {
           
           // Crear un nuevo orden de pedido
-          const idPedidoProduccion = this.ordenDeProduccionService.crear(this.currentPedidoProduccion!);
-          if (idPedidoProduccion) {
+          this.ordenDeProduccionService.crear(this.currentPedidoProduccion!).subscribe(idPedidoProduccion => {
+            this.currentPedidoProduccion!.id = idPedidoProduccion;
+            console.log('ID creado:', idPedidoProduccion);
+            this.generarPDF()
+          });
+          
+          this.mostrarBotonGuardar = false;
+          if (this.currentPedidoProduccion!.id) {
             // Aquí puedes reiniciar el formulario y mostrar el número del presupuesto
             console.log('Orden de pedido creada');
           }
         } else {
           // Si el presupuesto ya existe, actualizarlo
           const idPedidoProduccion = this.ordenDeProduccionService.actualizar(this.currentPedidoProduccion!);
+          this.mostrarBotonGuardar = false;
           if (idPedidoProduccion) {
             // Aquí puedes reiniciar el formulario y mostrar el número del presupuesto
             console.log('Orden de pedido actualizada');
+            this.generarPDF()
+
           }
         }
     
@@ -367,7 +378,7 @@ generarPDF() {
 
   // Encabezado
   doc.setFontSize(12);
-  doc.text('Pedido de producción', 10, 10);
+  doc.text('Pedido de producción N°' + this.currentPedidoProduccion?.id, 10, 10);
   doc.setFontSize(9);
   doc.text(`Fecha: ${this.fechaPedidoProduccion}`, 10, 20);
 
@@ -453,6 +464,7 @@ cargarDetallesPedidoProduccion(id: Number) {
       console.log(data);
       this.pedidoProduccionAAcceder = data;
       console.log("El presupuesto cargado es: ", this.pedidoProduccionAAcceder);
+      this.fechaPedidoProduccion=this.pedidoProduccionAAcceder.fecha
       this.currentTaller = this.pedidoProduccionAAcceder?.taller;
       console.log("Se cargó al taller que se buscó acceder ", this.currentTaller);
 

@@ -13,16 +13,10 @@ export class OrdenProduccionService {
 
   constructor(private http:HttpClient) {}
 
-  crear(ordenDePedido :PedidoProduccion)  {
+  crear(ordenDePedido :PedidoProduccion): Observable<number>  {
     alert('url' + baseUrl);
-  return this.http.post(`${baseUrl}/crear`, ordenDePedido).subscribe(
-    response => {
-      console.log('Respuesta de la API:', response);
-    },
-    error => {
-      console.error('Error en la llamada POST:', error);
-    }
-  );
+    return this.http.post<number>(`${baseUrl}/crear`, ordenDePedido);
+
   }
 
   actualizar(ordenDePedido :PedidoProduccion)  {

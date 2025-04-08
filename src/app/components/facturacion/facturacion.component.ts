@@ -48,6 +48,8 @@ export class FacturacionComponent {
   showBackDrop=false;
   currentIndex = -1;
   articuloColorIndex = -1;
+  mostrarBotonGuardar = true;
+
 
   //INPUT BUSQUEDA
   myControl = new FormControl();
@@ -346,6 +348,7 @@ this.mapaPresupuestoArticulos?.forEach((valor, clave) => {
     
         // Mostrar el backdrop (pantalla de espera o de carga)
         this.showBackDrop = true;
+        this.mostrarBotonGuardar = false;
       } else {
         // Mostrar alerta si no se selecciona un cliente ni se agregan artículos
         alert("Debe seleccionar un cliente y agregar artículos a la factura antes de continuar.");
@@ -468,6 +471,7 @@ cargarDetallesPresupuesto(id: Number) {
     next: (data) => {
       this.presupuestoAAcceder = data;
       console.log("El presupuesto cargado es: ", this.presupuestoAAcceder);
+      this.fechaFactura=this.presupuestoAAcceder.fecha
       this.currentCliente = this.presupuestoAAcceder.cliente;
       this.currentPresupuesto = this.presupuestoAAcceder
       console.log("Se cargó al cliente que se buscó acceder ", this.currentCliente);

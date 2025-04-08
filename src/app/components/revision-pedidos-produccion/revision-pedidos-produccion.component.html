@@ -1,0 +1,88 @@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+
+<div class="general-container">
+
+<div class="superior-container">
+<div class="selector-container">
+    <h2>TALLERES</h2>
+
+    <!-- Menú desplegable de clientes -->
+    <div class="dropdown">
+
+        <label for="clientes">Seleccionar Taller:</label>
+        <select  (change)="seleccionarTaller(); " [(ngModel)]="currentIndex">
+            <option >Seleccione un Taller</option>
+            <option *ngFor="let taller of talleres" [value]="taller.id" >
+                 {{taller.razonSocial}} 
+            </option>
+          </select>
+                    
+    </div>
+
+</div>
+
+</div>
+
+<div class="inferior-container">
+    <h3>Datos de los pedido producción</h3>
+
+    <div class="datos-comprobante">
+
+
+        <div>
+            <label for="fecha">Fecha de Emisión:</label>
+            <input type="date" id="fecha" [(ngModel)]="fechaIngresoMercaderia" (change)="mostrarFecha()">
+        </div>
+            <div>
+                <label for="estado">Estado del Pedido:</label>
+                <select id="estado" [(ngModel)]="estadoPedido" (change)="filtroPedidosProduccion()">
+                    <option [value]="3" >CREADO</option>
+                    <option [value]="2" >EN TALLER</option>
+                </select>
+            </div>
+        
+
+    </div>
+</div>
+
+
+<h3>Grilla de Información</h3>
+
+    <div class="grilla-container">
+        <div class="grilla">
+            <div class="item-header">CÓDIGO</div>
+            <div class="item-header">DESCRIPCIÓN</div>
+            <div class="item-header">CANTIDAD</div>
+            <div class="item-header">CANT PENDIENTE</div>
+
+        <div *ngFor="let pedido of pedidosProdXTallerFiltrados; let i = index">
+
+            <div *ngFor="let entry of mapaPresupuestoArticulos | keyvalue" class="row">
+                <div class="item">{{ entry.key }}</div>
+                
+                <div class="item">{{entry.value[0].articulo?.familia?.descripcion + '' + entry.value[0].articulo?.medida?.descripcion}}
+                 <ng-container *ngFor="let detalle of entry.value">
+                     {{ (detalle.cantidadActual || 0) + (detalle.articulo?.color?.codigo || '') }}
+                  </ng-container>
+                </div>
+
+                <div class="item">
+
+                    <ng-container  entry.value>
+                        {{ getCantidadTotal(entry.value)  }}
+                     </ng-container>
+                    
+                </div>
+
+                <div class="item">
+                    <button class="boton-borrar">
+                        <i class="fas fa-trash-alt"></i> 
+                    </button>
+                </div>    
+   
+
+    </div>
+
+</div>
+

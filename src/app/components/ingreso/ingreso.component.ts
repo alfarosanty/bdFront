@@ -51,6 +51,8 @@ export class IngresoComponent {
   codigoArticulo = '';
   cantProducto = '';
   mostrarColores = false;
+  mostrarBotonGuardar = true;
+
 
   currentIndex = -1;
   articuloColorIndex = -1;
@@ -82,6 +84,8 @@ export class IngresoComponent {
       },
       error: (e) => console.error(e)
     });
+
+    this.fechaIngresoMercaderia = new Date();
 
 
 
@@ -331,30 +335,9 @@ listarTalleres(): void {
         });
     
         console.log("Este es la orden de produccion generada", this.currentIngresoMercaderia);
-/*
-        if (!this.currentIngresoMercaderia?.id) {
-          
-          // Crear un nuevo orden de pedido
-          const idPedidoProduccion = this.ingresoService.crear(this.currentIngresoMercaderia!);
-          if (idPedidoProduccion) {
-            // Aquí puedes reiniciar el formulario y mostrar el número del presupuesto
-            console.log('Orden de pedido creada');
-          }
-        } else {
-          // Si el presupuesto ya existe, actualizarlo
-          const idPedidoProduccion = this.ingresoService.actualizar(this.currentIngresoMercaderia!);
-          if (idPedidoProduccion) {
-            // Aquí puedes reiniciar el formulario y mostrar el número del presupuesto
-            console.log('Presupuesto actualizado con ID:', idPedidoProduccion);
-          }
-        }
-    
-    
-      } else {
-        // Mostrar alerta si no se selecciona un cliente ni se agregan artículos
-        alert("Debe seleccionar un taller y agregar artículos al presupuesto antes de continuar.");
-        throw new Error("Validación fallida: Cliente o presupuesto no definidos.");
-      */}
+        this.ingresoService.crear(this.currentIngresoMercaderia)
+        this.mostrarBotonGuardar = false;
+}
     }
 
     
@@ -376,9 +359,9 @@ generarPDF() {
 
   // Encabezado
   doc.setFontSize(12);
-  doc.text('Pedido de producción', 10, 10);
   doc.setFontSize(9);
-  doc.text(`Fecha: ${this.fechaIngresoMercaderia}`, 10, 20);
+  console.log("ACÁ ESTÁ LA FECHA", this.fechaIngresoMercaderia)
+  doc.text(`Fecha: ${this.formatearFecha(this.fechaIngresoMercaderia)}`, 10, 20);
 
   // Imagen
   const marginRight = 10;
@@ -463,6 +446,7 @@ cargarDetallesIngresoMercaderia(id: Number) {
       this.ingresoMercaderiaAAcceder = data;
       console.log("El presupuesto cargado es: ", this.ingresoMercaderiaAAcceder);
       this.currentTaller = this.ingresoMercaderiaAAcceder?.taller;
+      this.fechaIngresoMercaderia = this.ingresoMercaderiaAAcceder.fecha
       console.log("Se cargó al taller que se buscó acceder ", this.currentTaller);
 
       // Llamar a procesarMapaDeArticulos cuando los datos se hayan cargado
@@ -548,43 +532,10 @@ aplicarIngresoAPedidosProduccion(){
       console.log("Taller que se buscó pedidos de producción ", this.currentTaller);
       console.log("Los pedidos de producción son los siguientes: ", this.pedidosProduccionXTaller);
       this.generarPDFcontrolPendientes();
-    //  this.aplicarDescuentoAArticulosDePedidosProduccion();
-
-      // Llamar a procesarMapaDeArticulos cuando los datos se hayan cargado
     },
     error: (e) => console.error(e)
   });
 
-}
-
-
-
-aplicarDescuentoAArticulosDePedidosProduccion(){
-  if (!this.currentIngresoMercaderia || !this.pedidosProduccionXTaller) return;
-
-  this.pedidosProduccionXTaller.sort((a, b) =>(new Date(a.fecha!).getTime()) - (new Date(b.fecha!).getTime()));
-  const pedidosAAgregarIngresos = this.pedidosProduccionXTaller.filter(pedido=>pedido.idEstadoPedidoProduccion == 2)
-
-
-for (let articuloIngreso of this.currentIngresoMercaderia.articulos ??[]) {
-  console.log("ESTE ES EL ARTÍCULO INGRESADO A DESCONTAR", (articuloIngreso.articulo?.familia?.codigo ?? '') + '/' +  (articuloIngreso.articulo?.medida?.codigo ?? ''))
-  let cantidadRestante = articuloIngreso.cantidad;
-
-  for (let pedidoProduccion of pedidosAAgregarIngresos) {
-    
-    let articuloADescontar = (pedidoProduccion.articulos ?? []).find(presuArt => presuArt.articulo!.id === articuloIngreso.articulo?.id);
-    if(!articuloADescontar){continue}
-    console.log("SE ENCONTRÓ EL ARTICULO EN EL PEDIDO PRODUCCION", (articuloADescontar.articulo?.familia?.codigo ?? '') + '/' + (articuloADescontar.articulo?.medida?.codigo ?? ''))
-    let cantidadADescontar = Math.min((articuloADescontar?.cantidadPendiente??0), (cantidadRestante??0));
-    articuloADescontar.cantidadPendiente! -= cantidadADescontar;
-    cantidadRestante! -= cantidadADescontar;
-    console.log(pedidoProduccion)
-
-//    this.ordenProduccionService.actualizar(pedidoProduccion)
-
-    if (cantidadRestante! <= 0) break;
-    }
-  }
 }
 
 aclararProductoPendentesDisminuidos() {
@@ -625,7 +576,9 @@ aclararProductoPendentesDisminuidos() {
         articuloAfectado : articuloIngreso.articulo,
         pendienteAntes: cantidadPendienteAntes,
         descontado: cantidadADescontar,
-        pendienteDespues: cantidadPendienteDespues
+        pendienteDespues: cantidadPendienteDespues,
+        idPedidoProduccion: pedidoProduccion.id,
+        cantidadPedidaOriginal : articuloADescontar.cantidad
       }
       
       if (!this.mapaArticulosModificados!.has(key)) {
@@ -722,6 +675,39 @@ aclararProductoPendentesDisminuidos() {
   // Guardar el PDF
   doc.save('ControlPendientes.pdf');
   console.log("PDF generado exitosamente");
+
+  this.actualizarPedidosProduccion()
+
+}
+
+actualizarPedidosProduccion(){
+
+  for (const valor of this.mapaArticulosModificados!.values()) {
+    console.log("Valor:", valor);
+    const ppSeleccionado = this.pedidosProduccionXTaller.find(pedidoProduccion=>pedidoProduccion.id===valor[0].idPedidoProduccion)
+  
+    if (!ppSeleccionado) continue;
+    for(let registro of valor){
+      ppSeleccionado.articulos = ppSeleccionado!.articulos?.filter(
+        presuArt => presuArt.articulo?.id !== registro.articuloAfectado?.id
+      );
+      const articuloActualizado = {
+        articulo: registro.articuloAfectado,
+        cantidad: registro.cantidadPedidaOriginal,
+        cantidadPendiente: registro.pendienteDespues
+      }
+    ppSeleccionado?.articulos?.push(articuloActualizado)  
+    }
+    
+    const cantPendientesPP = ppSeleccionado?.articulos?.map(articulo => articulo.cantidadPendiente);
+    if (cantPendientesPP?.every(cantPendiente => cantPendiente === 0)) {
+      ppSeleccionado!.idEstadoPedidoProduccion = 1;
+      }
+
+    console.log("EL PRESUPUESTO SE A ACTUALIZADO", ppSeleccionado)
+    this.ordenProduccionService.actualizar(ppSeleccionado!)
+
+  }
 
 }
 

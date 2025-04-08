@@ -9,6 +9,7 @@ import { ClientesComponent } from './components/clientes/clientes.component';
 import { FacturacionComponent } from './components/facturacion/facturacion.component';
 import { PedidoProduccionComponent } from './components/pedido-produccion/pedido-produccion.component';
 import { IngresoComponent } from './components/ingreso/ingreso.component';
+import { RevisionPedidosProduccionComponent } from './components/revision-pedidos-produccion/revision-pedidos-produccion.component';
 
 
 const routes: Routes = [
@@ -24,6 +25,8 @@ const routes: Routes = [
   { path:  'facturacion', component: FacturacionComponent},
   { path:  'pedidoProduccion', component: PedidoProduccionComponent},
   { path:  'ingreso', component: IngresoComponent},
+  { path:  'revisionPedidoProduccion', component: RevisionPedidosProduccionComponent},
+
 
 
 

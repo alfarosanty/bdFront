@@ -1,71 +1,69 @@
 import { Component } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { Observable, throwError } from 'rxjs';
-import { catchError, map, startWith } from 'rxjs/operators'
+import { ActivatedRoute } from '@angular/router';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { catchError, map, Observable, startWith, throwError } from 'rxjs';
 import { Articulo } from 'src/app/models/articulo.model';
-import { Cliente } from 'src/app/models/cliente';
-import { Medida } from 'src/app/models/medida.model';
+import { IngresoMercaderia } from 'src/app/models/ingreso-mercaderia.model';
+import { PedidoProduccion } from 'src/app/models/pedido-produccion.model';
 import { PresupuestoArticulo } from 'src/app/models/presupuesto-articulo.model';
-import { Presupuesto } from 'src/app/models/presupuesto.model';
+import { RegistroDescuento } from 'src/app/models/registro-descuento.model';
+import { Taller } from 'src/app/models/taller.model';
 import { ArticuloService } from 'src/app/services/articulo.service';
-import { PresupuestoService } from 'src/app/services/budget.service';
-import { ClienteService } from 'src/app/services/cliente.service';
-import { jsPDF }  from 'jspdf';
-import { ActivatedRoute, Router } from '@angular/router';
-import * as moment from 'moment';
-
-
-
-
-
+import { IngresoService } from 'src/app/services/ingreso.service';
+import { OrdenProduccionService } from 'src/app/services/orden-produccion.service';
+import { TallerService } from 'src/app/services/taller.service';
 
 @Component({
-  selector: 'app-search-budget',
-  templateUrl: './search-budget.component.html',
-  styleUrls: ['./search-budget.component.css']
+  selector: 'app-revision-pedidos-produccion',
+  templateUrl: './revision-pedidos-produccion.component.html',
+  styleUrls: ['./revision-pedidos-produccion.component.css']
 })
-export class SearchBudgetComponent {
-//DATOS DEL PRESUPUESTO
+export class RevisionPedidosProduccionComponent {
 
-  clientes?: Cliente[];
+  
+  
+  talleres?: Taller[];
   articulos: Articulo[]=[];
   familiaMedida: string[] = [];
+  ingresosMercaderiaXTaller: IngresoMercaderia[] =[];
+  pedidosProduccionXTaller: PedidoProduccion[] = [];
+  pedidosProdXTallerFiltrados: PedidoProduccion[] = [];
   mapaPresupuestoArticulos ?: Map<string,PresupuestoArticulo[]>;
-  mapaPresuXArtParaAcceder ?: Map<string,PresupuestoArticulo[]>
+  mapaPresuXArtParaAcceder ?: Map<string,PresupuestoArticulo[]>;
+  mapaArticulosModificados ?: Map<string,RegistroDescuento[]> = new Map();
 
-
-  currentCliente?: Cliente;
+  ingresoMercaderiaSeleccionado?: PedidoProduccion
+  currentTaller?: Taller;
   currentArticulo ?: Articulo;
-  currentPresupuesto?: Presupuesto;
+  currentIngresoMercaderia?: IngresoMercaderia;
+  curentPedidoProduccion ?: PedidoProduccion
 
-  presupuestoAAcceder ?: Presupuesto
-  fechaPresupuesto?: Date;
+  ingresoMercaderiaAAcceder ?: IngresoMercaderia
+  fechaIngresoMercaderia?: Date;
   producto = '';
-  numCliente = '';
   codigoArticulo = '';
   cantProducto = '';
-  descUnitario = '';
-  descTotal = '';
   mostrarColores = false;
-  eximirIVA = false;
-  presupuestoCliente = true;
-  showBackDrop=false;
+  mostrarBotonGuardar = true;
+  estadoPedido?:number
+
+
   currentIndex = -1;
   articuloColorIndex = -1;
-  mostrarBotonGuardar = true;
-
 
   //INPUT BUSQUEDA
   myControl = new FormControl();
   options: string[] = [];
-filteredOptions: Observable<string[]>= new Observable<string[]>();
-articuloSeleccionado ='';
+  filteredOptions: Observable<string[]>= new Observable<string[]>();
+  articuloSeleccionado ='';
  //END INPUT
 
-  constructor(private clienteService: ClienteService, private articuloService:ArticuloService, private presupuestoService:PresupuestoService, private route : ActivatedRoute) {}
+  constructor(private tallerService:TallerService, private articuloService:ArticuloService, private ingresoService:IngresoService, private ordenProduccionService: OrdenProduccionService , private route : ActivatedRoute) {}
 
   ngOnInit(): void {
-    this.listarClientes();
+    this.listarTalleres();
     this.mapaPresupuestoArticulos=new Map();
 
     this.articuloService.getAllFamiliaMedida().subscribe({
@@ -83,19 +81,11 @@ articuloSeleccionado ='';
       error: (e) => console.error(e)
     });
 
+    this.fechaIngresoMercaderia = new Date();
 
-    this.fechaPresupuesto=new Date();
+
+
     this.filteredOptions = this.myControl.valueChanges.pipe(startWith(''),map(value => this._filter(String(value))));
-
-
-    const presupuestoId = Number(this.route.snapshot.paramMap.get('id'));
-  
-    if (presupuestoId) {
-      // Si el ID está presente, cargar los detalles del presupuesto
-      console.log('ID del presupuesto:', presupuestoId);
-      this.cargarDetallesPresupuesto(presupuestoId);
-    }
-
 
   }
 
@@ -105,11 +95,11 @@ articuloSeleccionado ='';
   }
 
 
-listarClientes(): void {
+listarTalleres(): void {
 
-    this.currentCliente = {};
+    this.currentTaller = {};
     this.currentIndex = -1;
-    this.clienteService.getAll().pipe(
+    this.tallerService.getAll().pipe(
       catchError(error => {
         // Manejo del error
         console.error('Ocurrió un error:', error);
@@ -118,40 +108,50 @@ listarClientes(): void {
       })
     ).subscribe({
       next: (data) => {
-        this.clientes = data;
+        this.talleres = data;
         console.log(data);
       },
       error: (e) => console.error(e)
       
     });
   }
+ 
 
-  seleccionarXnumeroCliente() {
-     this.clienteService.get(this.numCliente).subscribe({
-      next: (data) => {
-        this.currentCliente = data;
-      },
-      error: (e) => console.error(e)
-
-    });
-  }
-  
-
- seleccionarCliente(): void {
-    if(this.clientes){
-      this.currentCliente = this.clientes[this.currentIndex-1];
+ seleccionarTaller(): void {
+    if(this.talleres){
+      this.currentTaller = this.talleres[this.currentIndex-1];
+      console.log(this.currentTaller)
+      this.buscarOrdenXTaller()
     }
 
       
+  }
+
+
+  buscarOrdenXTaller(){
+    if(this.currentTaller){
+     this.ordenProduccionService.getByTaller(this.currentTaller?.id).subscribe({
+      next: (data) => {
+        this.pedidosProduccionXTaller = data;
+        this.pedidosProdXTallerFiltrados= data
+        console.log("LAS ORDENES DE PRODUCCION DE " + this.currentTaller?.razonSocial + " SON:",this.pedidosProduccionXTaller)
+      },
+      error: (e) => console.error(e)
+  
+    });
+    }
+  }
+
+  filtroPedidosProduccion(){
+    if(this.estadoPedido)
+      this.pedidosProdXTallerFiltrados = this.pedidosProduccionXTaller.filter(pedido=>pedido.idEstadoPedidoProduccion==this.estadoPedido)
   }
 
   convertirAMayuscula(){
     this.codigoArticulo = this.codigoArticulo.toUpperCase();
   }
 
-  onEximirIVAChange() {
-    console.log('Valor de Eximir IVA cambiado:', this.eximirIVA);
-  }
+
 
   seleccionarArticulo(){
     const codigoAritculoSeleccionado = this.articuloSeleccionado.split(' ');
@@ -217,13 +217,13 @@ listarClientes(): void {
           
       if (articuloExistente) {
       // Sobreescribir la cantidad en lugar de sumarla
-        articuloExistente.cantidad = Number(this.cantProducto);
+        articuloExistente.cantidadActual = Number(this.cantProducto);
         articuloExistente.precioUnitario = this.currentArticulo.precio1;
           } else {
             // Si no existe, agregarlo como un nuevo artículo
             pa.push({
               articulo: this.currentArticulo,
-              cantidad: Number(this.cantProducto),
+              cantidadActual: Number(this.cantProducto),
               precioUnitario: this.currentArticulo.precio1
             });
           }
@@ -231,7 +231,7 @@ listarClientes(): void {
           // Si no existe la clave, simplemente creamos el artículo por primera vez
           pa.push({
             articulo: this.currentArticulo,
-            cantidad: Number(this.cantProducto),
+            cantidadActual: Number(this.cantProducto),
             precioUnitario: this.currentArticulo.precio1
           });
         }
@@ -244,149 +244,29 @@ listarClientes(): void {
 
   getCantidadTotal(presupuestoArticulos: PresupuestoArticulo[]): number {
     return (presupuestoArticulos
-      .map(articulo => articulo.cantidad)  // Extrae la propiedad 'cantidad'
+      .map(articulo => articulo.cantidadActual)  // Extrae la propiedad 'cantidad'
       .reduce((total, cantidad) => (total || 0) + (cantidad || 0), 0) || 0) ;  // Suma las cantidades
   }
 
-  aplicarDescuentoUnitario(key : any){
-    
-  var pa :PresupuestoArticulo[] = [];
-
-  pa =  this.mapaPresupuestoArticulos?.get(key) as PresupuestoArticulo[]
-
-  pa.forEach(presupuesto =>{presupuesto.descuento = Number(this.descUnitario)})
-
-  }
-
-  calcularPrecioConDescuento(presupuestoArticulo: any): number {
-    return (presupuestoArticulo.precioUnitario - (presupuestoArticulo.precioUnitario * ((presupuestoArticulo.descuento || 0) * 0.01)));
-  }
-
-  borrarFila(key : any){
-    
-    this.mapaPresupuestoArticulos?.delete(key);
-  
+  getFecha(fecha: Date): string {
+    if (typeof fecha === 'string') {
+      fecha = new Date(fecha);  // Convertimos la cadena a un objeto Date
     }
-
-  editarFila(key:any){
-
-    this.codigoArticulo = key
-    this.articulos = [];
   
-    // Verifica si hay un código de artículo
-    if (this.codigoArticulo) {
-      // Separa el código en familia y medida
-      this.familiaMedida = this.codigoArticulo.split('/');
-  
-      // Llama al servicio para obtener artículos según la familia y medida
-      this.articuloService.getByFamiliaMedida(this.familiaMedida[0], this.familiaMedida[1]).subscribe({
-        next: (data) => {
-          this.articulos = data;
-          // Mostrar u ocultar colores según si hay artículos disponibles
-          this.mostrarColores = this.articulos.length > 0;
-        },
-        error: (e) => console.error('Error al obtener artículos:', e)
-      });
-  
+    if (fecha instanceof Date && !isNaN(fecha.getTime())) {
+      const dia = fecha.getDate().toString().padStart(2, '0');
+      const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
+      const año = fecha.getFullYear();
+      const fechaFormateada = `${dia}/${mes}/${año}`
+      
+      return fechaFormateada;
     } else {
-      // Si no hay código de artículo, ocultar los colores
-      this.mostrarColores = false;
+      return '';
     }
   }
 
-
-  calcularPrecioSubtotal() : number{
-      if (this.mapaPresupuestoArticulos) {
-        // Aplana las listas de artículos
-        let presupuestosArticulos = Array.from(this.mapaPresupuestoArticulos.values()).flatMap(Lista => Lista);
-    
-        // Obtén solo los precios de los artículos
-        let preciosDePresupuestos = presupuestosArticulos.map(presupuestoArticulo => (this.calcularPrecioConDescuento(presupuestoArticulo)) * (presupuestoArticulo.cantidad || 0));
-    
-        // Suma los precios para obtener el subtotal
-        let subtotalDePrecios = preciosDePresupuestos.reduce((acumulador, precio) => {
-          return (acumulador || 0) + (precio || 0);  // Suma los precios al acumulador
-        }, 0);
-    
-        return subtotalDePrecios; 
-      }
-    
-      return 0; 
-    }
-
-
-  calcularPrecioTotal() : number{
-
-    var descuento = 0.01 * Number(this.descTotal)
-    return this.calcularPrecioSubtotal() - (this.calcularPrecioSubtotal() * descuento )
-    }
-    
-  
-    guardarPresupuesto() {
-
-      if (!this.currentPresupuesto) {
-        this.currentPresupuesto = {
-          cliente: undefined, // Asegúrate de establecer los valores adecuados para las propiedades
-          EximirIVA: false,
-          articulos: [],
-          fecha: new Date() // Establece una fecha por defecto si es necesario
-        };
-      }
-
-
-      if (!this.validarDatosRequeridos()) {
-        // Asignar cliente y otros valores
-        this.currentPresupuesto.id=this.presupuestoAAcceder?.id
-        this.currentPresupuesto!.cliente = this.currentCliente;
-        this.currentPresupuesto!.EximirIVA = this.eximirIVA;
-        this.currentPresupuesto!.articulos = [];
-        if(this.fechaPresupuesto != undefined){this.currentPresupuesto.fecha = this.fechaPresupuesto}
-     
-    
-        // Recorrer el mapa de artículos y agregarlos al presupuesto
-        this.mapaPresupuestoArticulos?.forEach((valor, clave) => {
-          valor.forEach(presuArt => {
-            console.log(presuArt.articulo?.color?.descripcion + ' ' + presuArt.cantidad);
-            this.currentPresupuesto!.articulos?.push(presuArt);
-          });
-        });
-    
-        // Mostrar el presupuesto que se va a guardar (para depuración)
-        console.log("Este es el presupuesto a guardar", this.currentPresupuesto);
-    
-        // Verificar si es un presupuesto nuevo o uno existente
-        if (!this.currentPresupuesto?.id) {
-          
-          // Crear un nuevo presupuesto
-          const idPresupuesto = this.presupuestoService.crear(this.currentPresupuesto!);
-          this.mostrarBotonGuardar = false;
-          if (idPresupuesto) {
-            // Aquí puedes reiniciar el formulario y mostrar el número del presupuesto
-            console.log('Presupuesto creado con ID:', idPresupuesto);
-          }
-        } else {
-          // Si el presupuesto ya existe, actualizarlo
-          const idPresupuesto = this.presupuestoService.actualizar(this.currentPresupuesto!);
-          this.mostrarBotonGuardar = false;
-          if (idPresupuesto) {
-            // Aquí puedes reiniciar el formulario y mostrar el número del presupuesto
-            console.log('Presupuesto actualizado con ID:', idPresupuesto);
-          }
-        }
-    
-        // Mostrar el backdrop (pantalla de espera o de carga)
-        this.showBackDrop = true;
-      } else {
-        // Mostrar alerta si no se selecciona un cliente ni se agregan artículos
-        alert("Debe seleccionar un cliente y agregar artículos al presupuesto antes de continuar.");
-        throw new Error("Validación fallida: Cliente o presupuesto no definidos.");
-      }
-    }
-
-    
-
+ 
 generarPDF() {
-  this.showBackDrop = false;
   const doc = new jsPDF();
 
   const pageHeight = doc.internal.pageSize.height;
@@ -403,9 +283,9 @@ generarPDF() {
 
   // Encabezado
   doc.setFontSize(12);
-  doc.text('Presupuesto', 10, 10);
   doc.setFontSize(9);
-  doc.text(`Fecha: ${this.formatearFecha(this.fechaPresupuesto)}`, 10, 20);
+  console.log("ACÁ ESTÁ LA FECHA", this.fechaIngresoMercaderia)
+  doc.text(`Fecha: ${this.formatearFecha(this.fechaIngresoMercaderia)}`, 10, 20);
 
   // Imagen
   const marginRight = 10;
@@ -416,10 +296,10 @@ generarPDF() {
   doc.addImage(imagenBase64, 'PNG', imageX, 10, imageWidth, imageHeight);
 
   // Datos del Cliente
-  if (this.currentCliente) {
-    doc.text(`Cliente: ${this.currentCliente.razonSocial}`, 10, 30);
-    doc.text(`Dirección: ${this.currentCliente.domicilio}`, 10, 40);
-    doc.text(`Teléfono: ${this.currentCliente.telefono}`, 10, 50);
+  if (this.currentTaller) {
+    doc.text(`Taller: ${this.currentTaller.razonSocial}`, 10, 30);
+    doc.text(`Dirección: ${this.currentTaller.direccion}`, 10, 40);
+    doc.text(`Teléfono: ${this.currentTaller.telefono}`, 10, 50);
   }
 
   // Datos a la derecha
@@ -427,8 +307,8 @@ generarPDF() {
   doc.text('Loria 1140 - Lomas de Zamora', rightMargin, 40);
   doc.text('Teléfono: 11-6958-2829', rightMargin, 50);
 
-  const columnas = this.presupuestoCliente ? ['Código', 'Cantidad', 'Descripción', 'Precio Unitario', 'Subtotal'] : ['Código', 'Cantidad', 'Descripción'];
-  const columnWidths = this.presupuestoCliente ? [35, 15, 100, 25, 25] : [35, 15, 145];
+  const columnas = ['Código', 'Cantidad', 'Descripción'];
+  const columnWidths =[35, 20, 130];
 
   const dibujarEncabezadosTabla = () => {
     doc.setFillColor(211, 211, 211);
@@ -438,9 +318,9 @@ generarPDF() {
     doc.setFont('Helvetica', 'normal');
 
 // Verifica si no es presupuestoCliente, si es así, usa negrita
-if (!this.presupuestoCliente) {
+
   doc.setFont('Helvetica', 'bold'); // Cambia a negrita si no es presupuestoCliente
-}
+
     columnas.forEach((columna, index) => {
       const x = 10 + columnWidths.slice(0, index).reduce((a, b) => a + b, 0);
       doc.text(columna, x, startY);
@@ -450,19 +330,17 @@ if (!this.presupuestoCliente) {
     startY += 10;
   };
 
+  //GENERACIÓN DE LA GRILLA
   dibujarEncabezadosTabla();
 
   this.mapaPresupuestoArticulos?.forEach((presupuestosArticulos, clave) => {
     if (startY + 10 > maxY) agregarNuevaPagina();
 
-    const cantidades = presupuestosArticulos.map(pa => pa.cantidad);
+    const cantidades = presupuestosArticulos.map(pa => pa.cantidadActual);
     const totalCantidad = cantidades.reduce((acc, c) => (acc || 0) + (c || 0), 0);
     const descripcion = presupuestosArticulos[0].articulo?.descripcion || '';
-    const descripcionCompleta = presupuestosArticulos.map(pa => `${pa.cantidad || 0}${pa.articulo?.color?.codigo || ''}`).join('');
-    const precioUnitario = this.presupuestoCliente ? (presupuestosArticulos[0].precioUnitario || 0).toFixed(2) : '';
-    const subtotal = this.presupuestoCliente ? (this.calcularPrecioConDescuento(presupuestosArticulos[0]) * (totalCantidad || 0)).toFixed(2) : '';
-
-    const fila = this.presupuestoCliente ? [clave, totalCantidad, descripcion + ' ' + descripcionCompleta, precioUnitario, subtotal] : [clave, totalCantidad, descripcion + ' ' + descripcionCompleta];
+    const descripcionCompleta = presupuestosArticulos.map(pa => `${pa.cantidadActual || 0}${pa.articulo?.color?.codigo + " " || ''}`).join('');
+    const fila =[clave, totalCantidad, descripcion + ' ' + descripcionCompleta];
 
     fila.forEach((valor, index) => {
       const x = 10 + columnWidths.slice(0, index).reduce((a, b) => a + b, 0);
@@ -472,17 +350,8 @@ if (!this.presupuestoCliente) {
 
     startY += 10;
   });
-
-  if(this.presupuestoCliente){
-      // Calcular el total
-  const total = String(this.calcularPrecioTotal());
-
-  // Agregar el total debajo de la tabla
-  doc.text(`Total: $${total}`, 190, startY);
-  }
-
   // Guardar el archivo
-  doc.save(`Presupuesto_${this.currentCliente?.razonSocial}_${new Date().toISOString().split('T')[0]}.pdf`);
+  doc.save(`Ingreso-de-mercaderia-${this.currentTaller?.razonSocial}_${new Date().toISOString().split('T')[0]}.pdf`);
 }
 
 
@@ -490,19 +359,19 @@ if (!this.presupuestoCliente) {
 
 validarDatosRequeridos() : Boolean{
 
-  return Object.keys((this.currentCliente || "")).length === 0 || this.currentCliente == undefined || this.mapaPresupuestoArticulos?.size == 0 
+  return Object.keys((this.currentTaller || "")).length === 0 || this.currentTaller == undefined || this.mapaPresupuestoArticulos?.size == 0 
 
 }
 
-cargarDetallesPresupuesto(id: Number) {
-  this.presupuestoService.get(id).subscribe({
+cargarDetallesIngresoMercaderia(id: Number) {
+  this.ingresoService.get(id).subscribe({
     next: (data) => {
       console.log(data);
-      this.presupuestoAAcceder = data;
-      console.log("El presupuesto cargado es: ", this.presupuestoAAcceder);
-      this.fechaPresupuesto= this.presupuestoAAcceder.fecha
-      this.currentCliente = this.presupuestoAAcceder.cliente;
-      console.log("Se cargó al cliente que se buscó acceder ", this.currentCliente);
+      this.ingresoMercaderiaAAcceder = data;
+      console.log("El presupuesto cargado es: ", this.ingresoMercaderiaAAcceder);
+      this.currentTaller = this.ingresoMercaderiaAAcceder?.taller;
+      this.fechaIngresoMercaderia = this.ingresoMercaderiaAAcceder.fecha
+      console.log("Se cargó al taller que se buscó acceder ", this.currentTaller);
 
       // Llamar a procesarMapaDeArticulos cuando los datos se hayan cargado
       this.procesarMapaDeArticulos();
@@ -511,24 +380,25 @@ cargarDetallesPresupuesto(id: Number) {
   });
 }
 
+
 procesarMapaDeArticulos() {
-  if(this.presupuestoAAcceder)
+  if(this.ingresoMercaderiaAAcceder)
   this.mapaPresuXArtParaAcceder = new Map()
-  this.presupuestoAAcceder?.articulos?.forEach(presuArt => {
-    const key = presuArt.articulo?.familia?.codigo + "/" + presuArt.articulo?.medida?.codigo;
+  this.ingresoMercaderiaAAcceder?.articulos?.forEach(pedidoArt => {
+    pedidoArt.cantidadActual = pedidoArt.cantidad
+    const key = pedidoArt.articulo?.familia?.codigo + "/" + pedidoArt.articulo?.medida?.codigo;
     
     if (this.mapaPresuXArtParaAcceder?.has(key)) {
-      const listaDePresuArtActualizada = (this.mapaPresuXArtParaAcceder.get(key) || []);
-      listaDePresuArtActualizada.push(presuArt);
-      this.mapaPresuXArtParaAcceder.set(key, listaDePresuArtActualizada);
+      const listaDePedidoArtActualizada = (this.mapaPresuXArtParaAcceder.get(key) || []);
+      listaDePedidoArtActualizada.push(pedidoArt);
+      this.mapaPresuXArtParaAcceder.set(key, listaDePedidoArtActualizada);
 
     } else {
-      this.mapaPresuXArtParaAcceder?.set(key, [presuArt]);
+      this.mapaPresuXArtParaAcceder?.set(key, [pedidoArt]);
     } 
 
     this.mapaPresupuestoArticulos = new Map();
     this.actualizarMapaPresupuestoArticulo(this.mapaPresuXArtParaAcceder!);
-    console.log(this.mapaPresupuestoArticulos)
       });
 
 }
@@ -560,7 +430,7 @@ cantidadActualDepoducto():string {
       const articuloExistente = pa.find(a => a.articulo?.id == this.currentArticulo?.id);
       
       if (articuloExistente) {
-        return articuloExistente!.cantidad!.toString(); // Devuelve la cantidad actual como string para mostrarla
+        return articuloExistente!.cantidadActual!.toString(); // Devuelve la cantidad actual como string para mostrarla
       }
     }
   }
@@ -574,16 +444,28 @@ actualizarArticuloSeleccionado(){
 }
 
 mostrarFecha(){
-  console.log(this.fechaPresupuesto)
+  console.log(this.fechaIngresoMercaderia)
 }
 
-formatearFecha(fecha: any): string {
-  const fechaObj = new Date(fecha);
-  return isNaN(fechaObj.getTime()) ? 'Fecha inválida' : `${fechaObj.getDate()}/${fechaObj.getMonth() + 1}/${fechaObj.getFullYear()}`;
+aplicarIngresoAPedidosProduccion(){
+
+  this.ordenProduccionService.getByTaller(this.currentTaller?.id).subscribe({
+    next: (data) => {
+      console.log(data);
+      this.pedidosProduccionXTaller = data;
+      console.log("Taller que se buscó pedidos de producción ", this.currentTaller);
+      console.log("Los pedidos de producción son los siguientes: ", this.pedidosProduccionXTaller);
+    },
+    error: (e) => console.error(e)
+  });
+
 }
+
+  formatearFecha(fecha: any): string {
+    const fechaObj = new Date(fecha);
+    return isNaN(fechaObj.getTime()) ? 'Fecha inválida' : `${fechaObj.getDate()}/${fechaObj.getMonth() + 1}/${fechaObj.getFullYear()}`;
+  }
+  
+
+
 }
-
-
-
-
-
