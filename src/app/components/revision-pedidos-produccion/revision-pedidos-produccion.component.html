@@ -46,38 +46,70 @@
     </div>
 </div>
 
-
 <h3>Grilla de Información</h3>
 
-    <div class="grilla-container">
-        <div class="grilla">
-            <div class="item-header">CÓDIGO</div>
-            <div class="item-header">CANTIDAD</div>
-            <div class="item-header">CANT PENDIENTE</div>
-            <div class="item-header">MOSTRAR GRILLA</div>
-            <div class="item-header">GENERAR PDF</div>
+<table mat-table [dataSource]="dataSource" multiTemplateDataRows class="mat-elevation-z8">
+    <ng-container matColumnDef="{{ column }}" *ngFor="let column of columnsToDisplay">
+      <th mat-header-cell *matHeaderCellDef>{{ column }}</th>
+  <!-- Celdas manuales por nombre de columna -->
+  <td mat-cell *matCellDef="let element">
+    <ng-container [ngSwitch]="column">
 
+      <!-- ID - FECHA -->
+      <ng-container *ngSwitchCase="'Pedido'">
+        {{ element.id }} - {{ formatearFecha(element.fecha) }}
+      </ng-container>
 
-        <div *ngFor="let pedido of pedidosProdXTallerFiltrados; let i = index">
+      <!-- SUMA CANTIDADES -->
+      <ng-container *ngSwitchCase="'Cantidad Total'">
+        {{ getCantidadTotal(element.articulos) }}
+      </ng-container>
 
-            <div class="row">
-                <div class="item">{{ pedido.id }} - {{ formatearFecha(pedido.fecha) }}</div>
-                
-                <div class="item"> {{ sumatoriaCantidadTotal(pedido) }}
-                </div>
+      <!-- SUMA PENDIENTES -->
+      <ng-container *ngSwitchCase="'Cantidad Pendiente'">
+        {{ sumatoriaCantidadPendienteTotal(element.articulos) }}
+      </ng-container>
 
-                <div class="item">  {{ sumatoriaCantidadPendienteTotal(pedido) }}
-                    
-                </div>
+      <!-- BOTÓN GENERAR PDF -->
+      <ng-container *ngSwitchCase="'Generar PDF'">
+        <button mat-button (click)="generarPDF()">Generar PDF</button>
+      </ng-container>
 
-                <div class="item">
-                    <button class="boton-borrar">
-                        <i class="fas fa-trash-alt"></i> 
-                    </button>
-                </div>    
-   
+      <!-- DEFAULT -->
+      <ng-container *ngSwitchDefault>
+        {{ element[column] }}
+      </ng-container>
 
-    </div>
+    </ng-container>
+  </td>
+</ng-container>
+  
+    <ng-container matColumnDef="expandedDetail">
+      <td mat-cell *matCellDef="let element" [attr.colspan]="columnsToDisplay.length">
+        <div
+          class="example-element-detail"
+          [@detailExpand]="element == expandedElement ? 'expanded' : 'collapsed'"
+        >
+          <table mat-table [dataSource]="element.isotopes" class="mat-elevation-z8">
+            <ng-container matColumnDef="{{ column }}" *ngFor="let column of isotopeColumnsToDisplay">
+              <th mat-header-cell *matHeaderCellDef>{{ column }}</th>
+              <td mat-cell *matCellDef="let isotope">{{ isotope[column] }}</td>
+            </ng-container>
+            <tr mat-row *matRowDef="let isotope; columns: isotopeColumnsToDisplay"></tr>
+          </table>
+        </div>
+      </td>
+    </ng-container>
+  
+    <tr mat-header-row *matHeaderRowDef="columnsToDisplay"></tr>
+    <tr
+      mat-row
+      *matRowDef="let element; columns: columnsToDisplay"
+      class="example-element-row"
+      [class.example-expanded-row]="expandedElement === element"
+      (click)="expandedElement = expandedElement === element ? null : element"
+    ></tr>
+    <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="example-detail-row"></tr>
+  </table>
 
-</div>
 

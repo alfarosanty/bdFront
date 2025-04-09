@@ -3,9 +3,9 @@ import { Taller } from "./taller.model"
 
 export class PedidoProduccion {
 
-    id?: Number
+    id?: number
     fecha?: Date
     taller?: Taller
-    idEstadoPedidoProduccion ?: Number
+    idEstadoPedidoProduccion ?: number
     articulos?: PresupuestoArticulo[]
 }

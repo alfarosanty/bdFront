@@ -80,6 +80,7 @@ export class PedidoProduccionComponent {
 
 
     this.fechaPedidoProduccion=new Date()
+    alert(this.fechaPedidoProduccion)
     this.filteredOptions = this.myControl.valueChanges.pipe(startWith(''),map(value => this._filter(String(value))));
 
   }
@@ -543,8 +544,5 @@ actualizarArticuloSeleccionado(){
   }
 }
 
-mostrarFecha(){
-  console.log(this.fechaPedidoProduccion)
-}
 
 }

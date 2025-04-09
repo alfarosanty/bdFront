@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, NgModule } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import jsPDF from 'jspdf';
@@ -14,11 +14,23 @@ import { ArticuloService } from 'src/app/services/articulo.service';
 import { IngresoService } from 'src/app/services/ingreso.service';
 import { OrdenProduccionService } from 'src/app/services/orden-produccion.service';
 import { TallerService } from 'src/app/services/taller.service';
+import { MatTableDataSource } from '@angular/material/table';
+import { trigger, state, style, transition, animate } from '@angular/animations';
+
+
+
 
 @Component({
   selector: 'app-revision-pedidos-produccion',
   templateUrl: './revision-pedidos-produccion.component.html',
-  styleUrls: ['./revision-pedidos-produccion.component.css']
+  styleUrls: ['./revision-pedidos-produccion.component.css'],
+  animations: [
+    trigger('detailExpand', [
+      state('collapsed', style({ height: '0px', minHeight: '0' })),
+      state('expanded', style({ height: '*' })),
+      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)'))
+    ])
+  ],
 })
 export class RevisionPedidosProduccionComponent {
 
@@ -38,7 +50,8 @@ export class RevisionPedidosProduccionComponent {
   currentTaller?: Taller;
   currentArticulo ?: Articulo;
   currentIngresoMercaderia?: IngresoMercaderia;
-  curentPedidoProduccion ?: PedidoProduccion
+  curentPedidoProduccion ?: PedidoProduccion;
+  dataSource = new MatTableDataSource<PedidoProduccion>();
 
   ingresoMercaderiaAAcceder ?: IngresoMercaderia
   fechaIngresoMercaderia?: Date;
@@ -52,6 +65,12 @@ export class RevisionPedidosProduccionComponent {
 
   currentIndex = -1;
   articuloColorIndex = -1;
+
+
+  toggleDetalles: { [idPedido: number]: boolean } = {};
+  columnsToDisplay = ['Pedido', 'Cantidad Total', 'Cantidad Pendiente', 'Generar PDF'];
+  isotopeColumnsToDisplay = ['name', 'weight'];
+  expandedElement: PresupuestoArticulo | undefined;
 
   //INPUT BUSQUEDA
   myControl = new FormControl();
@@ -133,8 +152,11 @@ listarTalleres(): void {
      this.ordenProduccionService.getByTaller(this.currentTaller?.id).subscribe({
       next: (data) => {
         this.pedidosProduccionXTaller = data;
-        this.pedidosProdXTallerFiltrados= data
+        this.pedidosProdXTallerFiltrados= data.sort((a, b) => new Date(a.fecha!).getTime() - new Date(b.fecha!).getTime());
+        this.dataSource.data = this.pedidosProdXTallerFiltrados;
+        console.log(this.pedidosProdXTallerFiltrados.map(p => p.fecha));
         console.log("LAS ORDENES DE PRODUCCION DE " + this.currentTaller?.razonSocial + " SON:",this.pedidosProduccionXTaller)
+        console.log(this.pedidosProduccionXTaller.map(pedido=>pedido.fecha))
       },
       error: (e) => console.error(e)
   
@@ -142,11 +164,17 @@ listarTalleres(): void {
     }
   }
 
-  filtroPedidosProduccion(){
-    if(this.estadoPedido)
-      this.pedidosProdXTallerFiltrados = this.pedidosProduccionXTaller.filter(pedido=>pedido.idEstadoPedidoProduccion==this.estadoPedido)
-  }
+  filtroPedidosProduccion() {
+    if (this.estadoPedido) {
+      this.pedidosProdXTallerFiltrados = this.pedidosProduccionXTaller
+        .filter(pedido => pedido.idEstadoPedidoProduccion == this.estadoPedido)
+        .sort((a, b) => new Date(a.fecha!).getTime() - new Date(b.fecha!).getTime());
+        this.dataSource.data = this.pedidosProdXTallerFiltrados;
 
+
+    }
+  }
+  
   sumatoriaCantidadTotal(pedido: PedidoProduccion): number|undefined {
     return pedido.articulos?.reduce((total, articulo) => total + articulo.cantidad!, 0);
   }
@@ -154,6 +182,10 @@ listarTalleres(): void {
   sumatoriaCantidadPendienteTotal(pedido: PedidoProduccion): number|undefined {
     return pedido.articulos?.reduce((total, articulo) => total + articulo.cantidadPendiente!, 0);
   }  
+
+  toggleGrilla(pedidoId: number): void {
+    this.toggleDetalles[pedidoId] = !this.toggleDetalles[pedidoId];
+  }
 
   convertirAMayuscula(){
     this.codigoArticulo = this.codigoArticulo.toUpperCase();
