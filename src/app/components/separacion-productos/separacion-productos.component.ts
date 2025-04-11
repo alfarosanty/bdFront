@@ -2,28 +2,25 @@ import { Component, NgModule } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import { catchError, map, Observable, startWith, throwError } from 'rxjs';
 import { Articulo } from 'src/app/models/articulo.model';
 import { IngresoMercaderia } from 'src/app/models/ingreso-mercaderia.model';
 import { PedidoProduccion } from 'src/app/models/pedido-produccion.model';
 import { PresupuestoArticulo } from 'src/app/models/presupuesto-articulo.model';
 import { RegistroDescuento } from 'src/app/models/registro-descuento.model';
 import { Taller } from 'src/app/models/taller.model';
-import { ArticuloService } from 'src/app/services/articulo.service';
-import { IngresoService } from 'src/app/services/ingreso.service';
-import { OrdenProduccionService } from 'src/app/services/orden-produccion.service';
-import { TallerService } from 'src/app/services/taller.service';
 import { MatTableDataSource } from '@angular/material/table';
 import { trigger, state, style, transition, animate } from '@angular/animations';
-
-
+import { OrdenProduccionService } from 'src/app/services/orden-produccion.service';
+import { TallerService } from 'src/app/services/taller.service';
+import { IngresoService } from 'src/app/services/ingreso.service';
+import { ArticuloService } from 'src/app/services/articulo.service';
+import { catchError, map, Observable, startWith, throwError } from 'rxjs';
 
 
 @Component({
-  selector: 'app-revision-pedidos-produccion',
-  templateUrl: './revision-pedidos-produccion.component.html',
-  styleUrls: ['./revision-pedidos-produccion.component.css'],
+  selector: 'app-separacion-productos',
+  templateUrl: './separacion-productos.component.html',
+  styleUrls: ['./separacion-productos.component.css'],
   animations: [
     trigger('detailExpand', [
       state('collapsed', style({ height: '0px', minHeight: '0' })),
@@ -32,7 +29,8 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
     ])
   ],
 })
-export class RevisionPedidosProduccionComponent {
+export class SeparacionProductosComponent {
+
 
   
   
@@ -517,6 +515,7 @@ aplicarIngresoAPedidosProduccion(){
     return isNaN(fechaObj.getTime()) ? 'Fecha inválida' : `${fechaObj.getDate()}/${fechaObj.getMonth() + 1}/${fechaObj.getFullYear()}`;
   }
   
+
 
 
 }

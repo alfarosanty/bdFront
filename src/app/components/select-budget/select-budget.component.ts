@@ -118,6 +118,15 @@ export class SelectBudgetComponent {
     }
   }
 
+  seleccionarPresupuesto(){
+    if (this.presupuestoSeleccionado) {
+      this.router.navigate(['/seleccionarPresupuesto', this.presupuestoSeleccionado.id]);
+    } else {
+      alert("No se seleccionó ningún presupuesto.")
+      console.log('No se ha seleccionado un presupuesto.');
+    }
+  }
+
   getFecha(fecha: Date): string {
     if (typeof fecha === 'string') {
       fecha = new Date(fecha);  // Convertimos la cadena a un objeto Date

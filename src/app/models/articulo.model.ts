@@ -10,5 +10,6 @@ export class Articulo {
     precio1?:number;
     familia?:Familia;
     medida?:Medida;
+    idFabricante?: number
     
 }

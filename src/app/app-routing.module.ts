@@ -10,6 +10,7 @@ import { FacturacionComponent } from './components/facturacion/facturacion.compo
 import { PedidoProduccionComponent } from './components/pedido-produccion/pedido-produccion.component';
 import { IngresoComponent } from './components/ingreso/ingreso.component';
 import { RevisionPedidosProduccionComponent } from './components/revision-pedidos-produccion/revision-pedidos-produccion.component';
+import { SeparacionProductosComponent } from './components/separacion-productos/separacion-productos.component';
 
 
 const routes: Routes = [
@@ -26,6 +27,8 @@ const routes: Routes = [
   { path:  'pedidoProduccion', component: PedidoProduccionComponent},
   { path:  'ingreso', component: IngresoComponent},
   { path:  'revisionPedidoProduccion', component: RevisionPedidosProduccionComponent},
+  { path:  'seleccionarPresupuesto/:id', component: SeparacionProductosComponent},
+
 
 
 

@@ -28,6 +28,7 @@ import { FacturacionComponent } from './components/facturacion/facturacion.compo
 import { PedidoProduccionComponent } from './components/pedido-produccion/pedido-produccion.component';
 import { IngresoComponent } from './components/ingreso/ingreso.component';
 import { RevisionPedidosProduccionComponent } from './components/revision-pedidos-produccion/revision-pedidos-produccion.component';
+import { SeparacionProductosComponent } from './components/separacion-productos/separacion-productos.component';
 
 @NgModule({
   declarations: [
@@ -42,6 +43,7 @@ import { RevisionPedidosProduccionComponent } from './components/revision-pedido
     PedidoProduccionComponent,
     IngresoComponent,
     RevisionPedidosProduccionComponent,
+    SeparacionProductosComponent,
   ],
   imports: [
     MatSelectModule,
