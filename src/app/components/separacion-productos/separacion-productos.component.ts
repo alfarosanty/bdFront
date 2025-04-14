@@ -69,8 +69,7 @@ export class SeparacionProductosComponent {
   articuloColorIndex = -1;
 
 
-  toggleDetalles: { [idPedido: number]: boolean } = {};
-  columnsToDisplay = ['Articulos', 'Cantidad', 'Descripcion'];
+  columnsToDisplay = ['Articulo', 'Cantidad', 'Descripcion'];
   articuloColumnsToDisplay = ['Articulo', 'Cantidad', 'Hay stock'];
   expandedElement: PresupuestoArticulo | undefined;
 
@@ -302,7 +301,19 @@ actualizarMapaPresupuestoArticulo(nuevoMap: Map<string, PresupuestoArticulo[]>){
         descripcion : presupuestosArticulos[0].articulo?.familia?.descripcion + " " + presupuestosArticulos[0].articulo?.medida?.descripcion
       })
     );
+    console.log("ACÁ VA A LEER LOS CÓDIGOS")
     console.log(this.dataSourceCodigo.data)
+  }
+
+  if(this.mapaPresupuestoArticulos){
+    this.dataSourceArticulos.data = Array.from(this.mapaPresupuestoArticulos.entries()).map(
+      ([codigo, presupuestosArticulos]) => ({
+      presuArt : presupuestosArticulos  
+      })
+    );
+    console.log("ACÁ VA A LEER LOS ARTICULOS")
+    console.log(this.dataSourceArticulos.data)
+
   }
 }
 

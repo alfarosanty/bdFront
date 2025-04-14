@@ -20,6 +20,8 @@ import { MatTableModule } from '@angular/material/table';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+
 
 import { ReactiveFormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -60,6 +62,7 @@ import { SeparacionProductosComponent } from './components/separacion-productos/
     MatIconModule,
     MatButtonModule,
     MatExpansionModule,
+    MatCheckboxModule,
   ],
   
   providers: [],

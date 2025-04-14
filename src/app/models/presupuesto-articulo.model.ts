@@ -8,4 +8,5 @@ export class PresupuestoArticulo {
     cantidadPendiente?: number;
     precioUnitario?: number;
     descuento?: number;
+    enStock ?: boolean
 }

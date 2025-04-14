@@ -224,3 +224,11 @@ select {
   .checklist-container {
     text-align: center; /* Centra el contenido */
   }
+
+  .mat-checkbox-checked .mat-checkbox-background {
+    background-color: #4caf50;  /* Color verde cuando está marcado */
+  }
+  
+  .mat-checkbox-disabled {
+    opacity: 0.5;  /* Opacidad para el checkbox deshabilitado */
+  }
