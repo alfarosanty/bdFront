@@ -1,4 +1,5 @@
 import { Articulo } from "./articulo.model";
+import { Presupuesto } from "./presupuesto.model";
 
 export class PresupuestoArticulo {
     articulo?:Articulo;
@@ -8,5 +9,6 @@ export class PresupuestoArticulo {
     cantidadPendiente?: number;
     precioUnitario?: number;
     descuento?: number;
-    enStock ?: boolean
+    hayStock: boolean = true;
+    presupuesto?: Presupuesto
 }

@@ -209,7 +209,8 @@ listarClientes(): void {
             pa.push({
               articulo: this.currentArticulo,
               cantidadActual: Number(this.cantProducto),
-              precioUnitario: this.currentArticulo.precio1
+              precioUnitario: this.currentArticulo.precio1,
+              hayStock : false
             });
           }
         } else {
@@ -217,7 +218,8 @@ listarClientes(): void {
           pa.push({
             articulo: this.currentArticulo,
             cantidadActual: Number(this.cantProducto),
-            precioUnitario: this.currentArticulo.precio1
+            precioUnitario: this.currentArticulo.precio1,
+            hayStock : false
           });
         }
     

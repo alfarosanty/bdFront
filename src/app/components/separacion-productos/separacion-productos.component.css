@@ -232,3 +232,43 @@ select {
   .mat-checkbox-disabled {
     opacity: 0.5;  /* Opacidad para el checkbox deshabilitado */
   }
+
+  .boton-finalizar-container {
+    margin-top: 20px;
+    text-align: center;
+  }
+  
+  .boton-finalizar-container button {
+    font-size: 16px;
+    padding: 10px 30px;
+    border-radius: 8px;
+  }
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.4); /* oscurece */
+    backdrop-filter: blur(8px); /* desenfoque del fondo */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+  
+  .modal-content {
+    background: #ffffff;
+    padding: 2rem 3rem;
+    border-radius: 12px;
+    text-align: center;
+    width: 40%;
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.4);
+  }
+  
+  .modal-buttons {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+  }

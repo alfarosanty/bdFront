@@ -232,7 +232,8 @@ listarTalleres(): void {
             pa.push({
               articulo: this.currentArticulo,
               cantidadActual: Number(this.cantProducto),
-              precioUnitario: this.currentArticulo.precio1
+              precioUnitario: this.currentArticulo.precio1,
+              hayStock: false
             });
           }
         } else {
@@ -240,7 +241,8 @@ listarTalleres(): void {
           pa.push({
             articulo: this.currentArticulo,
             cantidadActual: Number(this.cantProducto),
-            precioUnitario: this.currentArticulo.precio1
+            precioUnitario: this.currentArticulo.precio1,
+            hayStock: false
           });
         }
     
@@ -694,7 +696,8 @@ actualizarPedidosProduccion(){
       const articuloActualizado = {
         articulo: registro.articuloAfectado,
         cantidad: registro.cantidadPedidaOriginal,
-        cantidadPendiente: registro.pendienteDespues
+        cantidadPendiente: registro.pendienteDespues,
+        hayStock: false
       }
     ppSeleccionado?.articulos?.push(articuloActualizado)  
     }

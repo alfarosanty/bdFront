@@ -210,7 +210,8 @@ listarTalleres(): void {
             pa.push({
               articulo: this.currentArticulo,
               cantidadActual: Number(this.cantProducto),
-              precioUnitario: this.currentArticulo.precio1
+              precioUnitario: this.currentArticulo.precio1,
+              hayStock: false
             });
           }
         } else {
@@ -218,7 +219,8 @@ listarTalleres(): void {
           pa.push({
             articulo: this.currentArticulo,
             cantidadActual: Number(this.cantProducto),
-            precioUnitario: this.currentArticulo.precio1
+            precioUnitario: this.currentArticulo.precio1,
+            hayStock: false
           });
         }
     

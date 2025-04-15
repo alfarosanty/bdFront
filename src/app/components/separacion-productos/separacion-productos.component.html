@@ -56,10 +56,12 @@
 
   <!-- Fila expandible con artículos -->
   <ng-container matColumnDef="expandedDetail">
-    <td mat-cell *matCellDef="let element" [attr.colspan]="columnsToDisplay.length">
+    <td mat-cell *matCellDef="let element" [attr.colspan]="articuloColumnsToDisplay.length">
       <div class="example-element-detail" [@detailExpand]="element == expandedElement ? 'expanded' : 'collapsed'">
-        <table mat-table [dataSource]="element.presuArt" class="mat-elevation-z1">
-          
+        
+        <!-- Filtra los artículos según el código de la fila -->
+        <table mat-table [dataSource]="getArticulosParaArticulo(element.codigo)" class="mat-elevation-z1">
+
           <!-- COLUMNA ARTÍCULO -->
           <ng-container matColumnDef="Articulo">
             <th mat-header-cell *matHeaderCellDef>Artículo</th>
@@ -67,7 +69,7 @@
               {{ presuArt.articulo.familia.codigo }}/{{ presuArt.articulo.medida.codigo }} {{ presuArt.articulo.color.codigo }}
             </td>
           </ng-container>
-          
+
           <!-- COLUMNA CANTIDAD -->
           <ng-container matColumnDef="Cantidad">
             <th mat-header-cell *matHeaderCellDef>Cantidad</th>
@@ -75,23 +77,22 @@
               {{ presuArt.cantidad }}
             </td>
           </ng-container>
-          
+
           <!-- COLUMNA HAY STOCK -->
           <ng-container matColumnDef="Hay stock">
             <th mat-header-cell *matHeaderCellDef>Hay stock</th>
             <td mat-cell *matCellDef="let presuArt">
-              <mat-checkbox 
-                [checked]="true" 
-                [disabled]="false">
-              </mat-checkbox>
+              <mat-checkbox [(ngModel)]="presuArt.hayStock"></mat-checkbox>
             </td>
           </ng-container>
           
+
           <!-- Filas para la tabla expandida -->
           <tr mat-header-row *matHeaderRowDef="articuloColumnsToDisplay"></tr>
           <tr mat-row *matRowDef="let row; columns: articuloColumnsToDisplay"></tr>
 
         </table>
+
       </div>
     </td>
   </ng-container>
@@ -107,3 +108,24 @@
   <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="example-detail-row"></tr>
 
 </table>
+
+
+<div class="boton-finalizar-container">
+  <button mat-raised-button color="primary" (click)="generarPedidosProduccion()">
+    Finalizar
+  </button>
+</div>
+<!-- Modal de Confirmación -->
+<div class="modal-overlay" *ngIf="mostrarConfirmacionPDF">
+  <div class="modal-content">
+    <h2>¿Deseás generar el PDF?</h2>
+    <div class="modal-buttons">
+      <button mat-raised-button color="primary" (click)="confirmarGenerarPDF(true)">
+        Sí, generar PDF
+      </button>
+      <button mat-raised-button color="warn" (click)="confirmarGenerarPDF(false)">
+        No, solo finalizar
+      </button>
+    </div>
+  </div>
+</div>
