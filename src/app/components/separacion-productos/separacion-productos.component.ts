@@ -455,7 +455,7 @@ actualizarArticuloSeleccionado(){
   
       this.pedidosProduccionesGenerados.push(pedidoProduccion);
       // Crear un nuevo orden de pedido
-  /*    this.ordenProduccionService.crear(pedidoProduccion).subscribe(idPedidoProduccion => {
+      this.ordenProduccionService.crear(pedidoProduccion).subscribe(idPedidoProduccion => {
         pedidoProduccion.id = idPedidoProduccion;
         console.log('ID creado:', idPedidoProduccion);
       });
@@ -463,7 +463,7 @@ actualizarArticuloSeleccionado(){
       if (pedidoProduccion.id) {
         // Aquí puedes reiniciar el formulario y mostrar el número del presupuesto
         console.log('Orden de pedido creada');
-      }*/
+      }
     }
   
     console.log('Pedidos generados:', this.pedidosProduccionesGenerados);
