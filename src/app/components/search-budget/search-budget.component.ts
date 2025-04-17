@@ -13,6 +13,8 @@ import { ClienteService } from 'src/app/services/cliente.service';
 import { jsPDF }  from 'jspdf';
 import { ActivatedRoute, Router } from '@angular/router';
 import * as moment from 'moment';
+import { MatTableDataSource } from '@angular/material/table';
+import { trigger, state, style, transition, animate } from '@angular/animations';
 
 
 
@@ -22,6 +24,13 @@ import * as moment from 'moment';
 @Component({
   selector: 'app-search-budget',
   templateUrl: './search-budget.component.html',
+  animations: [
+    trigger('detailExpand', [
+      state('collapsed', style({ height: '0px', minHeight: '0' })),
+      state('expanded', style({ height: '*' })),
+      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)'))
+    ])
+  ],
   styleUrls: ['./search-budget.component.css']
 })
 export class SearchBudgetComponent {

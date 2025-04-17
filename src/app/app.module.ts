@@ -21,6 +21,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatRadioModule } from '@angular/material/radio';
+
 
 import { ReactiveFormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -63,6 +65,7 @@ import { SeparacionProductosComponent } from './components/separacion-productos/
     MatButtonModule,
     MatExpansionModule,
     MatCheckboxModule,
+    MatRadioModule,
   ],
   
   providers: [],

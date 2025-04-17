@@ -9,6 +9,6 @@ export class PresupuestoArticulo {
     cantidadPendiente?: number;
     precioUnitario?: number;
     descuento?: number;
-    hayStock: boolean = true;
+    hayStock: boolean = false;
     presupuesto?: Presupuesto
 }

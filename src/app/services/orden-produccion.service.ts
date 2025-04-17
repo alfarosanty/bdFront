@@ -14,13 +14,11 @@ export class OrdenProduccionService {
   constructor(private http:HttpClient) {}
 
   crear(ordenDePedido :PedidoProduccion): Observable<number>  {
-    alert('url' + baseUrl);
     return this.http.post<number>(`${baseUrl}/crear`, ordenDePedido);
 
   }
 
   actualizar(ordenDePedido :PedidoProduccion)  {
-    alert('url' + baseUrl);
    return this.http.post(`${baseUrl}/actualizar`, ordenDePedido).subscribe(
     response => {
       console.log('Respuesta de la API:', response);

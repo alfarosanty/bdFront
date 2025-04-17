@@ -189,19 +189,15 @@
 
 
 <div class="boton-generarPDF" *ngIf="mostrarBotonGuardar"> <button (click)="guardarPresupuesto()">Guardar</button>  </div>
-
 <div class="backdrop" *ngIf="showBackDrop">
     <div class="button-container">
-        <button class="boton-generarPDF" type="button" (click)="generarPDF()">Generar PDF</button>
-      </div>
-    
-      <div class="checklist-container">
-        <label class="checklist-label">
-          <input type="radio" [(ngModel)]="presupuestoCliente" [value]="true" name="tipo" /> Cliente
-        </label>
-        <label class="checklist-label">
-          <input type="radio" [(ngModel)]="presupuestoCliente" [value]="false" name="tipo" /> Empleado
-        </label>
-      </div>
-
-</div>
+      <button mat-raised-button color="primary" (click)="generarPDF()">Generar PDF</button>
+    </div>
+  
+    <div class="checklist-container">
+      <mat-radio-group [(ngModel)]="presupuestoCliente">
+        <mat-radio-button [value]="true">Cliente</mat-radio-button>
+        <mat-radio-button [value]="false">Empleado</mat-radio-button>
+      </mat-radio-group>
+    </div>
+  </div>

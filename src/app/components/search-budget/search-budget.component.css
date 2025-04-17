@@ -256,3 +256,14 @@ select {
   .checklist-container {
     text-align: center; /* Centra el contenido */
   }
+  
+  .button-container {
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  .checklist-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+  }

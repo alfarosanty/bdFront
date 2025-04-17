@@ -186,7 +186,7 @@ logoBase64: String = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAADMCAYA
         {
           columns: [
             {
-              text: 'Reporte de Pedidos Producción',
+              text: `Reporte de Pedidos Producción \n de \n ${this.currentCliente!.razonSocial}`,
               style: 'header',
               width: '*',
             },
@@ -221,7 +221,7 @@ logoBase64: String = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAADMCAYA
       const mapaPresuArtTabla = this.generarMapaPresuArt(pedido)
       // Agregar subtítulo con el taller y la fecha
       docDefinition.content.push({
-        text: `${pedido.taller?.razonSocial} - ${this.formatearFecha(pedido.fecha)}`,
+        text: `${pedido.taller?.razonSocial} - ${this.formatearFecha(pedido.fecha)} - ID: ${pedido.id}`,
         style: 'header',
         margin: [0, 10, 0, 5],
       });

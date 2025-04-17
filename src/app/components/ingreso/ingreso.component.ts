@@ -35,6 +35,7 @@ export class IngresoComponent {
   familiaMedida: string[] = [];
   ingresosMercaderiaXTaller: IngresoMercaderia[] =[];
   pedidosProduccionXTaller: PedidoProduccion[] = [];
+  presupuestosAModificar : Presupuesto[] = [];
   mapaPresupuestoArticulos ?: Map<string,PresupuestoArticulo[]>;
   mapaPresuXArtParaAcceder ?: Map<string,PresupuestoArticulo[]>;
   mapaArticulosModificados ?: Map<string,RegistroDescuento[]> = new Map();
@@ -64,7 +65,7 @@ export class IngresoComponent {
   articuloSeleccionado ='';
  //END INPUT
 
-  constructor(private tallerService:TallerService, private articuloService:ArticuloService, private ingresoService:IngresoService, private ordenProduccionService: OrdenProduccionService , private route : ActivatedRoute) {}
+  constructor(private tallerService:TallerService, private articuloService:ArticuloService, private ingresoService:IngresoService, private ordenProduccionService: OrdenProduccionService, private presupuestoService: PresupuestoService , private route : ActivatedRoute) {}
 
   ngOnInit(): void {
     this.listarTalleres();
@@ -580,7 +581,8 @@ aclararProductoPendentesDisminuidos() {
         descontado: cantidadADescontar,
         pendienteDespues: cantidadPendienteDespues,
         idPedidoProduccion: pedidoProduccion.id,
-        cantidadPedidaOriginal : articuloADescontar.cantidad
+        cantidadPedidaOriginal : articuloADescontar.cantidad,
+        hayStock : this.noTienePendientes(cantidadPendienteDespues)
       }
       
       if (!this.mapaArticulosModificados!.has(key)) {
@@ -612,6 +614,11 @@ aclararProductoPendentesDisminuidos() {
 
     console.log(this.mapaArticulosModificados)
 
+  }
+
+  noTienePendientes(unaCantidadPendiente : number): boolean{
+    if(unaCantidadPendiente ===0) {return true}
+    else return false
   }
 
   formatearFecha(fecha: any): string {
@@ -687,17 +694,74 @@ actualizarPedidosProduccion(){
   for (const valor of this.mapaArticulosModificados!.values()) {
     console.log("Valor:", valor);
     const ppSeleccionado = this.pedidosProduccionXTaller.find(pedidoProduccion=>pedidoProduccion.id===valor[0].idPedidoProduccion)
-  
+    let presuAsociado: Presupuesto;
+
+    this.presupuestoService.get(ppSeleccionado?.idPresupuesto).subscribe({
+      next: (data) => {
+        presuAsociado = data;
+        this.presupuestosAModificar.push(presuAsociado)
+      },
+      error: (e) => console.error(e)
+    });
+
+    
     if (!ppSeleccionado) continue;
     for(let registro of valor){
       ppSeleccionado.articulos = ppSeleccionado!.articulos?.filter(
         presuArt => presuArt.articulo?.id !== registro.articuloAfectado?.id
       );
+
       const articuloActualizado = {
         articulo: registro.articuloAfectado,
         cantidad: registro.cantidadPedidaOriginal,
         cantidadPendiente: registro.pendienteDespues,
-        hayStock: false
+        hayStock: !!registro.hayStock
+      }
+    ppSeleccionado?.articulos?.push(articuloActualizado)  
+    }
+    
+    const cantPendientesPP = ppSeleccionado?.articulos?.map(articulo => articulo.cantidadPendiente);
+    if (cantPendientesPP?.every(cantPendiente => cantPendiente === 0)) {
+      ppSeleccionado!.idEstadoPedidoProduccion = 1;
+      }
+
+    console.log("EL PRESUPUESTO SE A ACTUALIZADO", ppSeleccionado)
+    this.ordenProduccionService.actualizar(ppSeleccionado!)
+
+  }
+
+  this.actualizarPresupuestos()
+
+}
+
+
+actualizarPresupuestos(){
+
+  for (const valor of this.mapaArticulosModificados!.values()) {
+    console.log("Valor:", valor);
+    const ppSeleccionado = this.pedidosProduccionXTaller.find(pedidoProduccion=>pedidoProduccion.id===valor[0].idPedidoProduccion)
+    let presuAsociado: Presupuesto;
+
+    this.presupuestoService.get(ppSeleccionado?.idPresupuesto).subscribe({
+      next: (data) => {
+        presuAsociado = data;
+        this.presupuestosAModificar.push(presuAsociado)
+      },
+      error: (e) => console.error(e)
+    });
+
+    
+    if (!ppSeleccionado) continue;
+    for(let registro of valor){
+      ppSeleccionado.articulos = ppSeleccionado!.articulos?.filter(
+        presuArt => presuArt.articulo?.id !== registro.articuloAfectado?.id
+      );
+
+      const articuloActualizado = {
+        articulo: registro.articuloAfectado,
+        cantidad: registro.cantidadPedidaOriginal,
+        cantidadPendiente: registro.pendienteDespues,
+        hayStock: !!registro.hayStock
       }
     ppSeleccionado?.articulos?.push(articuloActualizado)  
     }
@@ -713,6 +777,7 @@ actualizarPedidosProduccion(){
   }
 
 }
+
 
 }
 
