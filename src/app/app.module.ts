@@ -22,7 +22,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 
-
 import { ReactiveFormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ClientesComponent } from './components/clientes/clientes.component';
@@ -31,6 +30,7 @@ import { PedidoProduccionComponent } from './components/pedido-produccion/pedido
 import { IngresoComponent } from './components/ingreso/ingreso.component';
 import { RevisionPedidosProduccionComponent } from './components/revision-pedidos-produccion/revision-pedidos-produccion.component';
 import { SeparacionProductosComponent } from './components/separacion-productos/separacion-productos.component';
+
 
 @NgModule({
   declarations: [
