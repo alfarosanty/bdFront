@@ -563,7 +563,7 @@ aclararProductoPendentesDisminuidos() {
     for (let pedidoProduccion of pedidosAAgregarIngresos) {
 
       let articuloADescontar = (pedidoProduccion.articulos ?? []).find(presuArt => presuArt.articulo!.id == articuloIngreso.articulo?.id);
-      if(!articuloADescontar){continue}
+      if(!articuloADescontar || articuloADescontar.cantidadPendiente == 0){continue}
       console.log(`SE ENCONTRÓ EL ARTICULO EN EL PEDIDO PRODUCCION N°${pedidoProduccion.id}: ` + `${articuloADescontar.articulo?.familia?.codigo ?? ''}/` + `${articuloADescontar.articulo?.medida?.codigo ?? ''}`); 
 
       let cantidadPendienteAntes = articuloADescontar.cantidadPendiente ?? 0;
@@ -715,7 +715,7 @@ actualizarPedidosProduccion(){
         articulo: registro.articuloAfectado,
         cantidad: registro.cantidadPedidaOriginal,
         cantidadPendiente: registro.pendienteDespues,
-        hayStock: !!registro.hayStock
+        hayStock: this.noTienePendientes(registro.pendienteDespues!)
       }
     ppSeleccionado?.articulos?.push(articuloActualizado)  
     }
@@ -739,21 +739,11 @@ actualizarPresupuestos(){
 
   for (const valor of this.mapaArticulosModificados!.values()) {
     console.log("Valor:", valor);
-    const ppSeleccionado = this.pedidosProduccionXTaller.find(pedidoProduccion=>pedidoProduccion.id===valor[0].idPedidoProduccion)
-    let presuAsociado: Presupuesto;
-
-    this.presupuestoService.get(ppSeleccionado?.idPresupuesto).subscribe({
-      next: (data) => {
-        presuAsociado = data;
-        this.presupuestosAModificar.push(presuAsociado)
-      },
-      error: (e) => console.error(e)
-    });
-
+    const presuSeleccionado = this.presupuestosAModificar.find(pedidoProduccion=>pedidoProduccion.id===valor[0].idPedidoProduccion)
     
-    if (!ppSeleccionado) continue;
+    if (!presuSeleccionado) continue;
     for(let registro of valor){
-      ppSeleccionado.articulos = ppSeleccionado!.articulos?.filter(
+      presuSeleccionado.articulos = presuSeleccionado!.articulos?.filter(
         presuArt => presuArt.articulo?.id !== registro.articuloAfectado?.id
       );
 
@@ -761,18 +751,18 @@ actualizarPresupuestos(){
         articulo: registro.articuloAfectado,
         cantidad: registro.cantidadPedidaOriginal,
         cantidadPendiente: registro.pendienteDespues,
-        hayStock: !!registro.hayStock
+        hayStock: this.noTienePendientes(registro.pendienteDespues!)
       }
-    ppSeleccionado?.articulos?.push(articuloActualizado)  
+      presuSeleccionado?.articulos?.push(articuloActualizado)  
     }
     
-    const cantPendientesPP = ppSeleccionado?.articulos?.map(articulo => articulo.cantidadPendiente);
+    const cantPendientesPP = presuSeleccionado?.articulos?.map(articulo => articulo.cantidadPendiente);
     if (cantPendientesPP?.every(cantPendiente => cantPendiente === 0)) {
-      ppSeleccionado!.idEstadoPedidoProduccion = 1;
+      presuSeleccionado!.id = 1;
       }
 
-    console.log("EL PRESUPUESTO SE A ACTUALIZADO", ppSeleccionado)
-    this.ordenProduccionService.actualizar(ppSeleccionado!)
+    console.log("EL PRESUPUESTO SE A ACTUALIZADO", presuSeleccionado)
+    this.presupuestoService.actualizar(presuSeleccionado!)
 
   }
 

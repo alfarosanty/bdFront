@@ -10,8 +10,7 @@
     <!-- Menú desplegable de clientes -->
     <div class="dropdown">
 
-        <label for="clientes">Seleccionar Taller:</label>
-        <select  (change)="seleccionarTaller(); buscarIngresosXTaller()" [(ngModel)]="currentIndex">
+        <select id="clientes" (change)="seleccionarTaller(); buscarIngresosXTaller()" [(ngModel)]="currentIndex">
             <option >Seleccione un Taller</option>
             <option *ngFor="let taller of talleres" [value]="taller.id" >
                  {{taller.razonSocial}} 
@@ -92,8 +91,8 @@
        </option>
     </select>        
         <!-- Input para mostrar el valor seleccionado -->
-        <label for="cantidades">Cantidad:</label>
-        <input type="text" id="Cantidad" size="2" [(ngModel)]="cantProducto" [placeholder]= "cantidadActualDepoducto()"  (keydown.enter)="agregarArticulo()">
+        <label for="cantidad">Cantidad:</label>
+        <input type="text" id="cantidad" size="2" [(ngModel)]="cantProducto" [placeholder]= "cantidadActualDepoducto()"  (keydown.enter)="agregarArticulo()">
     </div>
 
 </div>
