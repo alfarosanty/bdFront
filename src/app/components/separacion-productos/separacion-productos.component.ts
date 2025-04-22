@@ -380,8 +380,6 @@ actualizarMapaPresupuestoArticulo(nuevoMap: Map<string, PresupuestoArticulo[]>){
         descripcion : presupuestosArticulos[0].articulo?.familia?.descripcion + " " + presupuestosArticulos[0].articulo?.medida?.descripcion
       })
     );
-    console.log("ACÁ VA A LEER LOS CÓDIGOS")
-    console.log(this.dataSourceCodigo.data)
   }
 
   if(this.mapaPresupuestoArticulos){
@@ -390,9 +388,6 @@ actualizarMapaPresupuestoArticulo(nuevoMap: Map<string, PresupuestoArticulo[]>){
       presuArt : presupuestosArticulos  
       })
     );
-    console.log("ACÁ VA A LEER LOS ARTICULOS")
-    console.log(this.dataSourceArticulos.data)
-
   }
 }
 
@@ -451,7 +446,7 @@ actualizarArticuloSeleccionado(){
       if (articulosXTaller.length === 0) continue;
       articulosXTaller.forEach(presuArt=> {presuArt.cantidadPendiente = presuArt.cantidad; presuArt.presupuesto = this.currentPresupuesto})
   
-      const pedidoProduccion = new PedidoProduccion(this.fechaPedidoProduccion!, taller, 3, articulosXTaller, this.currentCliente!.id);
+      const pedidoProduccion = new PedidoProduccion(this.fechaPedidoProduccion!, taller, 3, articulosXTaller, this.currentCliente!.id, this.presupuestoAAcceder?.id);
   
       this.pedidosProduccionesGenerados.push(pedidoProduccion);
       // Crear un nuevo orden de pedido

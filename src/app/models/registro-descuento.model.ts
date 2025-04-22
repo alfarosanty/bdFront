@@ -6,6 +6,6 @@ export class RegistroDescuento {
     pendienteAntes?: number;
     descontado?: number;
     pendienteDespues?: number;
-    idPedidoProduccion?: Number;
+    idPedidoProduccion?: number;
     hayStock?: boolean;
 }

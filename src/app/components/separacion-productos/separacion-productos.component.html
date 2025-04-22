@@ -4,7 +4,7 @@
 <div class="general-container">
 
 <div class="superior-container">
-<div class="selector-container">
+<div class="selector-container" *ngIf="currentCliente">
     <h3>Datos del Cliente</h3>
     <p><strong>Razón Social:</strong> {{ currentCliente!.razonSocial }}</p>
     <p><strong>Domicilio:</strong> {{ currentCliente!.domicilio }}</p>

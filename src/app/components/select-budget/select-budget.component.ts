@@ -137,11 +137,9 @@ export class SelectBudgetComponent {
       const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
       const año = fecha.getFullYear();
       const fechaFormateada = `${dia}/${mes}/${año}`
-      console.log(fechaFormateada)
       
       return fechaFormateada;
     } else {
-      console.log('Fecha inválida o nula');
       return '';
     }
   }

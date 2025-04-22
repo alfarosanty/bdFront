@@ -21,6 +21,8 @@ import { IngresoService } from 'src/app/services/ingreso.service';
 import { IngresoMercaderia } from 'src/app/models/ingreso-mercaderia.model';
 import { RegistroDescuento } from 'src/app/models/registro-descuento.model';
 import autoTable from 'jspdf-autotable';
+import { firstValueFrom } from 'rxjs';
+import { EstadoPresupuesto } from 'src/app/models/estado-presupuesto.model';
 
 @Component({
   selector: 'app-ingreso',
@@ -543,19 +545,15 @@ aplicarIngresoAPedidosProduccion(){
 
 aclararProductoPendentesDisminuidos() {
 
-  console.log(this.currentIngresoMercaderia)
   if (!this.currentIngresoMercaderia || !this.pedidosProduccionXTaller) return;
-  console.log(this.pedidosProduccionXTaller)
 
   // Ordenar pedidos por fecha (de más antiguo a más reciente)
   this.pedidosProduccionXTaller.sort((a, b) => (new Date(a.fecha!).getTime()) - (new Date(b.fecha!).getTime()));
   const pedidosAAgregarIngresos = this.pedidosProduccionXTaller.filter(pedido=>pedido.idEstadoPedidoProduccion == 2)
 
-  console.log("Pedidos Producción ordenados:", pedidosAAgregarIngresos.map(pedido => new Date(pedido.fecha ?? 0).toLocaleString()));
 
   for (let articuloIngreso of this.currentIngresoMercaderia.articulos ?? []) {
-    console.log("ESTE ES EL ARTÍCULO INGRESADO A DESCONTAR",(articuloIngreso.articulo?.familia?.codigo ?? '') + '/' +(articuloIngreso.articulo?.medida?.codigo ?? '')+" "+(articuloIngreso.articulo?.color?.descripcion ?? '')
-    );    
+  
 
     let cantidadRestante = articuloIngreso.cantidad;
     let cantidadInicial = cantidadRestante; // Cantidad inicial ingresada
@@ -564,10 +562,8 @@ aclararProductoPendentesDisminuidos() {
 
       let articuloADescontar = (pedidoProduccion.articulos ?? []).find(presuArt => presuArt.articulo!.id == articuloIngreso.articulo?.id);
       if(!articuloADescontar || articuloADescontar.cantidadPendiente == 0){continue}
-      console.log(`SE ENCONTRÓ EL ARTICULO EN EL PEDIDO PRODUCCION N°${pedidoProduccion.id}: ` + `${articuloADescontar.articulo?.familia?.codigo ?? ''}/` + `${articuloADescontar.articulo?.medida?.codigo ?? ''}`); 
 
       let cantidadPendienteAntes = articuloADescontar.cantidadPendiente ?? 0;
-      console.log(`CANTIDAD PENDIENTE DE ${articuloADescontar?.articulo?.familia?.codigo ?? ''}/` + `${articuloADescontar?.articulo?.medida?.codigo ?? ''} ES ${cantidadPendienteAntes}`);
       let cantidadADescontar = Math.min(cantidadPendienteAntes, cantidadRestante!);
       let cantidadPendienteDespues = cantidadPendienteAntes - cantidadADescontar;
 
@@ -628,9 +624,11 @@ aclararProductoPendentesDisminuidos() {
   
 
  generarPDFcontrolPendientes(){
-  console.log("ENTRA A LA FUNCION")
   this.aclararProductoPendentesDisminuidos()
-  console.log("SALE DE LA FUNCION")
+  if (this.mapaArticulosModificados?.size === 0) {
+    alert("No hay ningún pedido producción con estado EN TALLER que tenga artículos para modificar");
+  }
+  
   console.log(this.mapaArticulosModificados)
 
   if (!this.mapaArticulosModificados || this.mapaArticulosModificados.size == 0) {
@@ -689,59 +687,66 @@ aclararProductoPendentesDisminuidos() {
 
 }
 
-actualizarPedidosProduccion(){
 
+async actualizarPedidosProduccion() {
   for (const valor of this.mapaArticulosModificados!.values()) {
     console.log("Valor:", valor);
-    const ppSeleccionado = this.pedidosProduccionXTaller.find(pedidoProduccion=>pedidoProduccion.id===valor[0].idPedidoProduccion)
-    let presuAsociado: Presupuesto;
 
-    this.presupuestoService.get(ppSeleccionado?.idPresupuesto).subscribe({
-      next: (data) => {
-        presuAsociado = data;
-        this.presupuestosAModificar.push(presuAsociado)
-      },
-      error: (e) => console.error(e)
-    });
-
-    
+    const ppSeleccionado = this.pedidosProduccionXTaller.find(
+      pedidoProduccion => pedidoProduccion.id === valor[0].idPedidoProduccion
+    );
+    console.log(" ESTE ES EL PEDPROD A MODIFICAR ARTICULOS ", ppSeleccionado)
     if (!ppSeleccionado) continue;
-    for(let registro of valor){
-      ppSeleccionado.articulos = ppSeleccionado!.articulos?.filter(
-        presuArt => presuArt.articulo?.id !== registro.articuloAfectado?.id
+
+    try {
+      const presuAsociado = await firstValueFrom(
+        this.presupuestoService.get(ppSeleccionado.idPresupuesto)
       );
+      this.presupuestosAModificar.push(presuAsociado);
+      console.log("Presupuesto cargado:", presuAsociado);
+    } catch (error) {
+      console.error("Error al obtener presupuesto", error);
+    }
+
+    for (let registro of valor) {
+      ppSeleccionado.articulos = ppSeleccionado.articulos?.filter(
+        presuArt => presuArt.articulo?.id !== registro.articuloAfectado?.id
+      ) ?? [];
 
       const articuloActualizado = {
         articulo: registro.articuloAfectado,
         cantidad: registro.cantidadPedidaOriginal,
         cantidadPendiente: registro.pendienteDespues,
         hayStock: this.noTienePendientes(registro.pendienteDespues!)
-      }
-    ppSeleccionado?.articulos?.push(articuloActualizado)  
+      };
+      ppSeleccionado.articulos.push(articuloActualizado);
     }
-    
-    const cantPendientesPP = ppSeleccionado?.articulos?.map(articulo => articulo.cantidadPendiente);
-    if (cantPendientesPP?.every(cantPendiente => cantPendiente === 0)) {
-      ppSeleccionado!.idEstadoPedidoProduccion = 1;
-      }
 
-    console.log("EL PRESUPUESTO SE A ACTUALIZADO", ppSeleccionado)
-    this.ordenProduccionService.actualizar(ppSeleccionado!)
+    const cantPendientesPP = ppSeleccionado.articulos?.map(a => a.cantidadPendiente);
+    if (cantPendientesPP?.every(p => p === 0)) {
+      ppSeleccionado.idEstadoPedidoProduccion = 1;
+    }
 
+    console.log("Pedido producción actualizado:", ppSeleccionado);
+    this.ordenProduccionService.actualizar(ppSeleccionado);
   }
 
-  this.actualizarPresupuestos()
-
+  // Asegurate que esto se ejecute después de cargar todos los presupuestos
+  this.actualizarPresupuestos();
 }
 
 
-actualizarPresupuestos(){
 
+actualizarPresupuestos(){
+    console.log("ENTRO A LA FUNCION ACTUALIAR PRESU")
   for (const valor of this.mapaArticulosModificados!.values()) {
     console.log("Valor:", valor);
-    const presuSeleccionado = this.presupuestosAModificar.find(pedidoProduccion=>pedidoProduccion.id===valor[0].idPedidoProduccion)
-    
+    const ppSeleccionado = this.pedidosProduccionXTaller.find(pedidoProduccion=>pedidoProduccion.id===valor[0].idPedidoProduccion)
+    console.log("estos son los presu a modificar", this.presupuestosAModificar.map(presu=> presu.id))
+    const presuSeleccionado = this.presupuestosAModificar.find(presupuesto=>presupuesto.id===ppSeleccionado?.idPresupuesto)
+    console.log("EL PRESU SELECCIONADO",presuSeleccionado)
     if (!presuSeleccionado) continue;
+    console.log(" ENTRÓ AL IF ")
     for(let registro of valor){
       presuSeleccionado.articulos = presuSeleccionado!.articulos?.filter(
         presuArt => presuArt.articulo?.id !== registro.articuloAfectado?.id
@@ -755,12 +760,12 @@ actualizarPresupuestos(){
       }
       presuSeleccionado?.articulos?.push(articuloActualizado)  
     }
-    
-    const cantPendientesPP = presuSeleccionado?.articulos?.map(articulo => articulo.cantidadPendiente);
-    if (cantPendientesPP?.every(cantPendiente => cantPendiente === 0)) {
-      presuSeleccionado!.id = 1;
+    console.log("YA PUSHEO EL NUEVO ARTICULO ACTUALIZADO")
+    const stockDeArticulos = presuSeleccionado?.articulos?.map(articulo => articulo.hayStock);
+    if (stockDeArticulos?.every(hayStock => hayStock === true)) {
+      presuSeleccionado!.estadoPresupuesto = new EstadoPresupuesto(4);
       }
-
+    console.log("ACTUALIZANDO EL PRESU")
     console.log("EL PRESUPUESTO SE A ACTUALIZADO", presuSeleccionado)
     this.presupuestoService.actualizar(presuSeleccionado!)
 
