@@ -108,7 +108,7 @@ select {
 }
 
 .seleccion-container{
-    width: 30%;
+    width: 50%;
     height: 100%;
     margin-left: 0%;
     border: 1px solid #ccc;
@@ -116,6 +116,12 @@ select {
     border-radius: 10px;
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
 }
+
+.input-mat {
+    width: 100%;
+    max-width: 600px; /* o poné el ancho que quieras */
+  }
+  
 
 .colores-container {
     border: 1px solid #ccc;
@@ -143,17 +149,31 @@ select {
     border-radius: 10px;
 }
 
-.grilla {
-    display: grid;
-    grid-template-columns: 15% 60% 11% 10% 10%; /* Tamaños fijos para cada celda */
-    grid-template-rows: auto; /* Alturas para filas específicas */
-
+/* Anchos de columnas */
+.col-codigo {
+    width: 15%; /* 15% del ancho total */
 }
 
-.grilla-total {
-    display: grid;
-    grid-template-columns: 20% 20% 20% 20% 20%; /* Tamaños fijos para cada celda */
-    grid-template-rows: auto; /* Alturas para filas específicas */
+.col-descripcion {
+    width: 49%; /* 49% del ancho total */
+}
+
+.col-cantidad {
+    width: 20%; /* 20% del ancho total */
+}
+
+.col-borrar {
+    width: 7%; /* 7% del ancho total */
+}
+
+.col-editar {
+    width: 8%; /* 8% del ancho total */
+}
+
+/* Estilos adicionales para que las celdas se alineen bien */
+th.mat-header-cell, td.mat-cell {
+    text-align: center; /* Centra el texto */
+    padding: 8px; /* Espacio alrededor del texto */
 }
 
 
@@ -255,4 +275,52 @@ select {
 
   .checklist-container {
     text-align: center; /* Centra el contenido */
+  }
+
+  
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.4); /* oscurece */
+    backdrop-filter: blur(8px); /* desenfoque del fondo */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+  
+  .modal-content {
+    background: #ffffff;
+    padding: 2rem 3rem;
+    border-radius: 12px;
+    text-align: center;
+    width: 40%;
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.4);
+  }
+  
+  .modal-buttons {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+  }
+
+  .boton-lindo {
+    font-size: 90%;
+    padding: 18% 50%;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+  
+  .boton-lindo:hover {
+    background-color: #020749;
+    transform: scale(1.05);
+  }
+  
+  .boton-lindo mat-icon {
+    margin-right: 8%;
   }
