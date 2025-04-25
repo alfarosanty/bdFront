@@ -586,6 +586,7 @@ actualizarMapaPresupuestoArticulo(nuevoMap: Map<string, PresupuestoArticulo[]>){
       this.mapaPresupuestoArticulos.set(key, value);
     }
   }
+  this.actualizarDataSource()
 }
 cantidadActualDepoducto():string {
   if (this.currentArticulo) {

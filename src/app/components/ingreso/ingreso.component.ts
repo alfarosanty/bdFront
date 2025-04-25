@@ -450,6 +450,98 @@ this.mostrarConfirmacionPDF=true
       pdfMake.createPdf(docDefinition).download(`Ingreso-de-mercaderia-${this.currentTaller?.razonSocial}_${new Date().toISOString().split('T')[0]}.pdf`);
     }
 
+    generarPDFcontrolPendientes() {
+      this.aclararProductoPendentesDisminuidos();
+      if (this.mapaArticulosModificados?.size === 0) {
+        alert("No hay ningún pedido producción con estado EN TALLER que tenga artículos para modificar");
+        return;
+      }
+      
+      console.log(this.mapaArticulosModificados);
+    
+      if (!this.mapaArticulosModificados || this.mapaArticulosModificados.size === 0) {
+        console.log("No hay datos para generar el PDF.");
+        return;
+      }
+    
+      const docDefinition: any = {
+        content: [
+          {
+            columns: [
+              {
+                width: '*',
+                stack: [
+                  { text: `Fecha: ${this.formatearFecha(this.fechaIngresoMercaderia)}`, style: 'caption', alignment: 'left' },
+                  { text: `Taller: ${this.currentTaller?.razonSocial}`, style: 'caption', alignment: 'left' },
+                  { text: `Dirección: ${this.currentTaller?.direccion}`, style: 'caption', alignment: 'left' },
+                  { text: `Teléfono: ${this.currentTaller?.telefono}`, style: 'caption', alignment: 'left' },
+                ]
+              },
+              {
+                width: 'auto',
+                stack: [
+                  {
+                    image: imagenBase64,
+                    fit: [120, 60],
+                    alignment: 'center',
+                  },
+                  { text: 'Loria 1140 - Lomas de Zamora', style: 'caption', alignment: 'center' },
+                  { text: 'Teléfono: 11-6958-2829', style: 'caption', alignment: 'center' }
+                ]
+              }
+            ]
+          },
+          {
+            text: 'Control de Pendientes',
+            style: 'header',
+            margin: [0, 20, 0, 10]
+          }
+        ],
+        styles: this.getStyles(),
+      };
+    
+      const tablaBody = [
+        [
+          { text: 'Pedido de Producción', style: 'tableHeaderControl' },
+          { text: 'Artículo', style: 'tableHeaderControl' },
+          { text: 'Pendiente Antes', style: 'tableHeaderControl' },
+          { text: 'Descontado', style: 'tableHeaderControl' },
+          { text: 'Pendiente Después', style: 'tableHeaderControl' }
+        ]
+      ];
+    
+      this.mapaArticulosModificados?.forEach((articulos, clave) => {
+        articulos.forEach(articulo => {
+          const a = articulo.articuloAfectado;
+          const descripcion = `${a?.familia?.codigo ?? 'N/A'}/${a?.medida?.codigo ?? 'N/A'} ${a?.color?.codigo ?? 'N/A'}`;
+          tablaBody.push([
+            { text: clave, style: 'tableCell' },
+            { text: descripcion, style: 'tableCell' },
+            { text: articulo.pendienteAntes?.toString() ?? '0', style: 'tableCell' },
+            { text: articulo.descontado?.toString() ?? '0', style: 'tableCell' },
+            { text: articulo.pendienteDespues?.toString() ?? '0', style: 'tableCell' }
+          ]);
+        });
+      });
+    
+      docDefinition.content.push({
+        table: {
+          headerRows: 1,
+          widths: [80, '*', 60, 60, 60],
+          body: tablaBody
+        },
+        layout: 'lightHorizontalLines',
+        style: 'table'
+      });
+    
+      // Generar el PDF
+      pdfMake.createPdf(docDefinition).download(`Control-Pendientes-${this.currentTaller?.razonSocial}_${new Date().toISOString().split('T')[0]}.pdf`);
+      console.log("PDF generado exitosamente");
+    
+      this.actualizarPedidosProduccion();
+    }
+    
+
 
 getStyles() {
   return {
@@ -477,6 +569,14 @@ getStyles() {
       fontSize: 10,
       alignment: 'center',
       margin: [0, 5, 0, 5]
+    },
+    tableHeaderControl:{
+      bold: true,
+      fontSize: 11,
+      color: 'white',
+      fillColor: '#4a90e2',
+      alignment: 'center',
+      margin: [0, 6, 0, 6]
     },
     footer: {
       fontSize: 11,
@@ -676,73 +776,6 @@ aclararProductoPendentesDisminuidos() {
     const fechaObj = new Date(fecha);
     return isNaN(fechaObj.getTime()) ? 'Fecha inválida' : `${fechaObj.getDate()}/${fechaObj.getMonth() + 1}/${fechaObj.getFullYear()}`;
   }
-  
-
- generarPDFcontrolPendientes(){
-  this.aclararProductoPendentesDisminuidos()
-  if (this.mapaArticulosModificados?.size === 0) {
-    alert("No hay ningún pedido producción con estado EN TALLER que tenga artículos para modificar");
-    return;
-  }
-  
-  console.log(this.mapaArticulosModificados)
-
-  if (!this.mapaArticulosModificados || this.mapaArticulosModificados.size == 0) {
-    console.log("No hay datos para generar el PDF.");
-    
-    //return;
-  }
-
-
-  const doc = new jsPDF();
-  let currentY = 15; // Posición inicial en Y
-
-  doc.setFontSize(14);
-  doc.text('Control de Pendientes', 14, currentY);
-  currentY += 10;
-
-  // Recorremos cada key del mapa
-  this.mapaArticulosModificados?.forEach((articulos, clave) => {
-    if (currentY + 10 > doc.internal.pageSize.height) {
-      doc.addPage();
-      currentY = 15;
-    }
-  
-    doc.setFontSize(12);
-    doc.text(`Pedido de Producción: ${clave}`, 14, currentY);
-    currentY += 10;
-    console.log(articulos.map(articulo=>articulo.articuloAfectado))
-    const bodyData = articulos.map(articulo => {
-      const a = articulo.articuloAfectado; // o articulo.articuloAfectado según cómo lo tengas
-      const descripcion = `${a?.familia?.codigo ?? 'N/A'}/${a?.medida?.codigo ?? 'N/A'} ${a?.color?.codigo ?? 'N/A'}`;
-      
-      return [
-        descripcion,
-        articulo.pendienteAntes ?? 0,
-        articulo.descontado ?? 0,
-        articulo.pendienteDespues ?? 0
-      ];
-    });
-  
-    autoTable(doc, {
-      startY: currentY,
-      head: [['Artículo', 'Pendiente Antes', 'Descontado', 'Pendiente Después']],
-      body: bodyData,
-      theme: 'grid',
-    });
-  
-    currentY = (doc as any).lastAutoTable.finalY + 10;
-  });
-  
-
-  // Guardar el PDF
-  doc.save('ControlPendientes.pdf');
-  console.log("PDF generado exitosamente");
-
-  this.actualizarPedidosProduccion()
-
-}
-
 
 async actualizarPedidosProduccion() {
   for (const valor of this.mapaArticulosModificados!.values()) {
@@ -820,7 +853,7 @@ actualizarPresupuestos(){
     const stockDeArticulos = presuSeleccionado?.articulos?.map(articulo => articulo.hayStock);
     if (stockDeArticulos?.every(hayStock => hayStock === true)) {
       presuSeleccionado!.estadoPresupuesto = new EstadoPresupuesto(4);
-      }
+      } else presuSeleccionado!.estadoPresupuesto = new EstadoPresupuesto(3);
     console.log("ACTUALIZANDO EL PRESU")
     console.log("EL PRESUPUESTO SE A ACTUALIZADO", presuSeleccionado)
     this.presupuestoService.actualizar(presuSeleccionado!)

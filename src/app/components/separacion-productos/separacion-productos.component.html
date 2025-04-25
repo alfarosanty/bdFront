@@ -110,22 +110,23 @@
 </table>
 
 
-<div class="boton-finalizar-container">
-  <button mat-raised-button color="primary" (click)="generarPedidosProduccion()">
-    Finalizar
+<div class="boton-generarPDF" >
+  <button mat-raised-button color="primary" class="boton-lindo" (click)="generarPedidosProduccion();">
+  Generar Pedido
   </button>
 </div>
+
 <!-- Modal de Confirmación -->
 <div class="modal-overlay" *ngIf="mostrarConfirmacionPDF">
-  <div class="modal-content">
-    <h2>¿Deseás generar el PDF?</h2>
-    <div class="modal-buttons">
-      <button mat-raised-button color="primary" (click)="confirmarGenerarPDF(true)">
-        Sí, generar PDF
-      </button>
-      <button mat-raised-button color="warn" (click)="confirmarGenerarPDF(false)">
-        No, solo finalizar
-      </button>
-    </div>
-  </div>
+<div class="modal-content">
+<h2>¿Deseás generar el PDF?</h2>
+<div class="modal-buttons">
+  <button mat-raised-button color="primary" (click)="confirmarGenerarPDF(true)">
+    Sí, generar PDF
+  </button>
+  <button mat-raised-button color="warn" (click)="confirmarGenerarPDF(false)">
+    No, solo finalizar
+  </button>
+</div>
+</div>
 </div>

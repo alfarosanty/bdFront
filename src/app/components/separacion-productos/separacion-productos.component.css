@@ -243,6 +243,32 @@ select {
     padding: 10px 30px;
     border-radius: 8px;
   }
+
+  .boton-busqueda-articulo {
+    margin-top: 10px;
+}
+
+.boton-generarPDF {
+    margin-top: 10px;
+    display: inline-block; /* Asegura que los botones se alineen horizontalmente */
+}
+
+.boton-borrar {
+    background-color: transparent;
+    border: none;
+    color: red;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.boton-borrar:hover {
+    text-decoration: underline;
+}
+
+.boton-borrar i {
+    margin-right: 5px;
+}
+
   .modal-overlay {
     position: fixed;
     top: 0;
@@ -271,4 +297,22 @@ select {
     display: flex;
     gap: 1rem;
     justify-content: center;
+  }
+
+  .boton-lindo {
+    font-size: 90%;
+    padding: 18% 50%;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+  
+  .boton-lindo:hover {
+    background-color: #020749;
+    transform: scale(1.05);
+  }
+  
+  .boton-lindo mat-icon {
+    margin-top: 100% ;
+    margin-right: 8%;
   }

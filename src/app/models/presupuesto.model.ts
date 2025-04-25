@@ -10,4 +10,5 @@ export class Presupuesto {
     EximirIVA?:Boolean;
     estadoPresupuesto?: EstadoPresupuesto;
     articulos?:PresupuestoArticulo[];
+    descuentoGeneral?: number;
 }
