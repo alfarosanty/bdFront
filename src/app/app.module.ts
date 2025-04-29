@@ -22,6 +22,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatRadioModule } from '@angular/material/radio';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+
+
+import { DragDropModule } from '@angular/cdk/drag-drop';
+
 
 
 import { ReactiveFormsModule } from '@angular/forms';
@@ -66,6 +72,9 @@ import { SeparacionProductosComponent } from './components/separacion-productos/
     MatExpansionModule,
     MatCheckboxModule,
     MatRadioModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    DragDropModule,
   ],
   
   providers: [],

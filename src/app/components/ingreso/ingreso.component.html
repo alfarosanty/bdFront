@@ -28,7 +28,7 @@
 
     <select [(ngModel)]="ingresoMercaderiaSeleccionado" (change)="cargarDetallesIngresoMercaderia((ingresoMercaderiaSeleccionado?.id??0))"> 
         <option value="" disabled selected>Selecciona una orden de ingreso de:</option>
-        <option *ngFor="let ingresoMercaderia of ingresosMercaderiaXTaller" [ngValue]="ingresoMercaderia">
+        <option *ngFor="let ingresoMercaderia of ingresosMercaderiaXTallerFiltrados" [ngValue]="ingresoMercaderia">
             {{ ingresoMercaderia.id }} - {{ getFecha(ingresoMercaderia.fecha!) }}
           </option>
 
@@ -46,7 +46,7 @@
 
         <div>
             <label for="fecha">Fecha de Emisión:</label>
-            <input type="date" id="fecha" [(ngModel)]="fechaIngresoMercaderia" (change)="mostrarFecha()"> 
+            <input type="date" id="fecha" [(ngModel)]="fechaIngresoMercaderia" (change)="filtrarIngresosXFecha()"> 
         </div>
 
     </div>

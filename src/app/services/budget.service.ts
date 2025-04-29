@@ -2,8 +2,9 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Presupuesto } from '../models/presupuesto.model';
 import { Observable } from 'rxjs';
+import { environment } from 'src/environment/environment';
 
-const baseUrl = 'http://localhost:7166/Presupuesto';
+const baseUrl = environment.apiUrl+'/Presupuesto';
 
 
 @Injectable({

@@ -2,8 +2,9 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { PedidoProduccion } from '../models/pedido-produccion.model';
 import { Observable } from 'rxjs';
+import { environment } from 'src/environment/environment';
 
-const baseUrl = 'http://localhost:7166/PedidoProduccion';
+const baseUrl = environment.apiUrl+'/PedidoProduccion';
 
 
 @Injectable({

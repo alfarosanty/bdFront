@@ -31,8 +31,16 @@
 
 
         <div>
-            <label for="fecha">Fecha de Emisión:</label>
-            <input type="date" id="fecha" [(ngModel)]="fechaPedidoProduccion" (change)="mostrarFecha()">
+          <mat-date-range-picker #rangePicker>
+            <mat-date-range-picker-actions>
+              <button mat-button matDateRangePickerCancel>Cancel</button>
+              <button mat-raised-button matDateRangePickerApply>Apply</button>
+            </mat-date-range-picker-actions>
+          </mat-date-range-picker>       
+        </div>
+        <div>
+            <label for="fecha">Fecha limite superior:</label>
+            <input type="date" id="fecha" [(ngModel)]="fechaPedidoProduccionLimiteSup" (change)="filtrarPedidosProduccionXRangoFechas()">
         </div>
             <div>
                 <label for="estado">Estado del Pedido:</label>
@@ -48,102 +56,112 @@
 </div>
 
 <h3>Grilla de Información</h3>
-<table mat-table [dataSource]="dataSource" multiTemplateDataRows class="mat-elevation-z8">
+<table mat-table [dataSource]="dataSource" cdkDropList (cdkDropListDropped)="drop($event)" multiTemplateDataRows class="mat-elevation-z8">
 
-    <!-- Columnas dinámicas -->
-    <ng-container matColumnDef="{{ column }}" *ngFor="let column of columnsToDisplay">
-      <th mat-header-cell *matHeaderCellDef>{{ column }}</th>
-      <td mat-cell *matCellDef="let element">
-        <ng-container [ngSwitch]="column">
-  
-          <!-- ID - FECHA -->
-          <ng-container *ngSwitchCase="'Pedido'">
-            {{ element.id }} - {{ formatearFecha(element.fecha) }}
-          </ng-container>
-  
-          <!-- SUMATORIA CANTIDADES -->
-          <ng-container *ngSwitchCase="'Cantidad Total'">
-            {{ sumatoriaCantidadTotal(element) }}
-          </ng-container>
-  
-          <!-- SUMATORIA CANTIDADES PENDIENTES -->
-          <ng-container *ngSwitchCase="'Cantidad Pendiente'">
-            {{ sumatoriaCantidadPendienteTotal(element) }}
-          </ng-container>
-  
-          <!-- BOTÓN GENERAR PDF Original-->
-          <ng-container *ngSwitchCase="'Generar PDF Original'">
-            <button mat-button (click)="generarPDFOriginalDePedido(element.id)">Generar PDF Original</button>
-          </ng-container>
+  <!-- Columnas dinámicas -->
+  <ng-container matColumnDef="{{ column }}" *ngFor="let column of columnsToDisplay">
+    <th mat-header-cell *matHeaderCellDef>{{ column }}</th>
+    <td mat-cell *matCellDef="let element">
+      <ng-container [ngSwitch]="column">
 
-          <!-- BOTÓN GENERAR PDF Pendiente-->
-          <ng-container *ngSwitchCase="'Generar PDF Pendientes'">
-            <button mat-button (click)="generarPDFPendientesDePedido(element.id)">Generar PDF Pendientes</button>
-          </ng-container>
-  
-          <!-- DEFAULT: otras columnas -->
-          <ng-container *ngSwitchDefault>
-            {{ element[column] }}
-          </ng-container>
-  
+        <!-- ID - FECHA -->
+        <ng-container *ngSwitchCase="'Pedido'">
+          {{ element.id }} - {{ formatearFecha(element.fecha) }}
         </ng-container>
-      </td>
-    </ng-container>
-  
-    <!-- Fila expandible con artículos -->
-    <ng-container matColumnDef="expandedDetail">
-        <td mat-cell *matCellDef="let element" [attr.colspan]="columnsToDisplay.length">
-          <div
-            class="example-element-detail"
-            [@detailExpand]="element == expandedElement ? 'expanded' : 'collapsed'"
-          >
-            <table mat-table [dataSource]="element.articulos" class="mat-elevation-z1">
-      
-              <!-- COLUMNA ARTÍCULO -->
-              <ng-container matColumnDef="codigoArticulo">
-                <th mat-header-cell *matHeaderCellDef>Artículo</th>
-                <td mat-cell *matCellDef="let articulo">
-                  {{ articulo.articulo.familia.codigo }}/{{ articulo.articulo.medida.codigo }} {{ articulo.articulo.color.codigo }}
-                </td>
-              </ng-container>
-      
-              <!-- COLUMNA CANTIDAD -->
-              <ng-container matColumnDef="cantidad">
-                <th mat-header-cell *matHeaderCellDef>Cantidad</th>
-                <td mat-cell *matCellDef="let articulo">
-                  {{ articulo.cantidad }}
-                </td>
-              </ng-container>
-      
-              <!-- COLUMNA CANTIDAD PENDIENTE -->
-              <ng-container matColumnDef="cantidadPendiente">
-                <th mat-header-cell *matHeaderCellDef>Cantidad Pendiente</th>
-                <td mat-cell *matCellDef="let articulo">
-                  {{ articulo.cantidadPendiente }}
-                </td>
-              </ng-container>
-      
-              <!-- FILAS -->
-              <tr mat-header-row *matHeaderRowDef="['codigoArticulo', 'cantidad', 'cantidadPendiente']"></tr>
-              <tr mat-row *matRowDef="let row; columns: ['codigoArticulo', 'cantidad', 'cantidadPendiente']"></tr>
-      
-            </table>
-          </div>
-        </td>
+
+        <!-- SUMATORIA CANTIDADES -->
+        <ng-container *ngSwitchCase="'Cantidad Total'">
+          {{ sumatoriaCantidadTotal(element) }}
+        </ng-container>
+
+        <!-- SUMATORIA CANTIDADES PENDIENTES -->
+        <ng-container *ngSwitchCase="'Cantidad Pendiente'">
+          {{ sumatoriaCantidadPendienteTotal(element) }}
+        </ng-container>
+
+        <!-- BOTÓN GENERAR PDF Original-->
+        <ng-container *ngSwitchCase="'Generar PDF Original'">
+          <button mat-button (click)="generarPDFOriginalDePedido(element.id); $event.stopPropagation()">Generar PDF Original</button>
+        </ng-container>
+
+        <!-- BOTÓN GENERAR PDF Pendiente-->
+        <ng-container *ngSwitchCase="'Generar PDF Pendientes'">
+          <button mat-button (click)="generarPDFPendientesDePedido(element.id); $event.stopPropagation()">Generar PDF Pendientes</button>
+        </ng-container>
+
+        <!-- COLUMNA Seleccionar -->
+        <ng-container *ngSwitchCase="'Seleccionar'">
+          <mat-checkbox [(ngModel)]="element.seleccionadoImprimir" (click)="$event.stopPropagation(); agregarClienteAMapa(element)"></mat-checkbox>
+        </ng-container>
+
+        <!-- DEFAULT: otras columnas -->
+        <ng-container *ngSwitchDefault>
+          {{ element[column] }}
+        </ng-container>
+
       </ng-container>
-  
-    <!-- Filas principales -->
-    <tr mat-header-row *matHeaderRowDef="columnsToDisplay"></tr>
-    <tr
-      mat-row
-      *matRowDef="let element; columns: columnsToDisplay"
-      class="example-element-row"
-      [class.example-expanded-row]="expandedElement === element"
-      (click)="expandedElement = expandedElement === element ? null : element"
-    ></tr>
-  
-    <!-- Fila expandida -->
-    <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="example-detail-row"></tr>
-  
-  </table>
-  
+    </td>
+  </ng-container>
+
+  <!-- Fila expandible con artículos -->
+  <ng-container matColumnDef="expandedDetail">
+    <td mat-cell *matCellDef="let element" [attr.colspan]="columnsToDisplay.length">
+      <div class="example-element-detail" [@detailExpand]="element == expandedElement ? 'expanded' : 'collapsed'">
+        <table mat-table [dataSource]="element.articulos" class="mat-elevation-z1">
+
+          <!-- COLUMNA ARTÍCULO -->
+          <ng-container matColumnDef="codigoArticulo">
+            <th mat-header-cell *matHeaderCellDef>Artículo</th>
+            <td mat-cell *matCellDef="let articulo">
+              {{ articulo.articulo.familia.codigo }}/{{ articulo.articulo.medida.codigo }} {{ articulo.articulo.color.codigo }}
+            </td>
+          </ng-container>
+
+          <!-- COLUMNA CANTIDAD -->
+          <ng-container matColumnDef="cantidad">
+            <th mat-header-cell *matHeaderCellDef>Cantidad</th>
+            <td mat-cell *matCellDef="let articulo">
+              {{ articulo.cantidad }}
+            </td>
+          </ng-container>
+
+          <!-- COLUMNA CANTIDAD PENDIENTE -->
+          <ng-container matColumnDef="cantidadPendiente">
+            <th mat-header-cell *matHeaderCellDef>Cantidad Pendiente</th>
+            <td mat-cell *matCellDef="let articulo">
+              {{ articulo.cantidadPendiente }}
+            </td>
+          </ng-container>
+
+          <!-- FILAS -->
+          <tr mat-header-row *matHeaderRowDef="['codigoArticulo', 'cantidad', 'cantidadPendiente']"></tr>
+          <tr mat-row *matRowDef="let row; columns: ['codigoArticulo', 'cantidad', 'cantidadPendiente']"></tr>
+
+        </table>
+      </div>
+    </td>
+  </ng-container>
+
+  <!-- Filas principales -->
+  <tr mat-header-row *matHeaderRowDef="columnsToDisplay"></tr>
+  <tr mat-row *matRowDef="let element; columns: columnsToDisplay" cdkDrag class="example-element-row" [class.example-expanded-row]="expandedElement === element" (click)="expandedElement = expandedElement === element ? null : element"></tr>
+
+  <!-- Fila expandida -->
+  <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="example-detail-row"></tr>
+
+</table>
+
+<div class="boton-container">
+  <div class="boton-generarPDF">
+    <button mat-raised-button (click)="generarPDFPedidosSeleccionadosOriginal()" color="primary" class="boton-lindo azul">
+      Generar PDF Original
+    </button>
+  </div>
+
+  <div class="boton-generarPDF">
+    <button mat-raised-button (click)="generarPDFPedidosSeleccionadosPendiente()" color="warn" class="boton-lindo rojo">
+      Generar PDF Pendientes
+    </button>
+  </div>
+</div>
+

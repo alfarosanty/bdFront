@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { Factura } from '../models/factura.model';
 import { HttpClient } from '@angular/common/http';
+import { environment } from 'src/environment/environment';
 
-const baseUrl = 'http://localhost:7166/Factura';
+const baseUrl = environment.apiUrl+'/Factura';
 
 
 @Injectable({

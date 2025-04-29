@@ -9,6 +9,7 @@ export class PedidoProduccion {
     articulos?: PresupuestoArticulo[];
     idCliente?: number;
     idPresupuesto ?: number;
+    seleccionadoImprimir?: boolean = false;
   
     constructor(fecha: Date, taller: Taller, idEstadoPedidoProduccion: number, articulos: PresupuestoArticulo[], idCliente?: number, idPresupuesto?:number) {
       this.fecha = fecha;

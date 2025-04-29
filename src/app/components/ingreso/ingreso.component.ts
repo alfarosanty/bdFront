@@ -47,6 +47,7 @@ export class IngresoComponent {
   articulos: Articulo[]=[];
   familiaMedida: string[] = [];
   ingresosMercaderiaXTaller: IngresoMercaderia[] =[];
+  ingresosMercaderiaXTallerFiltrados: IngresoMercaderia[] =[];
   pedidosProduccionXTaller: PedidoProduccion[] = [];
   presupuestosAModificar : Presupuesto[] = [];
   mapaPresupuestoArticulos ?: Map<string,PresupuestoArticulo[]>;
@@ -157,6 +158,7 @@ listarTalleres(): void {
      this.ingresoService.getByTaller(this.currentTaller?.id).subscribe({
       next: (data) => {
         this.ingresosMercaderiaXTaller = data;
+        this.ingresosMercaderiaXTallerFiltrados=data;
         console.log("LOS INGRESOS DE MERCADERIA DE " + this.currentTaller?.razonSocial + " SON:",this.ingresosMercaderiaXTaller)
       },
       error: (e) => console.error(e)
@@ -679,8 +681,12 @@ actualizarArticuloSeleccionado(){
   }
 }
 
-mostrarFecha(){
-  console.log(this.fechaIngresoMercaderia)
+filtrarIngresosXFecha(){
+  if(this.fechaIngresoMercaderia){
+    console.log(this.fechaIngresoMercaderia)
+  this.ingresosMercaderiaXTallerFiltrados=this.ingresosMercaderiaXTaller.filter(ingreso=>this.formatearFecha(ingreso.fecha) == this.formatearFecha(this.fechaIngresoMercaderia))
+}else this.ingresosMercaderiaXTaller = this.ingresosMercaderiaXTaller
+
 }
 
 aplicarIngresoAPedidosProduccion(){

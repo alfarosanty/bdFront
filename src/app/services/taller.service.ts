@@ -2,8 +2,9 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Taller } from '../models/taller.model';
+import { environment } from 'src/environment/environment';
 
-const baseUrl = 'http://localhost:7166/Taller';
+const baseUrl = environment.apiUrl+'/Taller';
 
 @Injectable({
   providedIn: 'root'

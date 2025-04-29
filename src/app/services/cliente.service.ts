@@ -2,8 +2,9 @@ import { Injectable } from '@angular/core';
 import { Cliente } from '../models/cliente';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from 'src/environment/environment';
 
-const baseUrl = 'http://localhost:7166/Cliente';
+const baseUrl = environment.apiUrl+'/Cliente';
 
 
 @Injectable({

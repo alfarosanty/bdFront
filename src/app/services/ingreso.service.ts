@@ -3,8 +3,9 @@ import { PedidoProduccion } from '../models/pedido-produccion.model';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { IngresoMercaderia } from '../models/ingreso-mercaderia.model';
+import { environment } from 'src/environment/environment';
 
-const baseUrl = 'http://localhost:7166/Ingreso';
+const baseUrl = environment.apiUrl+'/Ingreso';
 
 @Injectable({
   providedIn: 'root'

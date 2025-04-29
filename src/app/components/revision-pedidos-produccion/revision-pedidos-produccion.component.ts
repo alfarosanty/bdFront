@@ -18,6 +18,10 @@ import { MatTableDataSource } from '@angular/material/table';
 import * as pdfMake from 'pdfmake/build/pdfmake';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 import { animate, state, style, transition, trigger } from '@angular/animations';
+import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { Presupuesto } from 'src/app/models/presupuesto.model';
+import { PresupuestoService } from 'src/app/services/budget.service';
+
 
 (pdfMake as any).vfs = (pdfFonts as any).vfs;
 
@@ -45,14 +49,14 @@ export class RevisionPedidosProduccionComponent {
   talleres?: Taller[];
   articulos: Articulo[]=[];
   familiaMedida: string[] = [];
-  ingresosMercaderiaXTaller: IngresoMercaderia[] =[];
   pedidosProduccionXTaller: PedidoProduccion[] = [];
   pedidosProdXTallerFiltrados: PedidoProduccion[] = [];
   mapaPresupuestoArticulos ?: Map<string,PresupuestoArticulo[]>;
   mapaPresuXArtParaAcceder ?: Map<string,PresupuestoArticulo[]>;
   mapaArticulosModificados ?: Map<string,RegistroDescuento[]> = new Map();
+  presupuestosMap: Map<number, Presupuesto> = new Map();
 
-  ingresoMercaderiaSeleccionado?: PedidoProduccion
+
   currentTaller?: Taller;
   currentArticulo ?: Articulo;
   curentPedidoProduccion ?: PedidoProduccion;
@@ -60,6 +64,8 @@ export class RevisionPedidosProduccionComponent {
 
   pedidoProduccionAAcceder ?: PedidoProduccion
   fechaPedidoProduccion?: Date;
+  fechaPedidoProduccionLimiteInf?: Date;
+  fechaPedidoProduccionLimiteSup?: Date;
   producto = '';
   codigoArticulo = '';
   cantProducto = '';
@@ -73,7 +79,7 @@ export class RevisionPedidosProduccionComponent {
 
 
   toggleDetalles: { [idPedido: number]: boolean } = {};
-  columnsToDisplay = ['Pedido', 'Cantidad Total', 'Cantidad Pendiente', 'Generar PDF Original', 'Generar PDF Pendientes'];
+  columnsToDisplay = ['Pedido', 'Cantidad Total', 'Cantidad Pendiente', 'Generar PDF Original', 'Generar PDF Pendientes', 'Seleccionar'];
   articuloColumnsToDisplay = ['Articulo', 'Cantidad', 'Cantidad Pendiente'];
   expandedElement: PresupuestoArticulo | undefined;
 
@@ -84,7 +90,7 @@ export class RevisionPedidosProduccionComponent {
   articuloSeleccionado ='';
  //END INPUT
 
-  constructor(private ordenDeProduccionService:OrdenProduccionService, private tallerService:TallerService, private articuloService:ArticuloService, private ingresoService:IngresoService, private ordenProduccionService: OrdenProduccionService , private route : ActivatedRoute) {}
+  constructor(private ordenDeProduccionService:OrdenProduccionService, private tallerService:TallerService, private articuloService:ArticuloService, private presupuestoService:PresupuestoService, private ordenProduccionService: OrdenProduccionService , private route : ActivatedRoute) {}
 
   ngOnInit(): void {
     this.listarTalleres();
@@ -279,8 +285,189 @@ listarTalleres(): void {
   
     pdfMake.createPdf(docDefinition).download(`Pedido-Produccion-Original-${this.currentTaller?.razonSocial}_${this.formatearFecha(this.curentPedidoProduccion?.fecha)}.pdf`);
   }
-  
 
+
+  generarPDFOriginalMultiplePedidos(listaPedidosProduccion: PedidoProduccion[]) {
+    const contenidoPDF: any[] = [];
+  
+    // Cabecera general (una sola vez al principio)
+    const primerPedido = listaPedidosProduccion[0];
+    contenidoPDF.push({
+      columns: [
+        {
+          width: '*',
+          margin: [0, 0, 0, 10], // [left, top, right, bottom] – ajusta si querés más separación
+          stack: [
+            { text: `Taller: ${primerPedido.taller?.razonSocial || ''}`, style: 'tallerInfo' },
+            { text: `Teléfono: ${primerPedido.taller?.telefono || ''}`, style: 'tallerInfo' }
+          ]
+        },
+        {
+          width: 'auto',
+          stack: [
+            {
+              image: imagenBase64,
+              fit: [100, 50],
+              alignment: 'center'
+            },
+            { text: 'Loria 1140 - Lomas de Zamora', style: 'caption', alignment: 'center' },
+            { text: 'Teléfono: 11-6958-2829', style: 'caption', alignment: 'center' }
+          ]
+        }
+      ],
+      margin: [0, 0, 0, 20]
+    });
+  
+    listaPedidosProduccion.forEach((pedido) => {
+      const mapaPresuArt: Map<string, PresupuestoArticulo[]> = new Map();
+      this.agruparArticulosPorFamiliaYMedida(mapaPresuArt, pedido);
+      console.log(mapaPresuArt)
+  
+      const tablaBody = [
+        [
+          { text: 'Código', style: 'tableHeader' },
+          { text: 'Cantidad', style: 'tableHeader' },
+          { text: 'Descripción', style: 'tableHeader' }
+        ]
+      ];
+  
+      mapaPresuArt.forEach((presupuestosArticulos, clave) => {
+        const cantidades = presupuestosArticulos.map(pa => pa.cantidad || 0);
+        const totalCantidad = cantidades.reduce((acc, c) => acc + c, 0);
+        const descripcion = presupuestosArticulos[0].articulo?.descripcion || '';
+        const descripcionCompleta = presupuestosArticulos.map(pa =>
+          `${pa.cantidad || 0}${pa.articulo?.color?.codigo ? ' ' + pa.articulo.color.codigo : ''}`
+        ).join(' ');
+  
+        tablaBody.push([
+          { text: clave, style: 'tableCell' },
+          { text: String(totalCantidad), style: 'tableCell' },
+          { text: descripcion + ' ' + descripcionCompleta, style: 'tableCell' }
+        ]);
+      });
+  
+      // Separador del pedido: ID y fecha en tamaño discreto
+      contenidoPDF.push({
+        text: `Pedido N° ${pedido.id} - ${this.formatearFecha(pedido.fecha)} - Cliente: ${this.presupuestosMap.get(pedido.idPresupuesto ?? 0)?.cliente?.razonSocial ?? "Stock"}`,
+        style: 'smallCaption',
+        margin: [0, 10, 0, 5]
+      });
+  
+      contenidoPDF.push({
+        table: {
+          headerRows: 1,
+          widths: [70, 50, '*'],
+          body: tablaBody
+        },
+        layout: 'lightHorizontalLines',
+        style: 'table'
+      });
+  
+      contenidoPDF.push({ text: '', margin: [0, 0, 0, 20] }); // Espacio entre pedidos
+    });
+  
+    const docDefinition: any = {
+      content: contenidoPDF,
+      styles: {
+        ...this.getStyles(),
+        
+      }
+    };
+  
+    pdfMake.createPdf(docDefinition).download(`Pedidos-Produccion-Todos-${this.formatearFecha(new Date())}.pdf`);
+  }
+  
+  
+  generarPDFPendientesMultiplePedidos(listaPedidosProduccion: PedidoProduccion[]) {
+    const contenidoPDF: any[] = [];
+  
+    // Cabecera general (una sola vez al principio)
+    const primerPedido = listaPedidosProduccion[0];
+    contenidoPDF.push({
+      columns: [
+        {
+          width: '*',
+          margin: [0, 0, 0, 10], // [left, top, right, bottom] – ajusta si querés más separación
+          stack: [
+            { text: `Taller: ${primerPedido.taller?.razonSocial || ''}`, style: 'tallerInfo' },
+            { text: `Teléfono: ${primerPedido.taller?.telefono || ''}`, style: 'tallerInfo' }
+          ]
+        },
+        {
+          width: 'auto',
+          stack: [
+            {
+              image: imagenBase64,
+              fit: [100, 50],
+              alignment: 'center'
+            },
+            { text: 'Loria 1140 - Lomas de Zamora', style: 'caption', alignment: 'center' },
+            { text: 'Teléfono: 11-6958-2829', style: 'caption', alignment: 'center' }
+          ]
+        }
+      ],
+      margin: [0, 0, 0, 20]
+    });
+  
+    listaPedidosProduccion.forEach((pedido) => {
+      const mapaPresuArt: Map<string, PresupuestoArticulo[]> = new Map();
+      this.agruparArticulosPorFamiliaYMedida(mapaPresuArt, pedido);
+      console.log(mapaPresuArt)
+  
+      const tablaBody = [
+        [
+          { text: 'Código', style: 'tableHeader' },
+          { text: 'Pendiente', style: 'tableHeader' },
+          { text: 'Descripción', style: 'tableHeader' }
+        ]
+      ];
+  
+      mapaPresuArt.forEach((presupuestosArticulos, clave) => {
+        const cantidades = presupuestosArticulos.map(pa => pa.cantidadPendiente || 0);
+        const totalCantidad = cantidades.reduce((acc, c) => acc + c, 0);
+        const descripcion = presupuestosArticulos[0].articulo?.descripcion || '';
+        const descripcionCompleta = presupuestosArticulos.map(pa =>
+          `${pa.cantidadPendiente || 0}${pa.articulo?.color?.codigo ? ' ' + pa.articulo.color.codigo : ''}`
+        ).join(' ');
+  
+        tablaBody.push([
+          { text: clave, style: 'tableCell' },
+          { text: String(totalCantidad), style: 'tableCell' },
+          { text: descripcion + ' ' + descripcionCompleta, style: 'tableCell' }
+        ]);
+      });
+  
+      // Separador del pedido: ID y fecha en tamaño discreto
+      contenidoPDF.push({
+        text: `Pedido N° ${pedido.id} - ${this.formatearFecha(pedido.fecha)} - Cliente: ${this.presupuestosMap.get(pedido.idPresupuesto ?? 0)?.cliente?.razonSocial ?? "Stock"}`,
+        style: 'smallCaption',
+        margin: [0, 10, 0, 5]
+      });
+  
+      contenidoPDF.push({
+        table: {
+          headerRows: 1,
+          widths: [70, 50, '*'],
+          body: tablaBody
+        },
+        layout: 'lightHorizontalLines',
+        style: 'table'
+      });
+  
+      contenidoPDF.push({ text: '', margin: [0, 0, 0, 20] }); // Espacio entre pedidos
+    });
+  
+    const docDefinition: any = {
+      content: contenidoPDF,
+      styles: {
+        ...this.getStyles(),
+        
+      }
+    };
+  
+    pdfMake.createPdf(docDefinition).download(`Pedidos-Produccion-Todos-${this.formatearFecha(new Date())}.pdf`);
+  }
+  
 
 
 generarPDFPendientes() {
@@ -391,7 +578,18 @@ getStyles() {
     },
     table: {
       margin: [0, 10, 0, 10]
-    }
+    },
+    smallCaption: {
+      fontSize: 10,
+      bold: true,
+      margin: [0, 5, 0, 5]
+    },
+    tallerInfo: {
+      fontSize: 12,        // o más si querés
+      bold: true,          // opcional
+      alignment: 'left',   // por si acaso
+      margin: [0, 2, 0, 2] // espaciado interno entre líneas
+    },
   };
 }
 
@@ -509,9 +707,33 @@ actualizarArticuloSeleccionado(){
   }
 }
 
-mostrarFecha(){
-  console.log(this.fechaPedidoProduccion)
+filtrarPedidosProduccionXRangoFechas(){
+
+if(this.fechaPedidoProduccionLimiteInf){
+  if (this.fechaPedidoProduccionLimiteSup){
+    this.filtroPedidosProduccion()
+    const pedidosFiltradorEntreFechas = this.pedidosProdXTallerFiltrados.filter(pedidoProduccion=> this.estaEntreFechas(this.formatearFecha(this.fechaPedidoProduccionLimiteInf),this.formatearFecha(this.fechaPedidoProduccionLimiteSup), this.formatearFecha(pedidoProduccion ))) 
+    this.dataSource.data = pedidosFiltradorEntreFechas;
+
+  }
 }
+}
+
+estaEntreFechas(fechaInicio: any, fechaFin: any, fechaEvaluar: any): boolean {
+  const inicio = new Date(fechaInicio);
+  const fin = new Date(fechaFin);
+  const evaluar = new Date(fechaEvaluar);
+  console.log(inicio);
+  console.log(fin);
+  console.log(evaluar);
+  // Si alguna fecha es inválida, por seguridad devuelvo false
+  if (isNaN(inicio.getTime()) || isNaN(fin.getTime()) || isNaN(evaluar.getTime())) {
+    return false;
+  }
+
+  return evaluar >= inicio && evaluar <= fin;
+}
+
 
 aplicarIngresoAPedidosProduccion(){
 
@@ -531,7 +753,70 @@ aplicarIngresoAPedidosProduccion(){
     const fechaObj = new Date(fecha);
     return isNaN(fechaObj.getTime()) ? 'Fecha inválida' : `${fechaObj.getDate()}/${fechaObj.getMonth() + 1}/${fechaObj.getFullYear()}`;
   }
-  
 
+
+  drop(event: CdkDragDrop<PedidoProduccion[]>) {
+    console.log("movemos de", event.previousIndex, "a", event.currentIndex);
+  
+    if (event.previousIndex === event.currentIndex) {
+      console.log("No se movió de lugar");
+      return;
+    }
+  
+    const data = this.dataSource.data;
+    console.log(data)
+    moveItemInArray(data, event.previousIndex, event.currentIndex);
+    this.dataSource.data = data;
+  }
+
+  agregarClienteAMapa(pedidoProduccion:PedidoProduccion){
+
+    if(pedidoProduccion.idPresupuesto){this.agregarPresupuestoAMap(pedidoProduccion.idPresupuesto)}
+
+
+  }
+
+  agruparArticulosPorFamiliaYMedida(mapa: Map<string, PresupuestoArticulo[]>,pedidoProduccion:PedidoProduccion): void {
+    const articulos = pedidoProduccion.articulos
+    for (const articulo of articulos!) {
+      const familia = articulo.articulo?.familia?.codigo || 'SIN_FAMILIA';
+      const medida = articulo.articulo?.medida?.codigo || 'SIN_MEDIDA';
+      const clave = `${familia}/${medida}`;
+  
+      if (mapa.has(clave)) {
+        const listaExistente = mapa.get(clave)!;
+        mapa.set(clave, [...listaExistente, articulo]);
+      } else {
+        mapa.set(clave, [articulo]);
+      }
+    }
+  }
+
+
+  generarPDFPedidosSeleccionadosOriginal(){
+    const listaDePedidosProd = this.dataSource.data.filter(pedidoProd=>pedidoProd.seleccionadoImprimir == true)
+    this.generarPDFOriginalMultiplePedidos(listaDePedidosProd);
+  }
+
+  generarPDFPedidosSeleccionadosPendiente(){
+    const listaDePedidosProd = this.dataSource.data.filter(pedidoProd=>pedidoProd.seleccionadoImprimir == true)
+    this.generarPDFPendientesMultiplePedidos(listaDePedidosProd);
+  }
+
+  agregarPresupuestoAMap(id: number) {
+    this.presupuestoService.get(id).subscribe(
+      (presupuesto) => {
+        this.presupuestosMap.set(id, presupuesto);
+        console.log(this.presupuestosMap)
+      },
+      (error) => {
+        console.error('Error al obtener presupuesto:', error);
+      }
+    );
+
+  }
+  
+  
+  
 
 }
