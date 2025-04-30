@@ -64,8 +64,8 @@ export class RevisionPedidosProduccionComponent {
 
   pedidoProduccionAAcceder ?: PedidoProduccion
   fechaPedidoProduccion?: Date;
-  fechaPedidoProduccionLimiteInf?: Date;
-  fechaPedidoProduccionLimiteSup?: Date;
+  fechaInicio?: Date;
+  fechaFin?: Date;
   producto = '';
   codigoArticulo = '';
   cantProducto = '';
@@ -709,10 +709,11 @@ actualizarArticuloSeleccionado(){
 
 filtrarPedidosProduccionXRangoFechas(){
 
-if(this.fechaPedidoProduccionLimiteInf){
-  if (this.fechaPedidoProduccionLimiteSup){
+if(this.fechaInicio){
+  if (this.fechaFin){
     this.filtroPedidosProduccion()
-    const pedidosFiltradorEntreFechas = this.pedidosProdXTallerFiltrados.filter(pedidoProduccion=> this.estaEntreFechas(this.formatearFecha(this.fechaPedidoProduccionLimiteInf),this.formatearFecha(this.fechaPedidoProduccionLimiteSup), this.formatearFecha(pedidoProduccion ))) 
+    console.log("Fecha inicio", this.formatearFecha(this.fechaInicio), "Fecha fin", this.formatearFecha(this.fechaFin))
+    const pedidosFiltradorEntreFechas = this.pedidosProdXTallerFiltrados.filter(pedidoProduccion=> this.estaEntreFechas(this.fechaInicio,this.fechaFin, pedidoProduccion.fecha )) 
     this.dataSource.data = pedidosFiltradorEntreFechas;
 
   }
@@ -734,6 +735,10 @@ estaEntreFechas(fechaInicio: any, fechaFin: any, fechaEvaluar: any): boolean {
   return evaluar >= inicio && evaluar <= fin;
 }
 
+formatearFecha(fecha: any): string {
+  const fechaObj = new Date(fecha);
+  return isNaN(fechaObj.getTime()) ? 'Fecha inválida' : `${fechaObj.getDate()}/${fechaObj.getMonth() + 1}/${fechaObj.getFullYear()}`;
+}
 
 aplicarIngresoAPedidosProduccion(){
 
@@ -749,10 +754,6 @@ aplicarIngresoAPedidosProduccion(){
 
 }
 
-  formatearFecha(fecha: any): string {
-    const fechaObj = new Date(fecha);
-    return isNaN(fechaObj.getTime()) ? 'Fecha inválida' : `${fechaObj.getDate()}/${fechaObj.getMonth() + 1}/${fechaObj.getFullYear()}`;
-  }
 
 
   drop(event: CdkDragDrop<PedidoProduccion[]>) {

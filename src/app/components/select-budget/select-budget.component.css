@@ -71,3 +71,36 @@
     width: 500%; /* El div ocupará el 80% del ancho del contenedor padre */
     margin-bottom: 10px; /* Espaciado entre los divs */
   }
+
+  .boton-container {
+    display: flex; /* Usa Flexbox para alinear los botones */
+    justify-content: center; /* Centra los botones horizontalmente */
+    gap: 650px; /* Espacio entre los botones */
+    margin-top: 20px; /* Espacio superior */
+  }
+  
+  .boton-seleccionarPresupuesto {
+    display: inline-flex; /* Asegura que los botones estén alineados horizontalmente */
+  }
+  
+  .boton-lindo {
+    font-size: 90%;
+    padding: 10px 30px; /* Ajuste del tamaño de los botones */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    border: none; /* Elimina el borde por defecto del botón */
+  }
+  
+  /* Estilo para el botón azul */
+  .azul:hover {
+    background-color: #020749; /* Azul oscuro al pasar el mouse */
+  }
+  
+  .rojo:hover {
+    background-color: #8B0000; /* Rojo oscuro al pasar el mouse */
+  }
+  
+  .boton-lindo mat-icon {
+    margin-right: 8%;
+  }

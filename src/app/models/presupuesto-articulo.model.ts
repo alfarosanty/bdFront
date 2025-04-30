@@ -9,6 +9,7 @@ export class PresupuestoArticulo {
     cantidadPendiente?: number;
     precioUnitario?: number;
     descuento?: number;
+    descripcion?: string;
     hayStock?: boolean = false;
-    presupuesto?: Presupuesto
+    presupuesto?: Presupuesto;
 }

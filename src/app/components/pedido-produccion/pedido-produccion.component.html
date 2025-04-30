@@ -46,9 +46,13 @@
 
 
         <div>
-            <label for="fecha">Fecha de Emisión:</label>
-            <input type="date" id="fecha" [(ngModel)]="fechaPedidoProduccion" > 
-        </div>
+            <mat-form-field class="margen-horizontal">
+              <mat-label>Fecha de Emisión:</mat-label>
+              <input matInput [matDatepicker]="picker" [(ngModel)]="fechaPedidoProduccion" name="fechaPresupuesto">
+              <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+            </mat-form-field>       
+          </div>
 
         <div>
             <label for="estado">Estado del Pedido:</label>

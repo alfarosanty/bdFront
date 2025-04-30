@@ -31,17 +31,23 @@
 
 
         <div>
-          <mat-date-range-picker #rangePicker>
-            <mat-date-range-picker-actions>
-              <button mat-button matDateRangePickerCancel>Cancel</button>
-              <button mat-raised-button matDateRangePickerApply>Apply</button>
-            </mat-date-range-picker-actions>
-          </mat-date-range-picker>       
+          <mat-form-field class="fecha-field">
+            <mat-label>Ingrese itervalo de fechas</mat-label>
+            <mat-date-range-input [rangePicker]="rangePicker">
+              <input matStartDate [(ngModel)]="fechaInicio" name="fechaInicio" />
+              <input matEndDate [(ngModel)]="fechaFin" name="fechaFin" />
+            </mat-date-range-input>
+            <mat-hint>DD/MM/YYYY – DD/MM/YYYY</mat-hint>
+            <mat-datepicker-toggle matIconSuffix [for]="rangePicker"></mat-datepicker-toggle>
+            <mat-date-range-picker #rangePicker>
+              <mat-date-range-picker-actions>
+                <button mat-button matDateRangePickerCancel>Cancel</button>
+                <button mat-raised-button (click)="filtrarPedidosProduccionXRangoFechas()" matDateRangePickerApply>Apply</button>
+              </mat-date-range-picker-actions>
+            </mat-date-range-picker>
+          </mat-form-field>     
         </div>
-        <div>
-            <label for="fecha">Fecha limite superior:</label>
-            <input type="date" id="fecha" [(ngModel)]="fechaPedidoProduccionLimiteSup" (change)="filtrarPedidosProduccionXRangoFechas()">
-        </div>
+
             <div>
                 <label for="estado">Estado del Pedido:</label>
                 <select id="estado" [(ngModel)]="estadoPedido" (change)="filtroPedidosProduccion()">

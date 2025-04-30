@@ -1,9 +1,20 @@
 <div class="superior-container">
 
-  <button class="boton-de-busqueda" (click)="generarPresupuesto()">Generar Presupuesto</button>
-  <button class="boton-de-busqueda" (click)="mostrarPanelBusqueda = !mostrarPanelBusqueda">
-      Buscar Presupuesto
-    </button>
+  <div class="boton-container">
+    <div class="boton-seleccionarPresupuesto">
+      <button mat-raised-button (click)="generarPresupuesto()" color="primary" class="boton-lindo azul">
+        Generar Presupuesto
+      </button>
+    </div>
+
+    <div class="boton-generarPDF">
+      <button mat-raised-button (click)="mostrarPanelBusqueda = !mostrarPanelBusqueda" color="warn" class="boton-lindo rojo">
+        Buscar Presupuesto
+      </button>
+    </div>
+    
+  </div>
+
 </div>
 <div class="inferior-container">
   <div class="inferior-izquierda-container">

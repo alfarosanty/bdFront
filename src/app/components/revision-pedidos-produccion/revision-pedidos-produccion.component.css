@@ -265,13 +265,6 @@ select {
     padding: 6px 10px; /* Ajusta el padding del input */
   }
   
-  .mat-datepicker-toggle {
-    font-size: 16px; /* Ajusta el tamaño del ícono */
-    padding: 5px;    /* Ajusta el padding */
+  .fecha-field {
+    margin-right: 20px;
   }
-  
-  .mat-datepicker-toggle-button {
-    font-size: 16px; /* Ajusta el tamaño del botón */
-    padding: 5px;    /* Ajusta el padding */
-  }
-  

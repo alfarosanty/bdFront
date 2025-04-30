@@ -8,7 +8,7 @@ import { AppComponent } from './app.component';
 import { AddStockComponent } from './components/add-stock/add-stock.component';
 import { StockDetailsComponent } from './components/stock-details/stock-details.component';
 import { StockListComponent } from './components/stock-list/stock-list.component';
-import { SearchBudgetComponent } from './components/search-budget/search-budget.component';
+import { EditarGenericoDialogComponent, SearchBudgetComponent } from './components/search-budget/search-budget.component';
 import { SelectBudgetComponent } from './components/select-budget/select-budget.component';
 
 
@@ -24,6 +24,9 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MAT_DATE_LOCALE } from '@angular/material/core';
+import {MatDialogModule} from '@angular/material/dialog';
+
 
 
 import { DragDropModule } from '@angular/cdk/drag-drop';
@@ -38,6 +41,7 @@ import { PedidoProduccionComponent } from './components/pedido-produccion/pedido
 import { IngresoComponent } from './components/ingreso/ingreso.component';
 import { RevisionPedidosProduccionComponent } from './components/revision-pedidos-produccion/revision-pedidos-produccion.component';
 import { SeparacionProductosComponent } from './components/separacion-productos/separacion-productos.component';
+import { PresentacionComponent } from './components/presentacion/presentacion.component';
 
 
 @NgModule({
@@ -54,6 +58,8 @@ import { SeparacionProductosComponent } from './components/separacion-productos/
     IngresoComponent,
     RevisionPedidosProduccionComponent,
     SeparacionProductosComponent,
+    EditarGenericoDialogComponent,
+    PresentacionComponent,
   ],
   imports: [
     MatSelectModule,
@@ -74,10 +80,13 @@ import { SeparacionProductosComponent } from './components/separacion-productos/
     MatRadioModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    MatDialogModule,
     DragDropModule,
   ],
   
-  providers: [],
+  providers: [
+    { provide: MAT_DATE_LOCALE, useValue: 'es-AR' }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

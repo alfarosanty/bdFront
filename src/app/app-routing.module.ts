@@ -11,10 +11,11 @@ import { PedidoProduccionComponent } from './components/pedido-produccion/pedido
 import { IngresoComponent } from './components/ingreso/ingreso.component';
 import { RevisionPedidosProduccionComponent } from './components/revision-pedidos-produccion/revision-pedidos-produccion.component';
 import { SeparacionProductosComponent } from './components/separacion-productos/separacion-productos.component';
+import { PresentacionComponent } from './components/presentacion/presentacion.component';
 
 
 const routes: Routes = [
-  { path: '', redirectTo: 'listStock', pathMatch: 'full' },
+  { path: '', component: PresentacionComponent },
   { path: 'addStock', component: AddStockComponent },
   { path: 'viewStock', component: StockDetailsComponent },
   { path: 'listStock', component: StockListComponent },

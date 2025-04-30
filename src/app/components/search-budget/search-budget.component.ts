@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map, startWith } from 'rxjs/operators'
@@ -16,6 +16,7 @@ import * as pdfMake from 'pdfmake/build/pdfmake';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { EstadoPresupuesto } from 'src/app/models/estado-presupuesto.model';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 (pdfMake as any).vfs = (pdfFonts as any).vfs;
 
@@ -66,6 +67,8 @@ export class SearchBudgetComponent {
   currentIndex = -1;
   articuloColorIndex = -1;
   mostrarBotonGuardar = true;
+  descAModificar ?: string
+  precioUniAModificar ?: number
 
   precioSubtotal?: number;
 
@@ -87,7 +90,7 @@ export class SearchBudgetComponent {
 ];
 
 
-  constructor(private clienteService: ClienteService, private articuloService:ArticuloService, private presupuestoService:PresupuestoService, private route : ActivatedRoute) {}
+  constructor(private clienteService: ClienteService, private articuloService:ArticuloService, private presupuestoService:PresupuestoService, private route : ActivatedRoute, public dialog: MatDialog) {}
 
   ngOnInit(): void {
     this.listarClientes();
@@ -252,6 +255,7 @@ listarClientes(): void {
               articulo: this.currentArticulo,
               cantidad: Number(this.cantProducto),
               precioUnitario: this.currentArticulo.precio1,
+              descripcion : this.currentArticulo.familia?.descripcion! + this.currentArticulo.medida?.descripcion,
               hayStock: false
             });
           }
@@ -261,6 +265,7 @@ listarClientes(): void {
             articulo: this.currentArticulo,
             cantidad: Number(this.cantProducto),
             precioUnitario: this.currentArticulo.precio1,
+            descripcion : this.currentArticulo.familia?.descripcion! + this.currentArticulo.medida?.descripcion,
             hayStock: false
           });
         }
@@ -293,8 +298,8 @@ listarClientes(): void {
     }
   }
 
-  calcularPrecioConDescuento(presupuestoArticulo: any): number {
-    return (presupuestoArticulo.precioUnitario - (presupuestoArticulo.precioUnitario * ((presupuestoArticulo.descuento || 0) * 0.01)));
+  calcularPrecioConDescuento(presupuestoArticulo: PresupuestoArticulo): number {
+    return (presupuestoArticulo.precioUnitario! - (presupuestoArticulo.precioUnitario! * ((presupuestoArticulo.descuento || 0) * 0.01)));
   }
 
   actualizarTotales() {
@@ -315,32 +320,59 @@ listarClientes(): void {
     this.actualizarDataSource()
   
     }
-
-  editarFila(key:any){
-
-    this.codigoArticulo = key
-    this.articulos = [];
-  
-    // Verifica si hay un código de artículo
-    if (this.codigoArticulo) {
-      // Separa el código en familia y medida
-      this.familiaMedida = this.codigoArticulo.split('/');
-  
-      // Llama al servicio para obtener artículos según la familia y medida
-      this.articuloService.getByFamiliaMedida(this.familiaMedida[0], this.familiaMedida[1]).subscribe({
-        next: (data) => {
-          this.articulos = data;
-          // Mostrar u ocultar colores según si hay artículos disponibles
-          this.mostrarColores = this.articulos.length > 0;
-        },
-        error: (e) => console.error('Error al obtener artículos:', e)
-      });
-  
-    } else {
-      // Si no hay código de artículo, ocultar los colores
-      this.mostrarColores = false;
+    editarFila(key: any) {
+      this.codigoArticulo = key;
+      this.articulos = [];
+    
+      if (this.codigoArticulo) {
+        this.familiaMedida = this.codigoArticulo.split('/');
+    
+        this.articuloService.getByFamiliaMedida(this.familiaMedida[0], this.familiaMedida[1]).subscribe({
+          next: (data) => {
+            this.articulos = data;
+            this.mostrarColores = this.articulos.length > 0;
+          },
+          error: (e) => console.error('Error al obtener artículos:', e)
+        });
+    
+        // Si es genérico, abrir el diálogo
+        if (this.codigoArticulo === 'GEN/GEN') {
+          const dataInicial = {
+            descripcion: this.descAModificar,
+            precio: this.precioUniAModificar
+          };
+    
+          const dialogRef = this.dialog.open(EditarGenericoDialogComponent, {
+            width: '300px',
+            data: dataInicial
+          });
+    
+          dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+              this.descAModificar = result.descripcion;
+              this.precioUniAModificar = result.precio;
+              this.guardarCambiosGenerico();
+            }
+          });
+        }
+      } else {
+        this.mostrarColores = false;
+      }
+    
+      this.actualizarDataSource();
     }
-    this.actualizarDataSource()
+      guardarCambiosGenerico() {
+    const genericos = this.mapaPresupuestoArticulos?.get("GEN/GEN");
+    genericos?.forEach(p => {
+      p.descripcion = this.descAModificar;
+      p.precioUnitario = this.precioUniAModificar;
+    });
+    this.actualizarDataSource();
+    this.actualizarTotales();
+  
+  }
+
+  cerrarModal() {
   }
 
 
@@ -800,7 +832,7 @@ actualizarDataSource() {
   this.dataSourceCodigo = Array.from(this.mapaPresupuestoArticulos!.entries()).map(([codigo, articulos]) => {
     return {
       codigo,
-      descripcion: articulos[0]?.articulo?.familia?.descripcion + ' ' + articulos[0]?.articulo?.medida?.descripcion,
+      descripcion: articulos[0].descripcion,
       articulos // 👈 esto es clave para acceder después a los datos
     };
   });
@@ -814,8 +846,9 @@ getArticulosParaArticulo(codigo: string): PresupuestoArticulo[] {
 getDescripcionBase(codigo: string): string {
   const entry = this.mapaPresupuestoArticulos?.get(codigo);
   if (entry && entry.length > 0) {
-    const art = entry[0].articulo;
-    return `${art?.familia?.descripcion || ''} ${art?.medida?.descripcion || ''}`;
+    return `${entry[0].descripcion || ''}`;
+  /*  const art = entry[0].articulo;
+    return `${art?.familia?.descripcion || ''} ${art?.medida?.descripcion || ''}`;*/
   }
   return '';
 }
@@ -836,6 +869,22 @@ intentoDeCrearCurrentPresupuesto(){
 }
 
 
+@Component({
+  selector: 'app-editar-generico-dialog',
+  templateUrl: './editar-generico-dialog.component.html',
+})
+export class EditarGenericoDialogComponent {
+  constructor(
+    public dialogRef: MatDialogRef<EditarGenericoDialogComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: { descripcion: string; precio: number }
+  ) {}
 
+  onNoClick(): void {
+    this.dialogRef.close();
+  }
 
+  guardar(): void {
+    this.dialogRef.close(this.data);
+  }
+}
 
