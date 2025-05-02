@@ -7,6 +7,7 @@ export class PresupuestoArticulo {
     cantidadOriginal?: number;
     cantidadActual?: number;
     cantidadPendiente?: number;
+    codigo?: string;
     precioUnitario?: number;
     descuento?: number;
     descripcion?: string;

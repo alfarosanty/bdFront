@@ -3,16 +3,9 @@ import { FormControl } from '@angular/forms';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map, startWith } from 'rxjs/operators'
 import { Articulo } from 'src/app/models/articulo.model';
-import { Cliente } from 'src/app/models/cliente';
-import { Medida } from 'src/app/models/medida.model';
 import { PresupuestoArticulo } from 'src/app/models/presupuesto-articulo.model';
-import { Presupuesto } from 'src/app/models/presupuesto.model';
 import { ArticuloService } from 'src/app/services/articulo.service';
-import { PresupuestoService } from 'src/app/services/budget.service';
-import { ClienteService } from 'src/app/services/cliente.service';
-import { jsPDF }  from 'jspdf';
 import { ActivatedRoute, Router } from '@angular/router';
-import * as moment from 'moment';
 import { Taller } from 'src/app/models/taller.model';
 import { PedidoProduccion } from 'src/app/models/pedido-produccion.model';
 import { OrdenProduccionService } from 'src/app/services/orden-produccion.service';
@@ -20,6 +13,8 @@ import { TallerService } from 'src/app/services/taller.service';
 import * as pdfMake from 'pdfmake/build/pdfmake';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 import { animate, state, style, transition, trigger } from '@angular/animations';
+import * as ExcelJS from 'exceljs';
+import * as FileSaver from 'file-saver';
 
 (pdfMake as any).vfs = (pdfFonts as any).vfs;
 
@@ -79,6 +74,7 @@ export class PedidoProduccionComponent {
   expandedElement: any | null;
   dataSourceCodigo: any[] = []; // debe contener objetos con: codigo, descripcion
   mostrarConfirmacionPDF = false;
+  generacionPDF = false;
 
   constructor(private tallerService:TallerService, private articuloService:ArticuloService, private ordenDeProduccionService:OrdenProduccionService, private route : ActivatedRoute) {}
 
@@ -338,6 +334,7 @@ listarTalleres(): void {
         this.mapaPresupuestoArticulos?.forEach((valor, clave) => {
           valor.forEach(presuArt => {
             presuArt.cantidad = presuArt.cantidadActual
+            presuArt.codigo = presuArt.articulo?.familia?.codigo + "/" + presuArt.articulo?.medida?.codigo
             console.log(presuArt.articulo?.color?.descripcion + ' ' + presuArt.cantidadActual);
 
             if (presuArt.cantidadPendiente != null) {
@@ -395,6 +392,14 @@ listarTalleres(): void {
       }
       this.mostrarConfirmacionPDF = false;
     } 
+
+    confirmarGenerarExcel(generar: boolean) {
+      if (generar) {
+        this.generarExcel();
+      }
+      this.mostrarConfirmacionPDF = false;
+    } 
+
 
     
   generarPDF() {
@@ -510,6 +515,51 @@ getStyles() {
     }
   };
 }
+
+
+generarExcel() {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('Ingreso de Mercadería');
+
+  // Encabezados con estilo
+  worksheet.addRow(['Código', 'Cantidad', 'Descripción']);
+  const headerRow = worksheet.getRow(1);
+  headerRow.eachCell((cell) => {
+    cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    cell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF4A4A4A' }
+    };
+    cell.alignment = { vertical: 'middle', horizontal: 'center' };
+    cell.border = {
+      bottom: { style: 'thin' }
+    };
+  });
+
+  // Datos
+  this.mapaPresupuestoArticulos?.forEach((presupuestosArticulos, clave) => {
+    const cantidades = presupuestosArticulos.map(pa => pa.cantidadActual || 0);
+    const totalCantidad = cantidades.reduce((acc, c) => acc + c, 0);
+    const descripcion = presupuestosArticulos[0].articulo?.descripcion || '';
+    const descripcionCompleta = presupuestosArticulos
+      .map(pa => `${pa.cantidadActual || 0}${pa.articulo?.color?.codigo || ''}`)
+      .join(' ');
+
+    worksheet.addRow([clave, totalCantidad, `${descripcion} ${descripcionCompleta}`]);
+  });
+
+  // Ajustar ancho
+  worksheet.columns.forEach(column => {
+    column.width = 25;
+  });
+
+  workbook.xlsx.writeBuffer().then((buffer) => {
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    FileSaver.saveAs(blob, 'Ingreso-de-mercaderia.xlsx');
+  });
+}
+
 
 
 

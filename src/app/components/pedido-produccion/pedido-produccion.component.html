@@ -223,20 +223,17 @@
         </button>
       </div>
 
-      <!-- Modal de Confirmación -->
-<div class="modal-overlay" *ngIf="mostrarConfirmacionPDF">
-    <div class="modal-content">
-      <h2>¿Deseás generar el PDF?</h2>
-      <div class="modal-buttons">
-        <button mat-raised-button color="primary" (click)="confirmarGenerarPDF(true)">
-          Sí, generar PDF
-        </button>
-        <button mat-raised-button color="warn" (click)="confirmarGenerarPDF(false)">
-          No, solo finalizar
-        </button>
-      </div>
-    </div>
-  </div>
-      
 
-<!-- <div class="boton-generarPDF"> <button (click)="generarOrdenDePedido(); generarPDF(); aplicarIngresoAPedidosProduccion()">Generar Pedido</button>  </div> -->
+    <!-- Backdrop con opciones -->
+    <div class="backdrop" *ngIf="mostrarConfirmacionPDF">
+        <div class="button-container">
+          <button mat-raised-button color="primary" (click)="confirmarGenerarPDF(generacionPDF); confirmarGenerarExcel(!generacionPDF)">Generar PDF</button>
+          <button mat-raised-button color="warn" (click)="confirmarGenerarPDF(false)">No Generar PDF</button>
+        </div>
+        <div class="checklist-container">
+          <mat-radio-group [(ngModel)]="generacionPDF">
+            <mat-radio-button [value]="true">PDF</mat-radio-button>
+            <mat-radio-button [value]="false">Excel</mat-radio-button>
+          </mat-radio-group>
+        </div>
+      </div>

@@ -436,6 +436,7 @@ listarClientes(): void {
           valor.forEach(presuArt => {
             console.log(presuArt.articulo?.color?.descripcion + ' ' + presuArt.cantidad);
             presuArt.cantidadPendiente = presuArt.cantidad;
+            presuArt.codigo = presuArt.articulo?.familia?.codigo + "/" + presuArt.articulo?.medida?.codigo
             this.currentPresupuesto!.articulos?.push(presuArt);
           });
         });

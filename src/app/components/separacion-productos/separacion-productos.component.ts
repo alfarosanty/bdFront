@@ -444,7 +444,7 @@ actualizarArticuloSeleccionado(){
       const articulosXTaller = articulosAPedir.filter(presuArt => presuArt.articulo?.idFabricante === Number(taller.id));
   
       if (articulosXTaller.length === 0) continue;
-      articulosXTaller.forEach(presuArt=> {presuArt.cantidadPendiente = presuArt.cantidad; presuArt.presupuesto = this.currentPresupuesto})
+      articulosXTaller.forEach(presuArt=> {presuArt.cantidadPendiente = presuArt.cantidad; presuArt.presupuesto = this.currentPresupuesto;             presuArt.codigo = presuArt.articulo?.familia?.codigo + "/" + presuArt.articulo?.medida?.codigo})
   
       const pedidoProduccion = new PedidoProduccion(this.fechaPedidoProduccion!, taller, 3, articulosXTaller, this.currentCliente!.id, this.presupuestoAAcceder?.id);
   

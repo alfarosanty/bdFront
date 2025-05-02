@@ -324,3 +324,15 @@ th.mat-header-cell, td.mat-cell {
   .boton-lindo mat-icon {
     margin-right: 8%;
   }
+
+  .checklist-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+  }
+
+  .button-container {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 16px;
+  }

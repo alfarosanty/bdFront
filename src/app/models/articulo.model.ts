@@ -11,4 +11,8 @@ export class Articulo {
     familia?:Familia;
     medida?:Medida;
     idFabricante?: number;    
+
+    obtenerCodigo(): string{
+        return this.familia?.codigo + "/" + this.medida?.codigo
+    }
 }
