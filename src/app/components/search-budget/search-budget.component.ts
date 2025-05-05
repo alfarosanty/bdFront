@@ -800,7 +800,7 @@ actualizarMapaPresupuestoArticulo(nuevoMap: Map<string, PresupuestoArticulo[]>){
 }
 cantidadActualDepoducto():string {
   if (this.currentArticulo) {
-    const claveMapa: string = this.currentArticulo?.familia?.codigo + "/" + this.currentArticulo.medida?.codigo;
+  const claveMapa: string = this.currentArticulo?.familia?.codigo + "/" + this.currentArticulo.medida?.codigo;
     
     if (this.mapaPresupuestoArticulos?.has(claveMapa)) {
       const pa = this.mapaPresupuestoArticulos.get(claveMapa) as PresupuestoArticulo[];

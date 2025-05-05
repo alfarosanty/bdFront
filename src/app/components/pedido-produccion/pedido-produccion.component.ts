@@ -15,6 +15,7 @@ import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import * as ExcelJS from 'exceljs';
 import * as FileSaver from 'file-saver';
+import { PresupuestoService } from 'src/app/services/budget.service';
 
 (pdfMake as any).vfs = (pdfFonts as any).vfs;
 
@@ -76,7 +77,7 @@ export class PedidoProduccionComponent {
   mostrarConfirmacionPDF = false;
   generacionPDF = false;
 
-  constructor(private tallerService:TallerService, private articuloService:ArticuloService, private ordenDeProduccionService:OrdenProduccionService, private route : ActivatedRoute) {}
+  constructor(private tallerService:TallerService, private articuloService:ArticuloService, private ordenDeProduccionService:OrdenProduccionService, private presupuestoService:PresupuestoService) {}
 
   ngOnInit(): void {
     this.listarTalleres();
@@ -394,13 +395,34 @@ listarTalleres(): void {
     } 
 
     confirmarGenerarExcel(generar: boolean) {
-      if (generar) {
-        this.generarExcel();
+        console.log("ENTRA A LA FUNCION");
+        console.log(generar);
+        console.log(this.pedidoProduccionAAcceder?.idPresupuesto)
+      
+      
+        if (generar) {
+          const idPresupuesto = this.currentPedidoProduccion?.idPresupuesto;
+      
+          if (idPresupuesto) {
+            this.presupuestoService.get(idPresupuesto).subscribe({
+              next: (data) => {
+                console.log("ENTRO AL SUSCRIBE")
+                const clienteAsociado = data?.cliente?.razonSocial ?? 'Aca se pone cualquier cosa';
+                console.log(clienteAsociado)
+                this.generarExcel(clienteAsociado);
+              },
+              error: (e) => {
+                console.error('Error al obtener presupuesto, usando Stock:', e);
+                this.generarExcel("Stock");
+              }
+            });
+          } else {
+            this.generarExcel("Stock");
+          }
+        }
+        this.mostrarConfirmacionPDF = false;
       }
-      this.mostrarConfirmacionPDF = false;
-    } 
-
-
+    
     
   generarPDF() {
       const docDefinition: any = {
@@ -517,15 +539,41 @@ getStyles() {
 }
 
 
-generarExcel() {
+generarExcel(nombreClienteAsociado:string) {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet('Ingreso de Mercadería');
 
-  // Encabezados con estilo
+  const razonSocial = this.currentPedidoProduccion?.taller?.razonSocial || 'Sin taller';
+  const fechaPedido = this.currentPedidoProduccion?.fecha || new Date();
+  const clientePedidoProduccion = nombreClienteAsociado
+  const idPedido = this.currentPedidoProduccion?.id || '';
+
+  // 👉 Insertar título
+  const titulo1 = worksheet.addRow([`Razón social: ${razonSocial}`]);
+  titulo1.font = { size: 16, bold: true };
+  
+  const titulo2 = worksheet.addRow([`Fecha: ${this.formatearFecha(new Date(fechaPedido))}`]);
+  titulo2.font = { size: 16 };
+  
+  const titulo3 = worksheet.addRow([`ID Pedido: ${idPedido}`]);
+  titulo3.font = { size: 16 };
+  
+  const titulo4 = worksheet.addRow([`Presupuesto: ${clientePedidoProduccion}`]);
+  titulo4.font = { size: 16 };
+  
+
+  worksheet.addRow([]); // Fila vacía antes de la cabecera
+
+  // Encabezados
   worksheet.addRow(['Código', 'Cantidad', 'Descripción']);
-  const headerRow = worksheet.getRow(1);
+  const headerRow = worksheet.getRow(6); // o el número correcto según tu estructura
+  
   headerRow.eachCell((cell) => {
-    cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    cell.font = {
+      bold: true,
+      size: 14, // 👈 Tamaño de letra aumentado
+      color: { argb: 'FFFFFFFF' }
+    };
     cell.fill = {
       type: 'pattern',
       pattern: 'solid',
@@ -536,7 +584,7 @@ generarExcel() {
       bottom: { style: 'thin' }
     };
   });
-
+  
   // Datos
   this.mapaPresupuestoArticulos?.forEach((presupuestosArticulos, clave) => {
     const cantidades = presupuestosArticulos.map(pa => pa.cantidadActual || 0);
@@ -545,18 +593,20 @@ generarExcel() {
     const descripcionCompleta = presupuestosArticulos
       .map(pa => `${pa.cantidadActual || 0}${pa.articulo?.color?.codigo || ''}`)
       .join(' ');
-
-    worksheet.addRow([clave, totalCantidad, `${descripcion} ${descripcionCompleta}`]);
+  
+    const row = worksheet.addRow([clave, totalCantidad, `${descripcion} ${descripcionCompleta}`]);
+    row.font = { size: 14 }; // 👈 Aplicar tamaño de letra 14
   });
-
+  
   // Ajustar ancho
   worksheet.columns.forEach(column => {
     column.width = 25;
   });
 
+  // Descargar
   workbook.xlsx.writeBuffer().then((buffer) => {
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    FileSaver.saveAs(blob, 'Ingreso-de-mercaderia.xlsx');
+    FileSaver.saveAs(blob, `Ingreso-de-mercaderia-${new Date()} - ${this.currentPedidoProduccion?.taller?.razonSocial}.xlsx`);
   });
 }
 
@@ -574,7 +624,7 @@ cargarDetallesPedidoProduccion(id: Number) {
     next: (data) => {
       console.log(data);
       this.pedidoProduccionAAcceder = data;
-      console.log("El presupuesto cargado es: ", this.pedidoProduccionAAcceder);
+      console.log("El pedido produccion cargado es: ", this.pedidoProduccionAAcceder);
       this.fechaPedidoProduccion=this.pedidoProduccionAAcceder.fecha
       this.currentTaller = this.pedidoProduccionAAcceder?.taller;
       console.log("Se cargó al taller que se buscó acceder ", this.currentTaller);
