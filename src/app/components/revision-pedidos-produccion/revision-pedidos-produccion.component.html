@@ -158,16 +158,32 @@
 </table>
 
 <div class="boton-container">
-  <div class="boton-generarPDF">
-    <button mat-raised-button (click)="generarPDFPedidosSeleccionadosOriginal()" color="primary" class="boton-lindo azul">
-      Generar PDF Original
+  <div class="boton-seleccionarPresupuesto">
+    <button mat-raised-button (click)="mostrarOpciones('original')" color="primary" class="boton-lindo azul">
+      Originales
     </button>
   </div>
 
   <div class="boton-generarPDF">
-    <button mat-raised-button (click)="generarPDFPedidosSeleccionadosPendiente()" color="warn" class="boton-lindo rojo">
-      Generar PDF Pendientes
+    <button mat-raised-button (click)="mostrarOpciones('pendiente')" color="warn" class="boton-lindo rojo">
+      Pendientes
     </button>
   </div>
 </div>
+
+
+<div class="backdrop" *ngIf="mostrarConfirmacionPDF">
+  <div class="checklist-container">
+    <mat-radio-group [(ngModel)]="generacionPDF">
+      <mat-radio-button [value]="true">PDF</mat-radio-button>
+      <mat-radio-button [value]="false">Excel</mat-radio-button>
+    </mat-radio-group>
+  </div>
+
+  <div class="button-container">
+    <button mat-raised-button color="primary" (click)="confirmarGeneracion()">Confirmar</button>
+    <button mat-raised-button color="warn" (click)="cancelarGeneracion()">Cancelar</button>
+  </div>
+</div>
+
 

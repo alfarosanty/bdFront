@@ -1,17 +1,13 @@
 import { Component, NgModule } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { catchError, map, Observable, startWith, throwError } from 'rxjs';
 import { Articulo } from 'src/app/models/articulo.model';
-import { IngresoMercaderia } from 'src/app/models/ingreso-mercaderia.model';
 import { PedidoProduccion } from 'src/app/models/pedido-produccion.model';
 import { PresupuestoArticulo } from 'src/app/models/presupuesto-articulo.model';
 import { RegistroDescuento } from 'src/app/models/registro-descuento.model';
 import { Taller } from 'src/app/models/taller.model';
 import { ArticuloService } from 'src/app/services/articulo.service';
-import { IngresoService } from 'src/app/services/ingreso.service';
 import { OrdenProduccionService } from 'src/app/services/orden-produccion.service';
 import { TallerService } from 'src/app/services/taller.service';
 import { MatTableDataSource } from '@angular/material/table';
@@ -21,6 +17,8 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { Presupuesto } from 'src/app/models/presupuesto.model';
 import { PresupuestoService } from 'src/app/services/budget.service';
+import * as ExcelJS from 'exceljs';
+import * as FileSaver from 'file-saver';
 
 
 (pdfMake as any).vfs = (pdfFonts as any).vfs;
@@ -82,6 +80,10 @@ export class RevisionPedidosProduccionComponent {
   columnsToDisplay = ['Pedido', 'Cantidad Total', 'Cantidad Pendiente', 'Generar PDF Original', 'Generar PDF Pendientes', 'Seleccionar'];
   articuloColumnsToDisplay = ['Articulo', 'Cantidad', 'Cantidad Pendiente'];
   expandedElement: PresupuestoArticulo | undefined;
+
+  mostrarConfirmacionPDF = false;
+  generacionPDF: boolean = true;
+  tipoGeneracion: 'original' | 'pendiente' | null = null;
 
   //INPUT BUSQUEDA
   myControl = new FormControl();
@@ -467,6 +469,164 @@ listarTalleres(): void {
   
     pdfMake.createPdf(docDefinition).download(`Pedidos-Produccion-Todos-${this.formatearFecha(new Date())}.pdf`);
   }
+
+  generarExcelOriginalMultiplePedidos(listaPedidosProduccion: PedidoProduccion[]) {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Pedidos Producción');
+  
+    if (!listaPedidosProduccion.length) return;
+  
+    const primerPedido = listaPedidosProduccion[0];
+    const razonSocial = primerPedido.taller?.razonSocial || 'Sin taller';
+    const telefonoTaller = primerPedido.taller?.telefono || '';
+    
+    // 👉 Título general
+    const titulo1 = worksheet.addRow([`Taller: ${razonSocial}`]);
+    titulo1.font = { size: 16, bold: true };
+  
+    const titulo2 = worksheet.addRow([`Teléfono: ${telefonoTaller}`]);
+    titulo2.font = { size: 14 };
+  
+    worksheet.addRow([]); // Espacio
+  
+    listaPedidosProduccion.forEach((pedido) => {
+      const idPedido = pedido.id;
+      const fechaPedido = this.formatearFecha(pedido.fecha);
+      const cliente = this.presupuestosMap.get(pedido.idPresupuesto ?? 0)?.cliente?.razonSocial ?? 'Stock';
+  
+      // 👉 Encabezado del pedido
+      const separador = worksheet.addRow([`Pedido N° ${idPedido} - ${fechaPedido} - Cliente: ${cliente}`]);
+      separador.font = { bold: true, italic: true, size: 14 };
+      worksheet.addRow([]); // Espacio
+  
+      // 👉 Encabezado de tabla
+      const header = worksheet.addRow(['Código', 'Cantidad', 'Descripción']);
+      header.eachCell((cell) => {
+        cell.font = {
+          bold: true,
+          size: 13,
+          color: { argb: 'FFFFFFFF' }
+        };
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF4A4A4A' }
+        };
+        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        cell.border = { bottom: { style: 'thin' } };
+      });
+  
+      // 👉 Datos
+      const mapaPresuArt: Map<string, PresupuestoArticulo[]> = new Map();
+      this.agruparArticulosPorFamiliaYMedida(mapaPresuArt, pedido);
+  
+      mapaPresuArt.forEach((presupuestosArticulos, clave) => {
+        const cantidades = presupuestosArticulos.map(pa => pa.cantidad || 0);
+        const totalCantidad = cantidades.reduce((acc, c) => acc + c, 0);
+        const descripcion = presupuestosArticulos[0].articulo?.descripcion || '';
+        const descripcionCompleta = presupuestosArticulos
+          .map(pa => `${pa.cantidad || 0}${pa.articulo?.color?.codigo ? ' ' + pa.articulo.color.codigo : ''}`)
+          .join(' ');
+  
+        const row = worksheet.addRow([clave, totalCantidad, `${descripcion} ${descripcionCompleta}`]);
+        row.font = { size: 13 };
+      });
+  
+      worksheet.addRow([]); // Espacio entre pedidos
+    });
+  
+    // Ajustar ancho de columnas
+    worksheet.columns.forEach(column => {
+      column.width = 25;
+    });
+  
+    // 👉 Descargar archivo
+    workbook.xlsx.writeBuffer().then((buffer) => {
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      FileSaver.saveAs(blob, `Pedidos-Produccion-Todos-${this.formatearFecha(new Date())}.xlsx`);
+    });
+  }
+
+
+  generarExcelPendienteMultiplePedidos(listaPedidosProduccion: PedidoProduccion[]) {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Pedidos Producción');
+  
+    if (!listaPedidosProduccion.length) return;
+  
+    const primerPedido = listaPedidosProduccion[0];
+    const razonSocial = primerPedido.taller?.razonSocial || 'Sin taller';
+    const telefonoTaller = primerPedido.taller?.telefono || '';
+    
+    // 👉 Título general
+    const titulo1 = worksheet.addRow([`Taller: ${razonSocial}`]);
+    titulo1.font = { size: 16, bold: true };
+  
+    const titulo2 = worksheet.addRow([`Teléfono: ${telefonoTaller}`]);
+    titulo2.font = { size: 14 };
+  
+    worksheet.addRow([]); // Espacio
+  
+    listaPedidosProduccion.forEach((pedido) => {
+      const idPedido = pedido.id;
+      const fechaPedido = this.formatearFecha(pedido.fecha);
+      const cliente = this.presupuestosMap.get(pedido.idPresupuesto ?? 0)?.cliente?.razonSocial ?? 'Stock';
+  
+      // 👉 Encabezado del pedido
+      const separador = worksheet.addRow([`Pedido N° ${idPedido} - ${fechaPedido} - Cliente: ${cliente}`]);
+      separador.font = { bold: true, italic: true, size: 14 };
+      worksheet.addRow([]); // Espacio
+  
+      // 👉 Encabezado de tabla
+      const header = worksheet.addRow(['Código', 'Pendiente', 'Descripción']);
+      header.eachCell((cell) => {
+        cell.font = {
+          bold: true,
+          size: 13,
+          color: { argb: 'FFFFFFFF' }
+        };
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF4A4A4A' }
+        };
+        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        cell.border = { bottom: { style: 'thin' } };
+      });
+  
+      // 👉 Datos
+      const mapaPresuArt: Map<string, PresupuestoArticulo[]> = new Map();
+      this.agruparArticulosPorFamiliaYMedida(mapaPresuArt, pedido);
+  
+      mapaPresuArt.forEach((presupuestosArticulos, clave) => {
+        const pendientes = presupuestosArticulos.map(pa => pa.cantidadPendiente || 0);
+        const totalCantidad = pendientes.reduce((acc, c) => acc + c, 0);
+        const descripcion = presupuestosArticulos[0].articulo?.descripcion || '';
+        const descripcionCompleta = presupuestosArticulos
+          .map(pa => `${pa.cantidadPendiente || 0}${pa.articulo?.color?.codigo ? ' ' + pa.articulo.color.codigo : ''}`)
+          .join(' ');
+  
+        const row = worksheet.addRow([clave, totalCantidad, `${descripcion} ${descripcionCompleta}`]);
+        row.font = { size: 13 };
+      });
+  
+      worksheet.addRow([]); // Espacio entre pedidos
+    });
+  
+    // Ajustar ancho de columnas
+    worksheet.columns.forEach(column => {
+      column.width = 25;
+    });
+  
+    // 👉 Descargar archivo
+    workbook.xlsx.writeBuffer().then((buffer) => {
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      FileSaver.saveAs(blob, `Pedidos-Produccion-Todos-${this.formatearFecha(new Date())}.xlsx`);
+    });
+  }
+  
+  
+
   
 
 
@@ -591,6 +751,11 @@ getStyles() {
       margin: [0, 2, 0, 2] // espaciado interno entre líneas
     },
   };
+}
+
+mostrarOpciones(tipo: 'original' | 'pendiente') {
+  this.tipoGeneracion = tipo;
+  this.mostrarConfirmacionPDF = true;
 }
 
 
@@ -804,6 +969,17 @@ aplicarIngresoAPedidosProduccion(){
     this.generarPDFPendientesMultiplePedidos(listaDePedidosProd);
   }
 
+  generarExcelPedidosSeleccionadosOriginal(){
+    const listaDePedidosProd = this.dataSource.data.filter(pedidoProd=>pedidoProd.seleccionadoImprimir == true)
+    this.generarExcelOriginalMultiplePedidos(listaDePedidosProd);
+  }
+
+  generarExcelPedidosSeleccionadosPendiente(){
+    const listaDePedidosProd = this.dataSource.data.filter(pedidoProd=>pedidoProd.seleccionadoImprimir == true)
+    this.generarExcelPendienteMultiplePedidos(listaDePedidosProd);
+  }
+
+
   agregarPresupuestoAMap(id: number) {
     this.presupuestoService.get(id).subscribe(
       (presupuesto) => {
@@ -815,6 +991,29 @@ aplicarIngresoAPedidosProduccion(){
       }
     );
 
+  }
+
+  confirmarGeneracion() {
+    if (this.generacionPDF) {
+      if (this.tipoGeneracion === 'original') {
+        this.generarPDFPedidosSeleccionadosOriginal();
+      } else {
+        this.generarPDFPedidosSeleccionadosPendiente();
+      }
+    } else {
+      if (this.tipoGeneracion === 'original') {
+        this.generarExcelPedidosSeleccionadosOriginal();
+      } else {
+        this.generarExcelPedidosSeleccionadosPendiente(); // <-- este faltaba
+      }
+    }
+  
+    this.mostrarConfirmacionPDF = false;
+    this.tipoGeneracion = null;
+  }
+  
+  cancelarGeneracion(){
+    this.mostrarConfirmacionPDF = false
   }
   
   

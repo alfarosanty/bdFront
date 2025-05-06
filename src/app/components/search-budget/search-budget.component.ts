@@ -4,13 +4,11 @@ import { Observable, throwError } from 'rxjs';
 import { catchError, map, startWith } from 'rxjs/operators'
 import { Articulo } from 'src/app/models/articulo.model';
 import { Cliente } from 'src/app/models/cliente';
-import { Medida } from 'src/app/models/medida.model';
 import { PresupuestoArticulo } from 'src/app/models/presupuesto-articulo.model';
 import { Presupuesto } from 'src/app/models/presupuesto.model';
 import { ArticuloService } from 'src/app/services/articulo.service';
 import { PresupuestoService } from 'src/app/services/budget.service';
 import { ClienteService } from 'src/app/services/cliente.service';
-import { jsPDF }  from 'jspdf';
 import { ActivatedRoute, Router } from '@angular/router';
 import * as pdfMake from 'pdfmake/build/pdfmake';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';

@@ -220,10 +220,6 @@ select {
   input[type="radio"] {
     margin-right: 5%; /* Espacio entre el radio button y el texto */
   }
-
-  .checklist-container {
-    text-align: center; /* Centra el contenido */
-  }
   .boton-container {
     display: flex; /* Usa Flexbox para alinear los botones */
     justify-content: center; /* Centra los botones horizontalmente */
@@ -253,10 +249,6 @@ select {
     background-color: #8B0000; /* Rojo oscuro al pasar el mouse */
   }
   
-  .boton-lindo mat-icon {
-    margin-right: 8%;
-  }
-  
   .mat-form-field {
     font-size: 12px; /* Tamaño de fuente más pequeño */
   }
@@ -268,3 +260,142 @@ select {
   .fecha-field {
     margin-right: 20px;
   }
+
+  .boton-borrar {
+    background-color: transparent;
+    border: none;
+    color: red;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.boton-borrar:hover {
+    text-decoration: underline;
+}
+
+.boton-borrar i {
+    margin-right: 5px;
+}
+
+/* Capa de fondo borroso */
+.backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    display: flex;
+    flex-direction: column; /* Establece los elementos en columna */
+    justify-content: center; /* Centra los elementos verticalmente */
+    align-items: center; /* Centra los elementos horizontalmente */
+    z-index: 10;
+  }
+  
+  /* Modal */
+  .modal {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  }
+
+  .checklist-label {
+    font-weight: bold;
+    margin-top: 10px; /* Espacio entre los radio buttons */
+    display: flex; /* Usamos Flexbox para alinear los elementos */
+    align-items: center; /* Alinea el radio button con el texto */
+    justify-content: center; /* Centra los elementos dentro de cada label */
+  }
+
+  input[type="radio"] {
+    margin-right: 5%; /* Espacio entre el radio button y el texto */
+  }
+  
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.4); /* oscurece */
+    backdrop-filter: blur(8px); /* desenfoque del fondo */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+  
+  .modal-content {
+    background: #ffffff;
+    padding: 2rem 3rem;
+    border-radius: 12px;
+    text-align: center;
+    width: 40%;
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.4);
+  }
+  
+  .modal-buttons {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+  }
+
+  .boton-lindo {
+    font-size: 90%;
+    padding: 18% 50%;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+  }
+  
+  .boton-lindo:hover {
+    background-color: #020749;
+    transform: scale(1.05);
+  }
+
+  .checklist-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    text-align: center;
+  }
+
+  .boton-container {
+    display: flex;
+    justify-content: center;
+    gap: 40px; /* Ajustá este valor según necesites */
+    margin-top: 20px;
+  }
+  
+  
+  .boton-seleccionarPresupuesto {
+    display: inline-flex; /* Asegura que los botones estén alineados horizontalmente */
+  }
+  
+  .boton-lindo {
+    font-size: 90%;
+    padding: 22px 22px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    border: none;
+    width: 150px; /* Fijás un ancho común */
+    margin: 0 auto;
+  }
+  
+  
+  /* Estilo para el botón azul */
+  .azul:hover {
+    background-color: #020749; /* Azul oscuro al pasar el mouse */
+  }
+  
+  .rojo:hover {
+    background-color: #8B0000; /* Rojo oscuro al pasar el mouse */
+  }
+  

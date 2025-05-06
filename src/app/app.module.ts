@@ -8,8 +8,6 @@ import { AppComponent } from './app.component';
 import { AddStockComponent } from './components/add-stock/add-stock.component';
 import { StockDetailsComponent } from './components/stock-details/stock-details.component';
 import { StockListComponent } from './components/stock-list/stock-list.component';
-import { EditarGenericoDialogComponent, SearchBudgetComponent } from './components/search-budget/search-budget.component';
-import { SelectBudgetComponent } from './components/select-budget/select-budget.component';
 
 
 import { MatSelectModule } from '@angular/material/select';
@@ -36,12 +34,15 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { ReactiveFormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ClientesComponent } from './components/clientes/clientes.component';
-import { FacturacionComponent } from './components/facturacion/facturacion.component';
 import { PedidoProduccionComponent } from './components/pedido-produccion/pedido-produccion.component';
 import { IngresoComponent } from './components/ingreso/ingreso.component';
 import { RevisionPedidosProduccionComponent } from './components/revision-pedidos-produccion/revision-pedidos-produccion.component';
 import { SeparacionProductosComponent } from './components/separacion-productos/separacion-productos.component';
 import { PresentacionComponent } from './components/presentacion/presentacion.component';
+import { EditarGenericoDialogComponent, SearchBudgetComponent } from './components/search-budget/search-budget.component';
+import { EditarGenericoDialogFacturacionComponent, FacturacionComponent } from './components/facturacion/facturacion.component';
+import { SelectBudgetComponent } from './components/select-budget/select-budget.component';
+
 
 
 @NgModule({
@@ -59,6 +60,7 @@ import { PresentacionComponent } from './components/presentacion/presentacion.co
     RevisionPedidosProduccionComponent,
     SeparacionProductosComponent,
     EditarGenericoDialogComponent,
+    EditarGenericoDialogFacturacionComponent,
     PresentacionComponent,
   ],
   imports: [
