@@ -397,16 +397,15 @@ listarTalleres(): void {
     confirmarGenerarExcel(generar: boolean) {
         console.log("ENTRA A LA FUNCION");
         console.log(generar);
-        console.log(this.pedidoProduccionAAcceder?.idPresupuesto)
-      
-      
+        
+        
         if (generar) {
-          const idPresupuesto = this.currentPedidoProduccion?.idPresupuesto;
+          const idPresupuesto = this.pedidoProduccionAAcceder?.idPresupuesto;
+          console.log(idPresupuesto)
       
           if (idPresupuesto) {
             this.presupuestoService.get(idPresupuesto).subscribe({
               next: (data) => {
-                console.log("ENTRO AL SUSCRIBE")
                 const clienteAsociado = data?.cliente?.razonSocial ?? 'Aca se pone cualquier cosa';
                 console.log(clienteAsociado)
                 this.generarExcel(clienteAsociado);
@@ -538,7 +537,6 @@ getStyles() {
   };
 }
 
-
 generarExcel(nombreClienteAsociado:string) {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet('Ingreso de Mercadería');
@@ -606,12 +604,9 @@ generarExcel(nombreClienteAsociado:string) {
   // Descargar
   workbook.xlsx.writeBuffer().then((buffer) => {
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    FileSaver.saveAs(blob, `Ingreso-de-mercaderia-${new Date()} - ${this.currentPedidoProduccion?.taller?.razonSocial}.xlsx`);
+    FileSaver.saveAs(blob, `Ingreso-de-mercaderia-${this.formatearFecha(new Date())} - ${this.currentPedidoProduccion?.taller?.razonSocial}.xlsx`);
   });
 }
-
-
-
 
 validarDatosRequeridos() : Boolean{
 
@@ -688,6 +683,7 @@ actualizarMapaPresupuestoArticulo(nuevoMap: Map<string, PresupuestoArticulo[]>){
   }
   this.actualizarDataSource()
 }
+
 cantidadActualDepoducto():string {
   if (this.currentArticulo) {
     const claveMapa: string = this.currentArticulo?.familia?.codigo + "/" + this.currentArticulo.medida?.codigo;
