@@ -15,6 +15,7 @@ import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { EstadoPresupuesto } from 'src/app/models/estado-presupuesto.model';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { Factura } from 'src/app/models/factura.model';
 
 (pdfMake as any).vfs = (pdfFonts as any).vfs;
 
@@ -51,6 +52,7 @@ export class FacturacionComponent {
   currentCliente?: Cliente;
   currentArticulo ?: Articulo;
   currentPresupuesto?: Presupuesto;
+  currentFactura?: Factura;
 
   presupuestoAAcceder ?: Presupuesto
   fechaPresupuesto?: Date;
@@ -447,12 +449,11 @@ listarClientes(): void {
 
       if (!this.validarDatosRequeridos()) {
         // Asignar cliente y otros valores
-        this.currentPresupuesto!.id=this.presupuestoAAcceder?.id
-        this.currentPresupuesto!.cliente = this.currentCliente;
-        this.currentPresupuesto!.EximirIVA = this.eximirIVA;
-        this.currentPresupuesto!.articulos = [];
-        this.currentPresupuesto!.descuentoGeneral = Number(this.descTotal)
-        if(this.fechaPresupuesto != undefined){this.currentPresupuesto!.fecha = this.fechaPresupuesto}
+        this.currentFactura!.cliente = this.currentCliente;
+        this.currentFactura!.eximirIVA = this.eximirIVA;
+        this.currentFactura!.articulos = [];
+        this.currentFactura!.descuentoGeneral = Number(this.descTotal)
+        if(this.fechaPresupuesto != undefined){this.currentFactura!.fecha = this.fechaPresupuesto}
      
     
         // Recorrer el mapa de artículos y agregarlos al presupuesto
@@ -461,7 +462,7 @@ listarClientes(): void {
             console.log(presuArt.articulo?.color?.descripcion + ' ' + presuArt.cantidad);
             presuArt.cantidadPendiente = presuArt.cantidad;
             presuArt.codigo = presuArt.articulo?.familia?.codigo + "/" + presuArt.articulo?.medida?.codigo
-            this.currentPresupuesto!.articulos?.push(presuArt);
+            this.currentFactura!.articulos?.push(presuArt);
           });
         });
     
@@ -477,14 +478,6 @@ listarClientes(): void {
           if (idPresupuesto) {
             // Aquí puedes reiniciar el formulario y mostrar el número del presupuesto
             console.log('Presupuesto creado con ID:', idPresupuesto);
-          }
-        } else {
-          // Si el presupuesto ya existe, actualizarlo
-          const idPresupuesto = this.presupuestoService.actualizar(this.currentPresupuesto!);
-          this.mostrarBotonGuardar = false;
-          if (idPresupuesto) {
-            // Aquí puedes reiniciar el formulario y mostrar el número del presupuesto
-            console.log('Presupuesto actualizado con ID:', idPresupuesto);
           }
         }
     

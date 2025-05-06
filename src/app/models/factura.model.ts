@@ -5,9 +5,10 @@ import { Presupuesto } from "./presupuesto.model";
 
 export class Factura {
     id?:number
-    Fecha?:Date;
-    Cliente?:Cliente;
-    EximirIVA?:Boolean;
-    Articulos?:FacturaArticulo[];
-    Presupuesto?:Presupuesto | null;
+    fecha?:Date;
+    cliente?:Cliente;
+    eximirIVA?:Boolean;
+    descuentoGeneral?: number;
+    articulos?:FacturaArticulo[];
+    presupuesto?:Presupuesto | null;
 }
