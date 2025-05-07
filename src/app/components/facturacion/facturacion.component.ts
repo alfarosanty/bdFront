@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Inject } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map, startWith } from 'rxjs/operators'
@@ -46,7 +46,7 @@ export class FacturacionComponent {
   presupuestosXCliente: Presupuesto[] =[];
   mapaPresupuestoArticulos ?: Map<string,PresupuestoArticulo[]>;
   mapaPresuXArtParaAcceder ?: Map<string,PresupuestoArticulo[]>;
-  mapaPresuXArtEliminados?: Map<string,PresupuestoArticulo[]>;
+  mapaPresuXArtEliminados?: Map<string,PresupuestoArticulo[]> = new Map();
 
 
   currentCliente?: Cliente;
@@ -83,12 +83,17 @@ export class FacturacionComponent {
   articuloSeleccionado ='';
  //END INPUT
  //MATTABLE DATA
- columnsToDisplay: string[] = ['Codigo','Descripcion','Cantidad','PrecioUnitario','PrecioTotal','Descuento','Borrar','Editar'];
- articuloColumnsToDisplay = ['Articulo', 'Cantidad', 'Hay stock'];
- expandedElement: PresupuestoArticulo | undefined;
- totalesColumnsToDisplay = ['Descripcion', 'Monto'];
+
+
+ columnsToDisplay = ['Artículo', 'Descripcion', 'Cantidad', 'Precio Unitario', 'Precio Total', 'Descuento', 'Borrar', 'Editar'];
+ articuloColumnsToDisplay = ['Articulo', 'Cantidad', 'Borrar', 'Editar'];
+ expandedElement: any | undefined;
 
  dataSourceCodigo: any[] = [];
+
+
+ totalesColumnsToDisplay = ['Descripcion', 'Monto'];
+
  totalesData = [
   { descripcion: 'Subtotal', monto: this.calcularPrecioSubtotal() },
   { descripcion: 'Total', monto: this.calcularPrecioTotal() },
@@ -336,15 +341,33 @@ listarClientes(): void {
     this.mapaPresupuestoArticulos?.delete(key);
     this.actualizarDataSource();
   
-    if (articuloBorrado) {
-      if (this.mapaPresuXArtEliminados?.has(key)) {
-        const listaPresuPuestoArticulos = this.mapaPresuXArtEliminados.get(key);
-        listaPresuPuestoArticulos?.concat(articuloBorrado);
-      } else {
-        this.mapaPresuXArtEliminados?.set(key, articuloBorrado);
+    this.agregarAMapaEliminados(key,articuloBorrado!)
+  }
+
+
+
+  borrarArticulo(key: any, color: string) {
+    const articulos = this.mapaPresupuestoArticulos?.get(key);  // Obtener los artículos en esa clave
+    const articuloBorrado = articulos?.filter(presuArt=>presuArt.articulo?.color?.codigo == color)
+    if (articulos) {
+      const index = articulos.findIndex(presuArt => presuArt.articulo?.color?.codigo === color);  // Buscar el artículo por color
+      if (index !== -1) {
+        articulos.splice(index, 1);  // Eliminar el artículo específico (por índice)
+        
+        // Volver a poner la lista modificada en el Map
+        this.mapaPresupuestoArticulos?.set(key, articulos);
+  
+        // Si la lista está vacía, eliminar la clave del Map
+        if (articulos.length === 0) {
+          this.mapaPresupuestoArticulos?.delete(key);
+        }
+  
+        this.actualizarDataSource();
+        this.agregarAMapaEliminados(key,articuloBorrado!)  // Actualizar el DataSource para que la vista se refresque
       }
     }
   }
+  
   
     editarFila(key: any) {
       this.codigoArticulo = key;
@@ -847,6 +870,10 @@ formatearFecha(fecha: any): string {
 }
 
 actualizarDataSource() {
+  // Guardamos el `expandedElement` antes de actualizar el dataSource
+  const currentExpandedElement = this.expandedElement;
+
+  // Actualizamos el dataSource con los nuevos datos
   this.dataSourceCodigo = Array.from(this.mapaPresupuestoArticulos!.entries()).map(([codigo, articulos]) => {
     return {
       codigo,
@@ -854,6 +881,32 @@ actualizarDataSource() {
       articulos // 👈 esto es clave para acceder después a los datos
     };
   });
+
+  // Ahora, después de actualizar el dataSource, tratamos de restaurar el estado de la fila expandida
+  if (currentExpandedElement) {
+    const foundElement = this.dataSourceCodigo.find(element => element.codigo === currentExpandedElement.codigo);
+    if (foundElement) {
+      this.expandedElement = foundElement; // Restauramos el elemento expandido
+    } else {
+      this.expandedElement = null; // Si no se encuentra, cerramos la fila
+    }
+  }
+
+  console.log(this.dataSourceCodigo); // Verifica el nuevo dataSource
+}
+
+agregarAMapaEliminados(key:any, articuloBorrado: PresupuestoArticulo[]){
+  if (articuloBorrado) {
+    if (this.mapaPresuXArtEliminados?.has(key)) {
+      const listaPresupuestoArticulos = this.mapaPresuXArtEliminados.get(key);
+      const nuevaListaPresupuestoArticulos = listaPresupuestoArticulos?.concat(articuloBorrado);
+      this.mapaPresuXArtEliminados.set(key,nuevaListaPresupuestoArticulos!)
+    } else {
+      this.mapaPresuXArtEliminados?.set(key, articuloBorrado);
+    }
+  }
+
+  console.log(this.mapaPresuXArtEliminados)
 }
 
 getArticulosParaArticulo(codigo: string): PresupuestoArticulo[] {
@@ -906,3 +959,12 @@ export class EditarGenericoDialogFacturacionComponent {
   }
 }
 
+/*
+
+TODO:
+1) generar nuevo prespuesto con articulos eliminados(si está actvo el check)
+2) generar nueva factura y guardarla en la BD
+3) conectarse con la API de AFIP para automatizar problema
+4) revisar de mejorar el HTML, puntualmente la grilla de productos
+5) editar producto inddividualmente
+*/ 

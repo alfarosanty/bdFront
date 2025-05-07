@@ -219,7 +219,7 @@ th.mat-header-cell, td.mat-cell {
 }
 
 .input-pequeño{
-    width: 60%;
+    width: 30%;
 }
 
 .boton-busqueda-articulo {
@@ -357,4 +357,34 @@ th.mat-header-cell, td.mat-cell {
     padding: 0;
     border: none;
   }
+
+  table {
+    width: 100%;
+  }
   
+  tr.example-detail-row {
+    height: 0;
+  }
+  
+  tr.example-element-row:not(.example-expanded-row):hover {
+    background: whitesmoke;
+  }
+  
+  tr.example-element-row:not(.example-expanded-row):active {
+    background: #efefef;
+  }
+  
+  .example-element-row td {
+    border-bottom-width: 0;
+  }
+    
+  .zero-padding{
+    padding: 0;
+  }
+
+  .mat-column-Descuento {
+    width: 150px; /* o el ancho que necesites */
+    min-width: 20px;
+    padding: 0 4px;
+    text-align: center;
+  }
