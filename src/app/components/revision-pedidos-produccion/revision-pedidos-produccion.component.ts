@@ -900,6 +900,12 @@ estaEntreFechas(fechaInicio: any, fechaFin: any, fechaEvaluar: any): boolean {
   return evaluar >= inicio && evaluar <= fin;
 }
 
+filtrarGeneral(){
+  this.filtrarPedidosProduccionXRangoFechas();
+  this.filtroPedidosProduccion();
+
+}
+
 formatearFecha(fecha: any): string {
   const fechaObj = new Date(fecha);
   return isNaN(fechaObj.getTime()) ? 'Fecha inválida' : `${fechaObj.getDate()}/${fechaObj.getMonth() + 1}/${fechaObj.getFullYear()}`;

@@ -32,7 +32,7 @@
   <h3>Selecciona un presupuesto de:</h3>
   <h3>{{currentCliente.razonSocial}}</h3>
 
-  <select [(ngModel)]="presupuestoAAcceder" (change)="cargarDetallesPresupuesto((presupuestoAAcceder?.id??0))"> 
+  <select [(ngModel)]="presupuestoAAcceder" (change)="cargarDetallesPresupuesto((presupuestoAAcceder?.id??0)); inputArticulo.focus()"> 
       <option value="" disabled selected>Selecciona un presupuesto de:</option>
       <option *ngFor="let presupuesto of presupuestosXCliente" [ngValue]="presupuesto">
           {{ presupuesto.id }} - {{ formatearFecha(presupuesto.fecha!) }}
@@ -88,11 +88,12 @@
             <mat-form-field class="input-mat" appearance="outline">
                 <mat-label>Selecciona una opción</mat-label>
                 <input type="text"
+                       #inputArticulo
                        [(ngModel)]="articuloSeleccionado"
                        matInput
                        [formControl]="myControl"
                        [matAutocomplete]="auto"
-                       (keydown.enter)="seleccionarArticulo()"
+                       (keydown.enter)="seleccionarArticulo();"
                        (input)="myControl.setValue(myControl.value.toUpperCase(), { emitEvent: false })">
                 <mat-autocomplete #auto="matAutocomplete">
                   <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
@@ -109,7 +110,7 @@
     <div class="colores-container" *ngIf="mostrarColores">
         <h3>Detalle de selección</h3>
         <label for="colores">Color:</label> 
-    <select class="select-color" [(ngModel)]="articuloColorIndex" (click)="actualizarArticuloSeleccionado()">  
+    <select class="select-color"  [(ngModel)]="articuloColorIndex" (click)="actualizarArticuloSeleccionado();">  
 
         <option *ngFor="let articulo of articulos ; let i = index"  [value]="i" >
 
@@ -120,7 +121,7 @@
     </select>        
         <!-- Input para mostrar el valor seleccionado -->
         <label for="cantidades">Cantidad:</label>
-        <input type="text" id="Cantidad" size="2" [(ngModel)]="cantProducto" [placeholder]= "cantidadActualDepoducto()"  (keydown.enter)="agregarArticulo(); actualizarTotales()">
+        <input type="text" id="Cantidad" size="2" [(ngModel)]="cantProducto" [placeholder]= "cantidadActualDepoducto()"  (keydown.enter)="agregarArticulo(); actualizarTotales(); inputArticulo.focus()">
     </div>
 
 </div>
@@ -230,16 +231,6 @@
               </td>
             </ng-container>
   
-            <!-- EDITAR -->
-            <ng-container matColumnDef="Editar">
-              <th mat-header-cell *matHeaderCellDef>Editar</th>
-              <td mat-cell *matCellDef="let presuArt">
-                <button (click)="editarFila(presuArt)" class="boton-borrar">
-                  <i class="fas fa-edit" style="color: #003366;"></i>
-                </button>
-              </td>
-            </ng-container>
-  
             <tr mat-header-row *matHeaderRowDef="articuloColumnsToDisplay"></tr>
             <tr mat-row *matRowDef="let row; columns: articuloColumnsToDisplay"></tr>
           </table>
@@ -293,7 +284,7 @@
   
     <!-- Botón principal para generar presupuesto -->
     <div class="boton-generarPDF" *ngIf="mostrarBotonGuardar">
-      <button mat-raised-button color="primary" class="boton-lindo" (click)="guardarPresupuesto(); generarPDF()">
+      <button mat-raised-button color="primary" class="boton-lindo" (click)="guardarFactura(); generarPDF(); generarPresupuestoBorrados()">
         Generar Factura
       </button>
     </div>

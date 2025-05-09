@@ -399,3 +399,6 @@ select {
     background-color: #8B0000; /* Rojo oscuro al pasar el mouse */
   }
   
+  tr[cdkDrag] {
+    cursor: move;
+  }

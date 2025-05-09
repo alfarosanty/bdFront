@@ -78,7 +78,11 @@ export class SearchBudgetComponent {
   articuloSeleccionado ='';
  //END INPUT
  //MATTABLE DATA
- columnsToDisplay: string[] = ['Codigo','Descripcion','Cantidad','PrecioUnitario','PrecioTotal','Descuento','Borrar','Editar'];
+
+ columnsToDisplay = ['Artículo', 'Descripcion', 'Cantidad', 'Precio Unitario', 'Precio Total', 'Descuento', 'Borrar', 'Editar'];
+ articuloColumnsToDisplay = ['Articulo', 'Cantidad', 'Borrar'];
+ expandedElement: any | undefined;
+
  totalesColumnsToDisplay = ['Descripcion', 'Monto'];
 
  dataSourceCodigo: any[] = [];
@@ -318,6 +322,38 @@ listarClientes(): void {
     this.actualizarDataSource()
   
     }
+
+    borrarArticulo(key: any, color: string) {
+      const articulos = this.mapaPresupuestoArticulos?.get(key);
+      if (articulos) {
+        const index = articulos.findIndex(presuArt => presuArt.articulo?.color?.codigo === color);
+        if (index !== -1) {
+          articulos.splice(index, 1);
+          this.mapaPresupuestoArticulos?.set(key, articulos);
+    
+          // Si la lista está vacía, eliminar la clave
+          if (articulos.length === 0) {
+            this.mapaPresupuestoArticulos?.delete(key);
+          }
+    
+          // Guarda el código expandido actual antes de actualizar
+          const codigoExpandido = this.expandedElement?.codigo;
+    
+          this.actualizarDataSource();
+          this.actualizarTotales();
+    
+          // Reasignar el elemento expandido si sigue existiendo
+          const nuevoElementoExpandido = this.dataSourceCodigo.find(e => e.codigo === codigoExpandido);
+          if (nuevoElementoExpandido) {
+            this.expandedElement = nuevoElementoExpandido;
+          } else {
+            this.expandedElement = undefined; // Si ya no existe, lo cerramos
+          }
+        }
+      }
+    }
+    
+
     editarFila(key: any) {
       this.codigoArticulo = key;
       this.articulos = [];

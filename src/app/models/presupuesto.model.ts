@@ -11,4 +11,15 @@ export class Presupuesto {
     estadoPresupuesto?: EstadoPresupuesto;
     articulos?:PresupuestoArticulo[];
     descuentoGeneral?: number;
+
+    constructor(init?: Partial<Presupuesto>) {
+        this.id = init?.id;
+        this.fecha = init?.fecha ?? new Date();
+        this.cliente = init?.cliente;
+        this.EximirIVA = init?.EximirIVA ?? false;
+        this.estadoPresupuesto = init?.estadoPresupuesto;
+        this.articulos = init?.articulos ?? [];
+        this.descuentoGeneral = init?.descuentoGeneral ?? 0;
+      }
+      
 }

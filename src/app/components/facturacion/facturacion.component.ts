@@ -16,6 +16,7 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
 import { EstadoPresupuesto } from 'src/app/models/estado-presupuesto.model';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { Factura } from 'src/app/models/factura.model';
+import { FacturaService } from 'src/app/services/factura.service';
 
 (pdfMake as any).vfs = (pdfFonts as any).vfs;
 
@@ -52,7 +53,7 @@ export class FacturacionComponent {
   currentCliente?: Cliente;
   currentArticulo ?: Articulo;
   currentPresupuesto?: Presupuesto;
-  currentFactura?: Factura;
+  currentFactura?: Factura = new Factura();
 
   presupuestoAAcceder ?: Presupuesto
   fechaPresupuesto?: Date;
@@ -86,7 +87,7 @@ export class FacturacionComponent {
 
 
  columnsToDisplay = ['Artículo', 'Descripcion', 'Cantidad', 'Precio Unitario', 'Precio Total', 'Descuento', 'Borrar', 'Editar'];
- articuloColumnsToDisplay = ['Articulo', 'Cantidad', 'Borrar', 'Editar'];
+ articuloColumnsToDisplay = ['Articulo', 'Cantidad', 'Borrar'];
  expandedElement: any | undefined;
 
  dataSourceCodigo: any[] = [];
@@ -99,8 +100,7 @@ export class FacturacionComponent {
   { descripcion: 'Total', monto: this.calcularPrecioTotal() },
 ];
 
-
-  constructor(private clienteService: ClienteService, private articuloService:ArticuloService, private presupuestoService:PresupuestoService, private route : ActivatedRoute, public dialog: MatDialog) {}
+  constructor(private clienteService: ClienteService, private articuloService:ArticuloService, private presupuestoService:PresupuestoService, private facturaService:FacturaService, private route : ActivatedRoute, public dialog: MatDialog) {}
 
   ngOnInit(): void {
     this.listarClientes();
@@ -410,7 +410,30 @@ listarClientes(): void {
     
       this.actualizarDataSource();
     }
-      guardarCambiosGenerico() {
+/*
+    editarArticulo(presupuestoArticulo: PresupuestoArticulo){
+
+      const dataInicial = {
+        precio: this.precioUniAModificar
+      };
+
+      const dialogRef = this.dialog.open(EditarGenericoDialogFacturacionComponent, {
+        width: '300px',
+        data: dataInicial
+      });
+
+      dialogRef.afterClosed().subscribe(result => {
+        if (result) {
+          this.descAModificar = result.descripcion;
+          this.precioUniAModificar = result.precio;
+          const codigo = presupuestoArticulo.articulo?.familia?.codigo + '/' + presupuestoArticulo.articulo?.medida?.codigo
+          this.guardarCambioDeArticuloIndividual(codigo, presupuestoArticulo.articulo?.color?.codigo!,this.precioUniAModificar ?? 0);
+        }
+      });
+
+    }
+*/
+   guardarCambiosGenerico() {
     const genericos = this.mapaPresupuestoArticulos?.get("GEN/GEN");
     genericos?.forEach(p => {
       p.descripcion = this.descAModificar;
@@ -420,7 +443,25 @@ listarClientes(): void {
     this.actualizarTotales();
   
   }
-
+/*
+  guardarCambioDeArticuloIndividual(codigoArticulo: string, color: string, nuevoPrecio: number) {
+    const articulos = this.mapaPresupuestoArticulos?.get(codigoArticulo);
+  
+    if (!articulos) return;
+  
+    const articuloAEditar = articulos.find(
+      articulo => articulo.articulo?.color?.codigo === color
+    );
+  
+    if (articuloAEditar) {
+      articuloAEditar.precioUnitario = nuevoPrecio;
+    }
+  
+    this.actualizarDataSource();
+    this.actualizarTotales();
+  }
+  
+*/
   cerrarModal() {
   }
 
@@ -446,7 +487,7 @@ listarClientes(): void {
     }
 
 
-    calcularPrecioTotal(): number {
+  calcularPrecioTotal(): number {
       this.aplicarDescuentoTotal();
     
       let precioTotalConDescuentos = 0;
@@ -467,19 +508,21 @@ listarClientes(): void {
     }
     
   
-    guardarPresupuesto() {
+  guardarFactura() {
 
 
       if (!this.validarDatosRequeridos()) {
         // Asignar cliente y otros valores
+        console.log(this.currentCliente)
         this.currentFactura!.cliente = this.currentCliente;
         this.currentFactura!.eximirIVA = this.eximirIVA;
         this.currentFactura!.articulos = [];
         this.currentFactura!.descuentoGeneral = Number(this.descTotal)
         if(this.fechaPresupuesto != undefined){this.currentFactura!.fecha = this.fechaPresupuesto}
+        this.currentFactura!.presupuesto = this.currentPresupuesto
      
     
-        // Recorrer el mapa de artículos y agregarlos al presupuesto
+        // Recorrer el mapa de artículos y agregarlos a la facut
         this.mapaPresupuestoArticulos?.forEach((valor, clave) => {
           valor.forEach(presuArt => {
             console.log(presuArt.articulo?.color?.descripcion + ' ' + presuArt.cantidad);
@@ -490,19 +533,15 @@ listarClientes(): void {
         });
     
         // Mostrar el presupuesto que se va a guardar (para depuración)
-        console.log("Este es el presupuesto a guardar", this.currentPresupuesto);
+        console.log("Esta es la factura a guardar", this.currentFactura);
     
         // Verificar si es un presupuesto nuevo o uno existente
-        if (!this.currentPresupuesto?.id) {
+        
           
           // Crear un nuevo presupuesto
-          const idPresupuesto = this.presupuestoService.crear(this.currentPresupuesto!);
+          const idFactura = this.facturaService.crear(this.currentFactura!);
           this.mostrarBotonGuardar = false;
-          if (idPresupuesto) {
-            // Aquí puedes reiniciar el formulario y mostrar el número del presupuesto
-            console.log('Presupuesto creado con ID:', idPresupuesto);
-          }
-        }
+        
     
         // Mostrar el backdrop (pantalla de espera o de carga)
         this.showBackDrop = true;
@@ -513,9 +552,24 @@ listarClientes(): void {
       }
     }
 
-    
+    generarPresupuestoBorrados() {
+      if(this.generaPresuBorrados){
+      const listaDeArticulos = Array.from(this.mapaPresuXArtEliminados?.values() ?? []).flat();
+      const presupuesto = new Presupuesto({
+        fecha: this.currentPresupuesto?.fecha,
+        cliente: this.currentPresupuesto?.cliente,
+        EximirIVA: this.currentPresupuesto?.EximirIVA ?? false,
+        estadoPresupuesto: new EstadoPresupuesto(1),
+        articulos: listaDeArticulos,
+        descuentoGeneral: this.currentPresupuesto?.descuentoGeneral ?? 0
+      });
+      console.log("ESTE ES EL PRESUPUESTO CREADO CON LOS BORRADOS", presupuesto)
+      this.presupuestoService.crear(presupuesto)
+    }
+    }
+     
 
-    generarPDF() {
+  generarPDF() {
     
       let docDefinition: any;
     
@@ -763,6 +817,7 @@ cargarDetallesPresupuesto(id: Number) {
       // Verificar si el presupuesto cargado tiene los datos esperados
       if (data) {
         this.presupuestoAAcceder = data;
+        this.currentPresupuesto = data;
         console.log("El presupuesto cargado es: ", this.presupuestoAAcceder);
 
         this.fechaPresupuesto = this.presupuestoAAcceder.fecha;
@@ -962,9 +1017,9 @@ export class EditarGenericoDialogFacturacionComponent {
 /*
 
 TODO:
-1) generar nuevo prespuesto con articulos eliminados(si está actvo el check)
-2) generar nueva factura y guardarla en la BD
-3) conectarse con la API de AFIP para automatizar problema
-4) revisar de mejorar el HTML, puntualmente la grilla de productos
-5) editar producto inddividualmente
+
+1) conectarse con la API de AFIP para automatizar problema
+2) revisar de mejorar el HTML, puntualmente la grilla de productos
+3) descontar artículos de stock
+
 */ 

@@ -1,3 +1,2 @@
-1) revisar los TODO marcados al final de facturacion.ts
-2) cambiar en todos la selección (pasar de código -> color -> cantidad - código)
-3) reemplazar grilla por expandible en search budget
+1) revisar los TODO marcados al final de facturacion.ts.
+2) crear la tabla STOCK o ver cómo manejar el stock saliente y entrante.

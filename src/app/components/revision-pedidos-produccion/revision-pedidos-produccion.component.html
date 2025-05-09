@@ -42,7 +42,7 @@
             <mat-date-range-picker #rangePicker>
               <mat-date-range-picker-actions>
                 <button mat-button matDateRangePickerCancel>Cancel</button>
-                <button mat-raised-button (click)="filtrarPedidosProduccionXRangoFechas()" matDateRangePickerApply>Apply</button>
+                <button mat-raised-button (click)="filtrarGeneral()" matDateRangePickerApply>Apply</button>
               </mat-date-range-picker-actions>
             </mat-date-range-picker>
           </mat-form-field>     
@@ -50,7 +50,7 @@
 
             <div>
                 <label for="estado">Estado del Pedido:</label>
-                <select id="estado" [(ngModel)]="estadoPedido" (change)="filtroPedidosProduccion()">
+                <select id="estado" [(ngModel)]="estadoPedido" (change)="filtrarGeneral()">
                     <option [value]="3" >CREADO</option>
                     <option [value]="2" >EN TALLER</option>
                     <option [value]="1" >COMPLETADO</option>
