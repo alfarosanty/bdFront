@@ -96,7 +96,7 @@
               </mat-form-field>
               
 
-   </div>
+          </div>
 
     </div>
 <!-- Este DIV aparecerá a la derecha cuando presiones Enter -->
@@ -204,7 +204,7 @@
             <ng-container matColumnDef="Articulo">
               <th mat-header-cell *matHeaderCellDef>Artículo</th>
               <td mat-cell *matCellDef="let presuArt">
-                {{ presuArt.articulo.familia.codigo }}/{{ presuArt.articulo.medida.codigo }} {{ presuArt.articulo.color.codigo }}
+                {{ presuArt.articulo.codigo }}
               </td>
             </ng-container>
   
@@ -218,7 +218,7 @@
             <ng-container matColumnDef="Borrar">
               <th mat-header-cell *matHeaderCellDef>Borrar</th>
               <td mat-cell *matCellDef="let presuArt">
-                <button (click)="borrarArticulo(presuArt.articulo.familia.codigo + '/' + presuArt.articulo.medida.codigo,presuArt.articulo.color.codigo)" class="boton-borrar">
+                <button (click)="borrarArticulo(presuArt.articulo.codigo,presuArt.articulo.color.codigo)" class="boton-borrar">
                   <i class="fas fa-trash-alt"></i>
                 </button>
               </td>

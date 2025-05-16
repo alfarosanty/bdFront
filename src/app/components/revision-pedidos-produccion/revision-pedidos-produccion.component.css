@@ -203,6 +203,11 @@ select {
   .example-element-detail {
     overflow: hidden;
     display: flex;
+    cursor: grab;
+  }
+
+  .example-element-detail.cdk-drag-dragging {
+    cursor: grabbing;
   }
   
   .zero-padding{

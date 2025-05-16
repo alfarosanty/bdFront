@@ -101,10 +101,10 @@ export class SearchBudgetComponent {
     this.articuloService.getAllFamiliaMedida().subscribe({
       next: (data) => {
         this.articulos = data; 
+        console.log("ARTICULOS DE LA BD", this.articulos)
         for (let i = 0; i < this.articulos?.length; i++) {
           let item = this.articulos[i];
-          if(item.familia && item.familia.descripcion && item.medida && item.medida.descripcion)
-            this.options.push(item.familia?.codigo+'/'+item.medida.codigo +' '+item.familia?.descripcion + item.medida.descripcion);
+          this.options.push(item.codigo + ' ' + item.descripcion);
           console.log(item);
           }
           console.log('items options ' +  this.options.length);       
@@ -132,6 +132,8 @@ export class SearchBudgetComponent {
   }
 
   private _filter(value: string): string[] {
+    console.log(value)
+    console.log(this.options)
     const filterValue = value.toLowerCase();
     return this.options.filter(option => option.toLowerCase().includes(filterValue));
   }
@@ -200,6 +202,7 @@ listarClientes(): void {
     if (this.codigoArticulo) {
       // Separa el código en familia y medida
       this.familiaMedida = this.codigoArticulo.split('/');
+      console.log(this.familiaMedida)
   
       // Llama al servicio para obtener artículos según la familia y medida
       this.articuloService.getByFamiliaMedida(this.familiaMedida[0], this.familiaMedida[1]).subscribe({

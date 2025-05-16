@@ -8,6 +8,8 @@
     max-width: 100%;  /* Aumenta el ancho del contenedor general */
     width: 90%;
     margin:auto;
+    cursor: pointer;
+    user-select: none;
 }
 
 .superior-container {
@@ -197,9 +199,15 @@ th.mat-header-cell, td.mat-cell {
     text-align: right;
   }
   
-  mat-header-cell, mat-cell {
-    padding: 10px; /* Espacio alrededor de las celdas */
+  ::ng-deep .mat-header-cell,
+  ::ng-deep .mat-cell,
+  ::ng-deep .mat-row,
+  ::ng-deep .mat-header-row {
+    padding: 10px;
+    cursor: default;
+    user-select: none;
   }
+  
   
   table.mat-table {
     width: 100%; /* Asegúrate de que la tabla ocupe todo el ancho */
@@ -381,13 +389,13 @@ th.mat-header-cell, td.mat-cell {
     padding: 0;
   }
 
-  .mat-column-Descuento {
+.mat-column-Descuento {
     width: 150px; /* o el ancho que necesites */
     min-width: 20px;
     padding: 0 4px;
     text-align: center;
   }
 
-  .mat-table {
+.mat-table {
     cursor: pointer;
   }

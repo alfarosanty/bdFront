@@ -573,7 +573,6 @@ listarClientes(): void {
     
       let docDefinition: any;
     
-      if (this.presupuestoCliente) {
         // === PDF para CLIENTE ===
         const tablaBody: any[] = [
           [
@@ -665,74 +664,7 @@ listarClientes(): void {
           styles: this.getStyles()
         };
     
-      } else {
-        // === PDF para EMPLEADO ===
-        const tablaBody: any[] = [
-          [
-            { text: 'Código', style: 'tableHeader' },
-            { text: 'Cantidad', style: 'tableHeader' },
-            { text: 'Descripción completa', style: 'tableHeader' }
-          ]
-        ];
-    
-        this.mapaPresupuestoArticulos?.forEach((presupuestosArticulos, clave) => {
-          const cantidades = presupuestosArticulos.map(pa => pa.cantidad || 0);
-          const totalCantidad = cantidades.reduce((acc, c) => acc + c, 0);
-          const descripcion = presupuestosArticulos[0].articulo?.descripcion || '';
-          const descripcionCompleta = presupuestosArticulos
-            .map(pa => `${pa.cantidad || 0}${pa.articulo?.color?.codigo || ''}`)
-            .join(' ');
-    
-          tablaBody.push([
-            { text: clave, style: 'tableCell' },
-            { text: totalCantidad.toString(), style: 'tableCell' },
-            { text: `${descripcion} ${descripcionCompleta}`, style: 'tableCell' }
-          ]);
-        });
-    
-        docDefinition = {
-          content: [
-            {
-              columns: [
-                {
-                  width: '*',
-                  stack: [
-                    { text: `Fecha: ${this.formatearFecha(this.fechaPresupuesto)}`, style: 'caption', alignment: 'left' },
-                    { text: `Cliente: ${this.currentCliente?.razonSocial}`, style: 'caption', alignment: 'left' }
-                  ]
-                },
-                {
-                  width: 'auto',
-                  stack: [
-                    {
-                      image: imagenBase64,
-                      fit: [120, 60],
-                      alignment: 'center',
-                    },
-                    { text: 'Loria 1140 - Lomas de Zamora', style: 'caption', alignment: 'center' },
-                    { text: 'Teléfono: 11-6958-2829', style: 'caption', alignment: 'center' }
-                  ]
-                }
-              ]
-            },
-            {
-              text: 'Presupuesto Interno',
-              style: 'header',
-              margin: [0, 20, 0, 10]
-            },
-            {
-              table: {
-                headerRows: 1,
-                widths: [80, 60, '*'],
-                body: tablaBody
-              },
-              layout: 'lightHorizontalLines',
-              style: 'table'
-            }
-          ],
-          styles: this.getStyles()
-        };
-      }
+
     
       // Generar el PDF
       const nombreArchivo = `Presupuesto_${this.currentCliente?.razonSocial}_${this.formatearFecha(this.fechaPresupuesto)}.pdf`;
