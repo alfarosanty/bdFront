@@ -15,6 +15,7 @@ import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 import { trigger, state, style, transition, animate } from '@angular/animations';
 import { EstadoPresupuesto } from 'src/app/models/estado-presupuesto.model';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { ArticuloPrecio } from 'src/app/models/articulo-precio.model';
 
 (pdfMake as any).vfs = (pdfFonts as any).vfs;
 
@@ -41,6 +42,7 @@ export class SearchBudgetComponent {
 
   clientes?: Cliente[];
   articulos: Articulo[]=[];
+  articulosPrecio: ArticuloPrecio[]=[];
   familiaMedida: string[] = [];
   mapaPresupuestoArticulos ?: Map<string,PresupuestoArticulo[]>;
   mapaPresuXArtParaAcceder ?: Map<string,PresupuestoArticulo[]>
@@ -98,12 +100,12 @@ export class SearchBudgetComponent {
     this.listarClientes();
     this.mapaPresupuestoArticulos=new Map();
 
-    this.articuloService.getAllFamiliaMedida().subscribe({
+    this.articuloService.getAllArticuloPrecio().subscribe({
       next: (data) => {
-        this.articulos = data; 
-        console.log("ARTICULOS DE LA BD", this.articulos)
-        for (let i = 0; i < this.articulos?.length; i++) {
-          let item = this.articulos[i];
+        this.articulosPrecio = data; 
+        console.log("ARTICULOS DE LA BD", this.articulosPrecio.map(articuloPrecio=>articuloPrecio.codigo))
+        for (let i = 0; i < this.articulosPrecio?.length; i++) {
+          let item = this.articulosPrecio[i];
           this.options.push(item.codigo + ' ' + item.descripcion);
           console.log(item);
           }
@@ -190,6 +192,7 @@ listarClientes(): void {
   seleccionarArticulo(){
     const codigoAritculoSeleccionado = this.articuloSeleccionado.split(' ');
     this.codigoArticulo = codigoAritculoSeleccionado[0];
+    console.log("código artículo del seleccionado: ", this.codigoArticulo)
     this.mostrarVariedadColores();
 
 
@@ -201,11 +204,15 @@ listarClientes(): void {
     // Verifica si hay un código de artículo
     if (this.codigoArticulo) {
       // Separa el código en familia y medida
-      this.familiaMedida = this.codigoArticulo.split('/');
-      console.log(this.familiaMedida)
+      console.log("artiulosPrecio", this.articulosPrecio)
+      console.log(this.articulosPrecio.filter(articuloPrecio=>articuloPrecio.codigo ===this.codigoArticulo))
+      const articuloPrecioDeseado = this.articulosPrecio.filter(articuloPrecio=>articuloPrecio.codigo ===this.codigoArticulo)[0]
+      console.log(articuloPrecioDeseado)
+      const idArticuloPrecioDeseado = articuloPrecioDeseado.id
+      console.log(`Artículo deseado: ${this.codigoArticulo} y su articuloPrecioId: ${idArticuloPrecioDeseado}`)
   
       // Llama al servicio para obtener artículos según la familia y medida
-      this.articuloService.getByFamiliaMedida(this.familiaMedida[0], this.familiaMedida[1]).subscribe({
+      this.articuloService.getByArticuloPrecio(idArticuloPrecioDeseado).subscribe({
         next: (data) => {
           this.articulos = data;
             // Remover colores ya cargados
@@ -240,7 +247,8 @@ listarClientes(): void {
     }
     
     if (this.currentArticulo) {
-      const claveMapa: string = this.currentArticulo?.familia?.codigo + "/" + this.currentArticulo.medida?.codigo;
+      const claveMapa: string = this.currentArticulo.codigo!;
+      console.log("la llave es: ", claveMapa)
     
       let pa: PresupuestoArticulo[] = [];
       
@@ -253,14 +261,14 @@ listarClientes(): void {
       if (articuloExistente) {
       // Sobreescribir la cantidad en lugar de sumarla
         articuloExistente.cantidad = Number(this.cantProducto);
-        articuloExistente.precioUnitario = this.currentArticulo.precio1;
+        articuloExistente.precioUnitario = this.currentArticulo.articuloPrecio?.precio1;
           } else {
             // Si no existe, agregarlo como un nuevo artículo
             pa.push({
               articulo: this.currentArticulo,
               cantidad: Number(this.cantProducto),
-              precioUnitario: this.currentArticulo.precio1,
-              descripcion : this.currentArticulo.familia?.descripcion! + this.currentArticulo.medida?.descripcion,
+              precioUnitario: this.currentArticulo.articuloPrecio?.precio1,
+              descripcion : this.currentArticulo.descripcion,
               hayStock: false
             });
           }
@@ -269,8 +277,8 @@ listarClientes(): void {
           pa.push({
             articulo: this.currentArticulo,
             cantidad: Number(this.cantProducto),
-            precioUnitario: this.currentArticulo.precio1,
-            descripcion : this.currentArticulo.familia?.descripcion! + this.currentArticulo.medida?.descripcion,
+            precioUnitario: this.currentArticulo.articuloPrecio?.precio1,
+            descripcion : this.currentArticulo.descripcion,
             hayStock: false
           });
         }

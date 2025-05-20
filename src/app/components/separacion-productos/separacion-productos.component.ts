@@ -20,6 +20,7 @@ import { PresupuestoService } from 'src/app/services/budget.service';
 import { PedidoProduccion } from 'src/app/models/pedido-produccion.model';
 import * as pdfMake from 'pdfmake/build/pdfmake';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
+import { ArticuloPrecio } from 'src/app/models/articulo-precio.model';
 
 (pdfMake as any).vfs = (pdfFonts as any).vfs;
 
@@ -47,6 +48,7 @@ logoBase64: String = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAADMCAYA
   
   
   talleres?: Taller[];
+  articulosPrecio: ArticuloPrecio[]=[];
   articulos: Articulo[]=[];
   familiaMedida: string[] = [];
   ingresosMercaderiaXTaller: IngresoMercaderia[] =[];
@@ -99,13 +101,13 @@ logoBase64: String = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAADMCAYA
     this.listarTalleres()
     this.mapaPresupuestoArticulos=new Map();
 
-    this.articuloService.getAllFamiliaMedida().subscribe({
+    this.articuloService.getAllArticuloPrecio().subscribe({
       next: (data) => {
-        this.articulos = data; 
-        for (let i = 0; i < this.articulos?.length; i++) {
-          let item = this.articulos[i];
-          if(item.familia && item.familia.descripcion && item.medida && item.medida.descripcion)
-            this.options.push(item.familia?.codigo+'/'+item.medida.codigo +' '+item.familia?.descripcion + item.medida.descripcion);
+        this.articulosPrecio = data; 
+        for (let i = 0; i < this.articulosPrecio?.length; i++) {
+          let item = this.articulosPrecio[i];
+          if(item.codigo && item.descripcion)
+            this.options.push(item.codigo + ' ' + item.descripcion);
           console.log(item);
           }
           console.log('items options ' +  this.options.length);       

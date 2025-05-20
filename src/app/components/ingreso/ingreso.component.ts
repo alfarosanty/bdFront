@@ -23,6 +23,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import * as pdfMake from 'pdfmake/build/pdfmake';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 import { animate, state, style, transition, trigger } from '@angular/animations';
+import { ArticuloPrecio } from 'src/app/models/articulo-precio.model';
 
 (pdfMake as any).vfs = (pdfFonts as any).vfs;
 
@@ -44,6 +45,7 @@ export class IngresoComponent {
 
   
   talleres?: Taller[];
+  articulosPrecio: ArticuloPrecio[] = [];
   articulos: Articulo[]=[];
   familiaMedida: string[] = [];
   ingresosMercaderiaXTaller: IngresoMercaderia[] =[];
@@ -92,13 +94,13 @@ export class IngresoComponent {
     this.listarTalleres();
     this.mapaPresupuestoArticulos=new Map();
 
-    this.articuloService.getAllFamiliaMedida().subscribe({
+    this.articuloService.getAllArticuloPrecio().subscribe({
       next: (data) => {
-        this.articulos = data; 
-        for (let i = 0; i < this.articulos?.length; i++) {
-          let item = this.articulos[i];
-          if(item.familia && item.familia.descripcion && item.medida && item.medida.descripcion)
-            this.options.push(item.familia?.codigo+'/'+item.medida.codigo +' '+item.familia?.descripcion + item.medida.descripcion);
+        this.articulosPrecio = data; 
+        for (let i = 0; i < this.articulosPrecio?.length; i++) {
+          let item = this.articulosPrecio[i];
+          if(item.codigo && item.descripcion)
+            this.options.push(item.codigo + ' ' + item.descripcion);
           console.log(item);
           }
           console.log('items options ' +  this.options.length);       
@@ -251,13 +253,13 @@ listarTalleres(): void {
       if (articuloExistente) {
       // Sobreescribir la cantidad en lugar de sumarla
         articuloExistente.cantidadActual = Number(this.cantProducto);
-        articuloExistente.precioUnitario = this.currentArticulo.precio1;
+        articuloExistente.precioUnitario = this.currentArticulo.articuloPrecio?.precio1;
           } else {
             // Si no existe, agregarlo como un nuevo artículo
             pa.push({
               articulo: this.currentArticulo,
               cantidadActual: Number(this.cantProducto),
-              precioUnitario: this.currentArticulo.precio1,
+              precioUnitario: this.currentArticulo.articuloPrecio?.precio1,
               hayStock: false
             });
           }
@@ -266,7 +268,7 @@ listarTalleres(): void {
           pa.push({
             articulo: this.currentArticulo,
             cantidadActual: Number(this.cantProducto),
-            precioUnitario: this.currentArticulo.precio1,
+            precioUnitario: this.currentArticulo.articuloPrecio?.precio1,
             hayStock: false
           });
         }

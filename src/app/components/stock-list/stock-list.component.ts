@@ -3,6 +3,7 @@ import { Component } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators'
+import { ArticuloPrecio } from 'src/app/models/articulo-precio.model';
 import { Articulo } from 'src/app/models/articulo.model';
 import { Cliente } from 'src/app/models/cliente';
 //fin para combo
@@ -25,6 +26,7 @@ export class StockListComponent {
   options: string[] = [];
   filteredOptions: Observable<string[]>= new Observable<string[]>();
 
+  articulosPrecio?: ArticuloPrecio[];
   articulos?: Articulo[];
 
   constructor(private stockService: StockService,private articuloService: ArticuloService) {}
@@ -32,13 +34,14 @@ export class StockListComponent {
   ngOnInit(): void {
     
     this.retrieveStocks();
-    this.articuloService.getAllFamiliaMedida().subscribe({
+
+    this.articuloService.getAllArticuloPrecio().subscribe({
       next: (data) => {
-        this.articulos = data; 
-        for (let i = 0; i < this.articulos?.length; i++) {
-          let item = this.articulos[i];
-          if(item.familia && item.familia.descripcion && item.medida && item.medida.descripcion)
-            this.options.push(item.familia?.descripcion + item.medida.descripcion);
+        this.articulosPrecio = data; 
+        for (let i = 0; i < this.articulosPrecio?.length; i++) {
+          let item = this.articulosPrecio[i];
+          if(item.codigo && item.descripcion)
+            this.options.push(item.codigo + ' ' + item.descripcion);
           console.log(item);
           }
           console.log('items options ' +  this.options.length);       

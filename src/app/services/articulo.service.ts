@@ -3,6 +3,7 @@ import { Articulo } from '../models/articulo.model';
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environment/environment';
+import { ArticuloPrecio } from '../models/articulo-precio.model';
 
 const baseUrl = environment.apiUrl+'/Articulo';
 
@@ -22,9 +23,14 @@ export class ArticuloService {
 
   }
 
+  getByArticuloPrecio(id:any):  Observable<Articulo[]>{
+    return this.http.get<Articulo[]>(`${baseUrl}/ByArticuloPrecio/` + id);
 
-  getAllFamiliaMedida(): Observable<Articulo[]> {
-    return this.http.get<Articulo[]>(`${baseUrl}/GetArticulosByFamiliaMedida`);
+  }
+
+
+  getAllArticuloPrecio(): Observable<ArticuloPrecio[]> {
+    return this.http.get<ArticuloPrecio[]>(`${baseUrl}/GetArticulosPrecio`);
   }
 
   

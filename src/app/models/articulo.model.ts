@@ -1,3 +1,4 @@
+import { ArticuloPrecio } from "./articulo-precio.model";
 import { Color } from "./color.model";
 import { Familia } from "./familia.model";
 import { Medida } from "./medida.model";
@@ -7,7 +8,7 @@ export class Articulo {
     codigo?:string;
     descripcion?:string;
     color?: Color;
-    precio1?:number;
+    articuloPrecio?:ArticuloPrecio;
     familia?:Familia;
     medida?:Medida;
     idFabricante?: number;    
