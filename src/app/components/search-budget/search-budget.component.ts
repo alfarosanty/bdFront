@@ -208,12 +208,14 @@ listarClientes(): void {
       console.log(this.articulosPrecio.filter(articuloPrecio=>articuloPrecio.codigo ===this.codigoArticulo))
       const articuloPrecioDeseado = this.articulosPrecio.filter(articuloPrecio=>articuloPrecio.codigo ===this.codigoArticulo)[0]
       console.log(articuloPrecioDeseado)
+      if(!articuloPrecioDeseado){alert("El artículo seleccionado no existe")}
       const idArticuloPrecioDeseado = articuloPrecioDeseado.id
       console.log(`Artículo deseado: ${this.codigoArticulo} y su articuloPrecioId: ${idArticuloPrecioDeseado}`)
   
       // Llama al servicio para obtener artículos según la familia y medida
       this.articuloService.getByArticuloPrecio(idArticuloPrecioDeseado).subscribe({
         next: (data) => {
+          console.log("ESTOS SON LOS COLORES QUE TRAE ", this.codigoArticulo, data.map(articulo=>articulo.color?.descripcion))
           this.articulos = data;
             // Remover colores ya cargados
           var idspa = this.mapaPresupuestoArticulos?.get(this.codigoArticulo)?.map(pa => pa.articulo?.id);
@@ -803,7 +805,7 @@ procesarMapaDeArticulos() {
   if(this.presupuestoAAcceder)
   this.mapaPresuXArtParaAcceder = new Map()
   this.presupuestoAAcceder?.articulos?.forEach(presuArt => {
-    const key = presuArt.articulo?.familia?.codigo + "/" + presuArt.articulo?.medida?.codigo;
+    const key = presuArt.articulo?.codigo!;
     
     if (this.mapaPresuXArtParaAcceder?.has(key)) {
       const listaDePresuArtActualizada = (this.mapaPresuXArtParaAcceder.get(key) || []);
@@ -845,7 +847,7 @@ actualizarMapaPresupuestoArticulo(nuevoMap: Map<string, PresupuestoArticulo[]>){
 }
 cantidadActualDepoducto():string {
   if (this.currentArticulo) {
-  const claveMapa: string = this.currentArticulo?.familia?.codigo + "/" + this.currentArticulo.medida?.codigo;
+  const claveMapa: string = this.currentArticulo?.codigo!;
     
     if (this.mapaPresupuestoArticulos?.has(claveMapa)) {
       const pa = this.mapaPresupuestoArticulos.get(claveMapa) as PresupuestoArticulo[];

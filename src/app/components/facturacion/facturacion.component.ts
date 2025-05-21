@@ -221,11 +221,17 @@ listarClientes(): void {
     // Verifica si hay un código de artículo
     if (this.codigoArticulo) {
       // Separa el código en familia y medida
-      this.familiaMedida = this.codigoArticulo.split('/');
+      console.log("artiulosPrecio", this.articulosPrecio)
+      console.log(this.articulosPrecio.filter(articuloPrecio=>articuloPrecio.codigo ===this.codigoArticulo))
+      const articuloPrecioDeseado = this.articulosPrecio.filter(articuloPrecio=>articuloPrecio.codigo ===this.codigoArticulo)[0]
+      console.log(articuloPrecioDeseado)
+      if(!articuloPrecioDeseado){alert("El artículo seleccionado no existe")}
+      const idArticuloPrecioDeseado = articuloPrecioDeseado.id
+      console.log(`Artículo deseado: ${this.codigoArticulo} y su articuloPrecioId: ${idArticuloPrecioDeseado}`)
   
-      // Llama al servicio para obtener artículos según la familia y medida
-      this.articuloService.getByFamiliaMedida(this.familiaMedida[0], this.familiaMedida[1]).subscribe({
+      this.articuloService.getByArticuloPrecio(idArticuloPrecioDeseado).subscribe({
         next: (data) => {
+          console.log("ESTOS SON LOS COLORES QUE TRAE ", this.codigoArticulo, data.map(articulo=>articulo.color?.descripcion))
           this.articulos = data;
             // Remover colores ya cargados
           var idspa = this.mapaPresupuestoArticulos?.get(this.codigoArticulo)?.map(pa => pa.articulo?.id);
@@ -245,6 +251,7 @@ listarClientes(): void {
       this.mostrarColores = false;
     }
   }
+  
   
 
   mostrarColoresDisponibles(articulo : Articulo) : string {

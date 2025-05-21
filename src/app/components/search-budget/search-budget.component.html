@@ -100,22 +100,25 @@
 
     </div>
 <!-- Este DIV aparecerá a la derecha cuando presiones Enter -->
-    <div class="colores-container" *ngIf="mostrarColores">
-        <h3>Detalle de selección</h3>
-        <label for="colores">Color:</label> 
-    <select class="select-color" [(ngModel)]="articuloColorIndex" (click)="actualizarArticuloSeleccionado()">  
+<div class="colores-container" *ngIf="mostrarColores">
+  <h3>Detalle de selección</h3>
+  <label for="colores">Color</label>
 
-        <option *ngFor="let articulo of articulos ; let i = index"  [value]="i" >
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-select [(value)]="articuloColorIndex" (selectionChange)="actualizarArticuloSeleccionado()">
+      <mat-option *ngFor="let articulo of articulos; let i = index" [value]="i">
+        <span class="color-circle" [ngStyle]="{ 'background-color': articulo.color?.colorHexa || '#000' }"></span>
+        {{ mostrarColoresDisponibles(articulo) }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
 
-                {{mostrarColoresDisponibles(articulo)}} 
+  <label for="cantidades">Cantidad</label>
+  <input type="text" id="Cantidad" size="2" [(ngModel)]="cantProducto"
+         [placeholder]="cantidadActualDepoducto()"
+         (keydown.enter)="agregarArticulo(); actualizarTotales(); inputArticulos.focus()">
+</div>
 
-            
-       </option>
-    </select>        
-        <!-- Input para mostrar el valor seleccionado -->
-        <label for="cantidades">Cantidad:</label>
-        <input type="text" id="Cantidad" size="2" [(ngModel)]="cantProducto" [placeholder]= "cantidadActualDepoducto()"  (keydown.enter)="agregarArticulo(); actualizarTotales(); inputArticulos.focus()">
-    </div>
 
 </div>
 
@@ -204,9 +207,15 @@
             <ng-container matColumnDef="Articulo">
               <th mat-header-cell *matHeaderCellDef>Artículo</th>
               <td mat-cell *matCellDef="let presuArt">
-                {{ presuArt.articulo.codigo }}
+                {{ presuArt.articulo.codigo }}  
+                {{ presuArt.cantidad }}
+                {{ presuArt.articulo.color.codigo }}
+                <span class="color-circle"
+                      [ngStyle]="{ 'background-color': presuArt.articulo.color?.colorHexa || '#000' }">
+                </span>
               </td>
             </ng-container>
+            
   
             <!-- CANTIDAD -->
             <ng-container matColumnDef="Cantidad">

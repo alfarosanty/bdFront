@@ -399,3 +399,14 @@ th.mat-header-cell, td.mat-cell {
 .mat-table {
     cursor: pointer;
   }
+
+  .color-circle {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: middle;
+    border: 1px solid #000000; /* contorno gris oscuro */
+  }
+  
