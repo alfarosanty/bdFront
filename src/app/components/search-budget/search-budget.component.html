@@ -10,19 +10,26 @@
     <!-- Menú desplegable de clientes -->
     <div class="dropdown">
         <div>
-            <label for="descuento">Numero de Cliente:</label>
+            <label for="cliente id">Numero de Cliente:</label>
             <input type="text" id="numCliente" [(ngModel)]="numCliente" (keydown.enter)="seleccionarXnumeroCliente(); inputArticulos.focus()">
         </div>
 
+        <label for="cliente razón social">Cliente:</label>
 
-        <label for="clientes">Seleccionar Cliente:</label>
-        <select  (change)="seleccionarCliente(); inputArticulos.focus()" [(ngModel)]="currentIndex">
-            <option >Seleccione un cliente</option>
-            <option *ngFor="let cliente of clientes" [value]="cliente.id" >
-                 {{cliente.razonSocial}} 
-            </option>
-          </select>
-                    
+        <mat-form-field class="input-mat" appearance="outline">
+          <mat-label>Seleccione un cliente...</mat-label>
+          <input type="text"
+                 matInput
+                 [formControl]="clienteControl"
+                 [matAutocomplete]="autoCliente"
+                 (input)="clienteControl.setValue(clienteControl.value?.toUpperCase(), { emitEvent: false })">
+            <mat-autocomplete #autoCliente="matAutocomplete" (optionSelected)="seleccionarCliente()">
+            <mat-option *ngFor="let c of filteredClientes | async" [value]="c.razonSocial">
+              {{ c.razonSocial }}
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
+          
     </div>
 
 </div>
@@ -79,17 +86,17 @@
         <!--COMBO DE PRODUCTOS CON FILTRADO-->
         <div >
             <mat-form-field class="input-mat" appearance="outline">
-                <mat-label>Selecciona una opción</mat-label>
+                <mat-label>Seleccione un artículo...</mat-label>
                 <input type="text"
                       #inputArticulos
                       [(ngModel)]="articuloSeleccionado"
                       matInput
-                      [formControl]="myControl"
+                      [formControl]="articuloControl"
                       [matAutocomplete]="auto"
                       (keydown.enter)="seleccionarArticulo()"
-                      (input)="myControl.setValue(myControl.value.toUpperCase(), { emitEvent: false })">
+                      (input)="articuloControl.setValue(articuloControl.value.toUpperCase(), { emitEvent: false })">
                 <mat-autocomplete #auto="matAutocomplete">
-                  <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
+                  <mat-option *ngFor="let option of filteredArticulos | async" [value]="option">
                     {{ option }}
                   </mat-option>
                 </mat-autocomplete>

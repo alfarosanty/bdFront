@@ -74,11 +74,17 @@ export class SearchBudgetComponent {
 
 
   //INPUT BUSQUEDA
-  myControl = new FormControl();
+  articuloControl = new FormControl();
   options: string[] = [];
-  filteredOptions: Observable<string[]>= new Observable<string[]>();
+  filteredArticulos: Observable<string[]>= new Observable<string[]>();
   articuloSeleccionado ='';
- //END INPUT
+
+  clienteControl = new FormControl();
+  filteredClientes: Observable<Cliente[]> = new Observable<Cliente[]>;
+  clienteOptions: Cliente[] =[];
+  clienteSeleccionado ='';
+
+  //END INPUT
  //MATTABLE DATA
 
  columnsToDisplay = ['Artículo', 'Descripcion', 'Cantidad', 'Precio Unitario', 'Precio Total', 'Descuento', 'Borrar', 'Editar'];
@@ -117,9 +123,9 @@ export class SearchBudgetComponent {
 
 
     this.fechaPresupuesto=new Date();
-    this.filteredOptions = this.myControl.valueChanges.pipe(startWith(''),map(value => this._filter(String(value))));
+    this.filteredArticulos = this.articuloControl.valueChanges.pipe(startWith(''),map(value => this._filter(String(value))));
 
-
+    console.log("CLIENTES FILTRADOS:", this.filteredClientes)
     const presupuestoId = Number(this.route.snapshot.paramMap.get('id'));
     
     this.intentoDeCrearCurrentPresupuesto()
@@ -140,6 +146,11 @@ export class SearchBudgetComponent {
     return this.options.filter(option => option.toLowerCase().includes(filterValue));
   }
 
+  private _filterClientes(value: string): Cliente[] {
+    const filterValue = value.toLowerCase();
+    return this.clientes!.filter(cliente => cliente.razonSocial?.toLowerCase().includes(filterValue))
+    .sort((a,b) => a.razonSocial!.localeCompare(b.razonSocial!) );
+  }
 
 listarClientes(): void {
 
@@ -156,6 +167,12 @@ listarClientes(): void {
       next: (data) => {
         this.clientes = data;
         console.log(data);
+        this.filteredClientes = this.clienteControl.valueChanges.pipe(
+          startWith(''),
+          map(value => this._filterClientes(value || ''))
+        );
+
+        console.log(this.filteredClientes)
       },
       error: (e) => console.error(e)
       
@@ -173,13 +190,20 @@ listarClientes(): void {
   }
   
 
- seleccionarCliente(): void {
-    if(this.clientes){
-      this.currentCliente = this.clientes[this.currentIndex-1];
+  seleccionarCliente() {
+    const input = this.clienteControl.value?.trim().toUpperCase();
+
+    const encontrado = this.clientes?.find(c => c.razonSocial?.toUpperCase() === input);
+  
+    if (encontrado) {
+      this.currentCliente = encontrado;
+    } else {
+      alert("no se encontró el cliente deseado")
     }
+  }
 
       
-  }
+  
 
   convertirAMayuscula(){
     this.codigoArticulo = this.codigoArticulo.toUpperCase();
