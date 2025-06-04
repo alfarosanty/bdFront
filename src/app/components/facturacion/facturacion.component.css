@@ -388,3 +388,13 @@ th.mat-header-cell, td.mat-cell {
     padding: 0 4px;
     text-align: center;
   }
+
+  .color-circle {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: middle;
+    border: 1px solid #000000; /* contorno gris oscuro */
+  }

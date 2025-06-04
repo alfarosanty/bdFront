@@ -322,3 +322,13 @@ th.mat-header-cell, td.mat-cell {
   .boton-lindo mat-icon {
     margin-right: 8%;
   }
+  
+  .color-circle {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: middle;
+    border: 1px solid #000000; /* contorno gris oscuro */
+  }

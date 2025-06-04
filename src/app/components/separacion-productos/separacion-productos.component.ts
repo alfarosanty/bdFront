@@ -141,7 +141,7 @@ logoBase64: String = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAADMCAYA
       catchError(error => {
         // Manejo del error
         console.error('Ocurrió un error:', error);
-        alert('No se puede obtener los datos provenientes de la base de datos ');
+        alert('Error al acceder a datos provenientes de la base de datos ');
         return throwError(() => new Error('Hubo un problema al obtener los clientes.'));
       })
     ).subscribe({
@@ -340,7 +340,7 @@ procesarMapaDeArticulos() {
   if(this.presupuestoAAcceder)
   this.mapaPresuXArtParaAcceder = new Map()
   this.presupuestoAAcceder?.articulos?.forEach(presuArt => {
-    const key = presuArt.articulo?.familia?.codigo + "/" + presuArt.articulo?.medida?.codigo;
+    const key = presuArt.articulo?.codigo!;
     
     if (this.mapaPresuXArtParaAcceder?.has(key)) {
       const listaDePresuArtActualizada = (this.mapaPresuXArtParaAcceder.get(key) || []);
@@ -379,7 +379,7 @@ actualizarMapaPresupuestoArticulo(nuevoMap: Map<string, PresupuestoArticulo[]>){
       ([codigo, presupuestosArticulos]) => ({
         codigo,
         cantidadTotal : this.cantidadTotalXCodigo(codigo),
-        descripcion : presupuestosArticulos[0].articulo?.familia?.descripcion + " " + presupuestosArticulos[0].articulo?.medida?.descripcion
+        descripcion : presupuestosArticulos[0].articulo?.descripcion!
       })
     );
   }
@@ -430,7 +430,7 @@ actualizarArticuloSeleccionado(){
 
   getArticulosParaArticulo(codigo: string): PresupuestoArticulo[]{
     const todosLosArticulos = this.dataSourceArticulos.data.flatMap(element => element.presuArt);
-    const listaDeArticulosDeFila = todosLosArticulos.filter(presuArt=>presuArt.articulo!.familia?.codigo + "/" + presuArt.articulo?.medida?.codigo == codigo)
+    const listaDeArticulosDeFila = todosLosArticulos.filter(presuArt=>presuArt.articulo?.codigo == codigo)
     return listaDeArticulosDeFila
   }
   
@@ -446,7 +446,7 @@ actualizarArticuloSeleccionado(){
       const articulosXTaller = articulosAPedir.filter(presuArt => presuArt.articulo?.idFabricante === Number(taller.id));
   
       if (articulosXTaller.length === 0) continue;
-      articulosXTaller.forEach(presuArt=> {presuArt.cantidadPendiente = presuArt.cantidad; presuArt.presupuesto = this.currentPresupuesto;             presuArt.codigo = presuArt.articulo?.familia?.codigo + "/" + presuArt.articulo?.medida?.codigo})
+      articulosXTaller.forEach(presuArt=> {presuArt.cantidadPendiente = presuArt.cantidad; presuArt.presupuesto = this.currentPresupuesto; presuArt.codigo = presuArt.articulo?.codigo; presuArt.descripcion = presuArt.articulo?.descripcion})
   
       const pedidoProduccion = new PedidoProduccion(this.fechaPedidoProduccion!, taller, 3, articulosXTaller, this.currentCliente!.id, this.presupuestoAAcceder?.id);
   
@@ -467,6 +467,38 @@ actualizarArticuloSeleccionado(){
     this.mostrarConfirmacionPDF = true;
  }
 
+
+ actualizarHayStockDeArticulos() {
+  this.mapaArticulosModificados = new Map<string, PresupuestoArticulo[]>();
+
+  this.dataSourceArticulos.data.forEach(item => {
+    item.presuArt.forEach(presuArt => {
+      const codigo = presuArt.articulo?.codigo;
+
+      if (codigo) {
+        if (this.mapaArticulosModificados?.has(codigo)) {
+          this.mapaArticulosModificados.get(codigo)!.push(presuArt);
+        } else {
+          this.mapaArticulosModificados?.set(codigo, [presuArt]);
+        }
+      }
+    });
+  });
+
+  // Unificamos todos los PresupuestoArticulo[] en una sola lista
+  const listaDeArticulos: PresupuestoArticulo[] = Array.from(this.mapaArticulosModificados.values()).flat();
+
+  // Verificamos si al menos uno tiene hayStock = true
+  const hayAlgunoConStock = listaDeArticulos.some(presuArt => presuArt?.hayStock === true);
+
+  if (hayAlgunoConStock) {
+    this.presupuestoAAcceder!.articulos = listaDeArticulos;
+    this.presupuestoService.actualizar(this.presupuestoAAcceder!)
+  }
+}
+
+
+
  confirmarGenerarPDF(generar: boolean) {
   if (generar) {
     this.generarPDF();
@@ -478,7 +510,7 @@ generarMapaPresuArt(pedidoProduccion: PedidoProduccion): Map<string, Presupuesto
   const mapaNuevo = new Map<string, PresupuestoArticulo[]>();
 
   for (const articulo of pedidoProduccion.articulos!) {
-    const key = articulo.articulo?.familia?.codigo + '/' + articulo.articulo?.medida?.codigo;
+    const key = articulo.articulo?.codigo!;
 
       if (mapaNuevo.has(key)) {
         const listaExistente = mapaNuevo.get(key)!;

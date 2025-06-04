@@ -23,10 +23,15 @@
     <div class="datos-comprobante">
 
 
-        <div>
-            <label for="fecha">Fecha de Emisión:</label>
-            <input type="date" id="fecha" [(ngModel)]="fechaPresupuesto">
-        </div>
+      <div>
+        <mat-form-field class="margen-horizontal">
+          <mat-label>Fecha de Emisión:</mat-label>
+          <input matInput [matDatepicker]="picker" [(ngModel)]="fechaPresupuesto" name="fechaPresupuesto">
+          <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>       
+      </div>
+
             <div>
                 <label for="estado">Estado del Pedido:</label>
                 <select id="estado" [(ngModel)]="estadoPedido">
@@ -41,7 +46,7 @@
     </div>
 </div>
 
-<h3>Grilla de Información</h3>
+<h3>Grilla de Información</h3>  
 <table mat-table [dataSource]="dataSourceCodigo" multiTemplateDataRows class="mat-elevation-z8">
 
   <!-- Columnas dinámicas para las filas principales -->
@@ -66,7 +71,8 @@
           <ng-container matColumnDef="Articulo">
             <th mat-header-cell *matHeaderCellDef>Artículo</th>
             <td mat-cell *matCellDef="let presuArt">
-              {{ presuArt.articulo.codigo }}
+              <span class="color-circle" [ngStyle]="{ 'background-color': presuArt.articulo.color.colorHexa }"></span>
+              {{ presuArt.articulo.codigo }} {{presuArt.articulo.color.descripcion}}
             </td>
           </ng-container>
 
@@ -111,7 +117,7 @@
 
 
 <div class="boton-generarPDF" >
-  <button mat-raised-button color="primary" class="boton-lindo" (click)="generarPedidosProduccion();">
+  <button mat-raised-button color="primary" class="boton-lindo" (click)="generarPedidosProduccion(); actualizarHayStockDeArticulos()">
   Generar Pedido
   </button>
 </div>

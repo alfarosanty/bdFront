@@ -87,24 +87,25 @@
     
         </div>
 <!-- Este DIV aparecerá a la derecha cuando presiones Enter -->
-    <div class="colores-container" *ngIf="mostrarColores">
-        <h3>Detalle de selección</h3>
-        <label for="colores">Color:</label> 
-    <select class="select-color" [(ngModel)]="articuloColorIndex" (click)="actualizarArticuloSeleccionado()">  
-
-        <option *ngFor="let articulo of articulos ; let i = index"  [value]="i" >
-
-                {{mostrarColoresDisponibles(articulo)}} 
-
-            
-       </option>
-    </select>        
-        <!-- Input para mostrar el valor seleccionado -->
-        <label for="cantidad">Cantidad:</label>
-        <input type="text" id="cantidad" size="2" [(ngModel)]="cantProducto" [placeholder]= "cantidadActualDepoducto()"  (keydown.enter)="agregarArticulo(); inputArticulos.focus()">
-    </div>
-
-</div>
+<div class="colores-container" *ngIf="mostrarColores">
+    <h3>Detalle de selección</h3>
+    <label for="colores">Color</label>
+  
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-select [(value)]="articuloColorIndex" (selectionChange)="actualizarArticuloSeleccionado()">
+        <mat-option *ngFor="let articulo of articulos; let i = index" [value]="i">
+          <span class="color-circle" [ngStyle]="{ 'background-color': articulo.color?.colorHexa || '#000' }"></span>
+          {{ mostrarColoresDisponibles(articulo) }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  
+    <label for="cantidades">Cantidad</label>
+    <input type="text" id="Cantidad" size="2" [(ngModel)]="cantProducto"
+           [placeholder]="cantidadActualDepoducto()"
+           (keydown.enter)="agregarArticulo(); inputArticulos.focus()">
+  </div>
+  </div>
 
     <div class="grilla-container">
         <h3>Grilla de Información</h3>

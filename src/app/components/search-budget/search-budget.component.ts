@@ -160,7 +160,7 @@ listarClientes(): void {
       catchError(error => {
         // Manejo del error
         console.error('Ocurrió un error:', error);
-        alert('No se puede obtener los datos provenientes de la base de datos ');
+        alert('Error al acceder a datos provenientes de la base de datos ');
         return throwError(() => new Error('Hubo un problema al obtener los clientes.'));
       })
     ).subscribe({
@@ -396,9 +396,8 @@ listarClientes(): void {
       this.articulos = [];
     
       if (this.codigoArticulo) {
-        this.familiaMedida = this.codigoArticulo.split('/');
     
-        this.articuloService.getByFamiliaMedida(this.familiaMedida[0], this.familiaMedida[1]).subscribe({
+        this.articuloService.getByArticuloPrecio(this.codigoArticulo).subscribe({
           next: (data) => {
             this.articulos = data;
             this.mostrarColores = this.articulos.length > 0;
@@ -816,7 +815,7 @@ cargarDetallesPresupuesto(id: Number) {
         this.actualizarTotales();
         console.log("ACÁ CARGO EL DESCUENTO EN CURRENT PRESUPUESTO", this.currentPresupuesto);
       } else {
-        console.error("No se pudo cargar el presupuesto con ID:", id);
+        console.error("Error generado al cargar el presupuesto con ID:", id);
       }
     },
     error: (e) => {

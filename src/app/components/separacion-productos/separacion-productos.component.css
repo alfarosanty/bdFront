@@ -13,7 +13,9 @@
 .superior-container {
     display: flex;
     justify-content: space-between;
+    align-content: center;
     gap: 5%;
+    width: 45%;
 }
 
 /* Contenedor Inferior */
@@ -30,7 +32,7 @@
 
 
 .selector-container {
-    width: 80%;
+    width: 200%;
     height: 100%;
     margin-left: 0%;
     border: 1px solid #ccc;
@@ -315,4 +317,14 @@ select {
   .boton-lindo mat-icon {
     margin-top: 100% ;
     margin-right: 8%;
+  }
+
+  .color-circle {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: middle;
+    border: 1px solid #000000; /* contorno gris oscuro */
   }

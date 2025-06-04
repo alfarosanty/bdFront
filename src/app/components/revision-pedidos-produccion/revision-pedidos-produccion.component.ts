@@ -134,7 +134,7 @@ listarTalleres(): void {
       catchError(error => {
         // Manejo del error
         console.error('Ocurrió un error:', error);
-        alert('No se puede obtener los datos provenientes de la base de datos ');
+        alert('Error al acceder a datos provenientes de la base de datos ');
         return throwError(() => new Error('Hubo un problema al obtener los clientes.'));
       })
     ).subscribe({
