@@ -467,33 +467,49 @@ actualizarArticuloSeleccionado(){
     this.mostrarConfirmacionPDF = true;
  }
 
-
  actualizarHayStockDeArticulos() {
   this.mapaArticulosModificados = new Map<string, PresupuestoArticulo[]>();
 
   this.dataSourceArticulos.data.forEach(item => {
     item.presuArt.forEach(presuArt => {
       const codigo = presuArt.articulo?.codigo;
+      if (!codigo) return;
 
-      if (codigo) {
-        if (this.mapaArticulosModificados?.has(codigo)) {
-          this.mapaArticulosModificados.get(codigo)!.push(presuArt);
-        } else {
-          this.mapaArticulosModificados?.set(codigo, [presuArt]);
-        }
+      const listaExistente = this.mapaArticulosModificados?.get(codigo);
+      if (listaExistente) {
+        listaExistente.push(presuArt);
+      } else {
+        this.mapaArticulosModificados?.set(codigo, [presuArt]);
       }
     });
   });
 
-  // Unificamos todos los PresupuestoArticulo[] en una sola lista
   const listaDeArticulos: PresupuestoArticulo[] = Array.from(this.mapaArticulosModificados.values()).flat();
 
-  // Verificamos si al menos uno tiene hayStock = true
-  const hayAlgunoConStock = listaDeArticulos.some(presuArt => presuArt?.hayStock === true);
+  const hayAlgunoConStock = listaDeArticulos.some(p => p?.hayStock === true);
 
-  if (hayAlgunoConStock) {
-    this.presupuestoAAcceder!.articulos = listaDeArticulos;
-    this.presupuestoService.actualizar(this.presupuestoAAcceder!)
+  if (hayAlgunoConStock && this.presupuestoAAcceder) {
+    this.presupuestoAAcceder.articulos = listaDeArticulos;
+
+    const todosConStock = listaDeArticulos.every(art => art.hayStock === true);
+
+    // Si todos tienen stock, y no hay estado asignado, lo ponemos como "Armado" (id = 4)
+    if (todosConStock) {
+      if (!this.presupuestoAAcceder.estadoPresupuesto) {
+        this.presupuestoAAcceder.estadoPresupuesto = { id: 4, descripcion: 'Armado', codigo: "ARM" };
+      } else {
+        this.presupuestoAAcceder.estadoPresupuesto.id = 4;
+      }
+    } else {
+      // Si no todos tienen stock y no hay estado seleccionado, mostrar alerta
+      if (!this.presupuestoAAcceder.estadoPresupuesto) {
+        alert("No seleccionó un estado del pedido");
+        return;
+      }
+    }
+
+    console.log(this.presupuestoAAcceder);
+    this.presupuestoService.actualizar(this.presupuestoAAcceder);
   }
 }
 
