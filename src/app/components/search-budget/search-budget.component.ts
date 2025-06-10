@@ -69,6 +69,7 @@ export class SearchBudgetComponent {
   mostrarBotonGuardar = true;
   descAModificar ?: string
   precioUniAModificar ?: number
+  idPresupuestoActual ?: Number;
 
   precioSubtotal?: number;
 
@@ -218,6 +219,8 @@ listarClientes(): void {
     this.codigoArticulo = codigoAritculoSeleccionado[0];
     console.log("código artículo del seleccionado: ", this.codigoArticulo)
     this.mostrarVariedadColores();
+    const articuloPrecioDeseado = this.articulosPrecio.filter(articuloPrecio=>articuloPrecio.codigo ===this.codigoArticulo)[0]
+    this.articuloSeleccionado = articuloPrecioDeseado.codigo + " " + articuloPrecioDeseado.descripcion
 
 
   }
@@ -241,6 +244,12 @@ listarClientes(): void {
         next: (data) => {
           console.log("ESTOS SON LOS COLORES QUE TRAE ", this.codigoArticulo, data.map(articulo=>articulo.color?.descripcion))
           this.articulos = data;
+          this.articulos.sort((a, b) => {
+            const descA = a.color?.descripcion?.toLowerCase() || '';
+            const descB = b.color?.descripcion?.toLowerCase() || '';
+            return descA.localeCompare(descB);
+          });
+          
             // Remover colores ya cargados
           var idspa = this.mapaPresupuestoArticulos?.get(this.codigoArticulo)?.map(pa => pa.articulo?.id);
   
@@ -313,6 +322,7 @@ listarClientes(): void {
     
       }
       this.actualizarDataSource()
+      this.cantProducto = "0"
     }
     
 
@@ -518,19 +528,24 @@ listarClientes(): void {
         if (!this.currentPresupuesto?.id) {
           
           // Crear un nuevo presupuesto
-          const idPresupuesto = this.presupuestoService.crear(this.currentPresupuesto!);
-          this.mostrarBotonGuardar = false;
-          if (idPresupuesto) {
+          this.presupuestoService.crear(this.currentPresupuesto!).subscribe((id: object) => {
+            this.idPresupuestoActual = Number(id)
+            this.mostrarBotonGuardar = false;
+          })
+          if (this.idPresupuestoActual) {
             // Aquí puedes reiniciar el formulario y mostrar el número del presupuesto
-            console.log('Presupuesto creado con ID:', idPresupuesto);
+            console.log('Presupuesto creado con ID:', this.idPresupuestoActual);
           }
         } else {
           // Si el presupuesto ya existe, actualizarlo
-          const idPresupuesto = this.presupuestoService.actualizar(this.currentPresupuesto!);
-          this.mostrarBotonGuardar = false;
-          if (idPresupuesto) {
+          this.presupuestoService.actualizar(this.currentPresupuesto!).subscribe((id: object)=>{
+            this.idPresupuestoActual = Number(id);
+            this.mostrarBotonGuardar = false;
+
+          });
+          if (this.idPresupuestoActual) {
             // Aquí puedes reiniciar el formulario y mostrar el número del presupuesto
-            console.log('Presupuesto actualizado con ID:', idPresupuesto);
+            console.log('Presupuesto actualizado con ID:', this.idPresupuestoActual);
           }
         }
     
@@ -554,54 +569,93 @@ listarClientes(): void {
         const tablaBody: any[] = [
           [
             { text: 'Código', style: 'tableHeader' },
-            { text: 'Cantidad', style: 'tableHeader' },
             { text: 'Descripción', style: 'tableHeader' },
+            { text: 'Cant', style: 'tableHeader' },
             { text: 'Precio Unitario', style: 'tableHeader' },
+            { text: 'Desc', style: 'tableHeader' },
             { text: 'Subtotal', style: 'tableHeader' }
           ]
         ];
+
+        const formatNumberWithThousandsSeparator = (numberString: String) => {
+          const parts = numberString.split('.');
+          parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+          return parts.join(',');
+        };
     
         this.mapaPresupuestoArticulos?.forEach((presupuestosArticulos, clave) => {
           const cantidades = presupuestosArticulos.map(pa => pa.cantidad || 0);
           const totalCantidad = cantidades.reduce((acc, c) => acc + c, 0);
+          let descuentoUnitario = " "
+          if ((presupuestosArticulos[0].descuento === 0 || presupuestosArticulos[0].descuento === null)) {
+            descuentoUnitario = " ";
+          } else if (presupuestosArticulos[0].descuento !== undefined) {
+            descuentoUnitario = String(presupuestosArticulos[0].descuento) + "%";
+          }
           const descripcion = presupuestosArticulos[0].articulo?.descripcion || '';
           const descripcionCompleta = presupuestosArticulos
             .map(pa => `${pa.cantidad || 0}${pa.articulo?.color?.codigo || ''}`)
             .join(' ');
-          const precioUnitario = (presupuestosArticulos[0].precioUnitario || 0).toFixed(2);
-          const subtotalXArticulo = (this.calcularPrecioConDescuento(presupuestosArticulos[0]) * (totalCantidad || 0)).toFixed(2);
-    
+         
+            const precioUnitario = formatNumberWithThousandsSeparator((presupuestosArticulos[0].precioUnitario || 0).toFixed(2));
+            const subtotalXArticulo = formatNumberWithThousandsSeparator((this.calcularPrecioConDescuento(presupuestosArticulos[0]) * (totalCantidad || 0)).toFixed(2));
+          
           tablaBody.push([
-            { text: clave, style: 'tableCell' },
-            { text: totalCantidad.toString(), style: 'tableCell' },
-            { text: `${descripcion} ${descripcionCompleta}`, style: 'tableCell' },
-            { text: precioUnitario, style: 'tableCell' },
-            { text: subtotalXArticulo, style: 'tableCell' }
+            { text: clave, style: 'tableCellString' },
+            { text: `${descripcion} ${descripcionCompleta}`, style: 'tableCellString' },
+            { text:   totalCantidad.toString(), style: 'tableCellNumber' },
+            { text: `$ ${precioUnitario}`, style: 'tableCellNumber' },
+            { text: `${descuentoUnitario}`, style: 'tableCellNumber' },
+            { text: `$ ${subtotalXArticulo}`, style: 'tableCellNumber' }
           ]);
         });
     
         const precioSubtotal = this.calcularPrecioSubtotal().toFixed(2);
+        let descuentoGeneral
+        if (this.descTotal==="0" || this.descTotal===null || this.descTotal===undefined){
+          descuentoGeneral = " "
+        }else {descuentoGeneral= `Descuento : ${this.descTotal}%`}
         const precioTotal = this.calcularPrecioTotal().toFixed(2);
-    
+        let domicilio = '';
+        let localidad = '';
+        let provincia = '';
+        if(this.currentCliente?.domicilio){ domicilio = this.currentCliente?.domicilio}
+        if(this.currentCliente?.localidad){ localidad = this.currentCliente?.localidad}
+        if(this.currentCliente?.provincia){ provincia = this.currentCliente?.provincia}
+
+
         docDefinition = {
           content: [
             {
               columns: [
                 {
                   width: '*',
-                  stack: [
-                    { text: `Fecha: ${this.formatearFecha(this.fechaPresupuesto)}`, style: 'caption', alignment: 'left' },
-                    { text: `Cliente: ${this.currentCliente?.razonSocial}`, style: 'caption', alignment: 'left' },
-                    { text: `Dirección: ${this.currentCliente?.domicilio}`, style: 'caption', alignment: 'left' },
-                    { text: `Teléfono: ${this.currentCliente?.telefono}`, style: 'caption', alignment: 'left' },
-                  ]
+                  table: {
+                    widths: ['*'],
+                    body: [
+                      [
+                        {
+                          stack: [
+                            { text: `Presupuesto N° ${this.idPresupuestoActual}`, style: 'headerBold' },
+                            { text: `Cliente: ${this.currentCliente?.razonSocial} (${this.currentCliente?.id})`, style: 'headerBold' },
+                            { text: `Fecha: ${this.formatearFecha(this.fechaPresupuesto)}`, style: 'headerBold' },
+                            { text: `\nDirección: ${domicilio} ${localidad} ${provincia}`, style: 'caption' },
+                            { text: `Teléfono: ${this.currentCliente?.telefono}`, style: 'caption' },
+                            { text: `CUIT: ${this.currentCliente?.cuit}`, style: 'caption' }
+                          ]
+                        }
+                      ]
+                    ]
+                  },
+                  layout: 'noBorders',
+                  margin: [0, 0, 0, 10]
                 },
                 {
                   width: 'auto',
                   stack: [
                     {
                       image: imagenBase64,
-                      fit: [120, 60],
+                      fit: [150, 85],
                       alignment: 'center',
                     },
                     { text: 'Loria 1140 - Lomas de Zamora', style: 'caption', alignment: 'center' },
@@ -610,15 +664,11 @@ listarClientes(): void {
                 }
               ]
             },
-            {
-              text: `Presupuesto de ${this.currentCliente?.razonSocial}`,
-              style: 'header',
-              margin: [0, 20, 0, 10]
-            },
+
             {
               table: {
                 headerRows: 1,
-                widths: [80, 60, '*', 60, 60],
+                widths: [80,'*', 25 , 60, 25 , 70],
                 body: tablaBody
               },
               layout: 'lightHorizontalLines',
@@ -630,8 +680,9 @@ listarClientes(): void {
                 {
                   width: 'auto',
                   stack: [
-                    { text: `Subtotal: $${precioSubtotal}`, style: 'subtotal' },
-                    { text: `Total: $${precioTotal}`, style: 'total' }
+                    { text: `Subtotal: $${formatNumberWithThousandsSeparator(precioSubtotal)}`, style: 'subtotal' },
+                    { text: `${descuentoGeneral}`, style: 'subtotal' },
+                    { text: `Total: $${formatNumberWithThousandsSeparator(precioTotal)}`, style: 'total' }
                   ],
                   margin: [0, 20, 0, 0]
                 }
@@ -660,9 +711,9 @@ listarClientes(): void {
             .join(' ');
     
           tablaBody.push([
-            { text: clave, style: 'tableCell' },
-            { text: totalCantidad.toString(), style: 'tableCell' },
-            { text: `${descripcion} ${descripcionCompleta}`, style: 'tableCell' }
+            { text: clave, style: 'tableCellString' },
+            { text: totalCantidad.toString(), style: 'tableCellNumber' },
+            { text: `${descripcion} ${descripcionCompleta}`, style: 'tableCellString' }
           ]);
         });
     
@@ -674,7 +725,7 @@ listarClientes(): void {
                   width: '*',
                   stack: [
                     { text: `Fecha: ${this.formatearFecha(this.fechaPresupuesto)}`, style: 'caption', alignment: 'left' },
-                    { text: `Cliente: ${this.currentCliente?.razonSocial}`, style: 'caption', alignment: 'left' }
+                    { text: `Cliente: ${this.currentCliente?.razonSocial} (${this.currentCliente?.id})`, style: 'caption', alignment: 'left' }
                   ]
                 },
                 {
@@ -692,7 +743,7 @@ listarClientes(): void {
               ]
             },
             {
-              text: 'Presupuesto Interno',
+              text: `Presupuesto Interno N° ${this.idPresupuestoActual}`,
               style: 'header',
               margin: [0, 20, 0, 10]
             },
@@ -718,17 +769,15 @@ listarClientes(): void {
 
   getStyles() {
       return {
-        header: {
-          fontSize: 16,
+        headerBold: {
+          fontSize: 13,
           bold: true,
-          alignment: 'center',
-          margin: [0, 10, 0, 10]
+          margin: [0, 1, 0, 1]
         },
         caption: {
-          fontSize: 9,
-          italics: true,
-          alignment: 'center',
-          margin: [0, 2, 0, 2]
+          fontSize: 10,
+          margin: [0, 1, 0, 1],
+          color: 'dark gray'
         },
         tableHeader: {
           bold: true,
@@ -738,9 +787,14 @@ listarClientes(): void {
           alignment: 'center',
           margin: [0, 6, 0, 6]
         },
-        tableCell: {
+        tableCellNumber: {
           fontSize: 10,
           alignment: 'center',
+          margin: [0, 5, 0, 5]
+        },
+        tableCellString: {
+          fontSize: 10,
+          alignment: 'left',
           margin: [0, 5, 0, 5]
         },
         footer: {

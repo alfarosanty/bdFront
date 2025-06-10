@@ -18,28 +18,14 @@ export class PresupuestoService {
 
   constructor(private http: HttpClient) {}
 
-  crear(presupuesto :Presupuesto)  {
-    alert('url' + baseUrl);
-  return this.http.post(`${baseUrl}/crear`, presupuesto).subscribe(
-    response => {
-      console.log('Respuesta de la API:', response);
-    },
-    error => {
-      console.error('Error en la llamada POST:', error);
-    }
-  );
+  crear(presupuesto :Presupuesto): Observable<Object>   {
+  alert('url' + baseUrl);
+  return this.http.post(`${baseUrl}/crear`, presupuesto)
   }
 
-  actualizar(presupuesto :Presupuesto)  {
+  actualizar(presupuesto :Presupuesto): Observable<Object>   {
     alert('url' + baseUrl);
-   return this.http.post(`${baseUrl}/actualizar`, presupuesto).subscribe(
-    response => {
-      console.log('Respuesta de la API:', response);
-    },
-    error => {
-      console.error('Error en la llamada POST:', error);
-    }
-  );
+   return this.http.post(`${baseUrl}/actualizar`, presupuesto);
   }
 
   getByCliente(id:any): Observable<Presupuesto[]> {
