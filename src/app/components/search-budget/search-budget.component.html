@@ -131,7 +131,10 @@
 </div>
 
 <div class="grilla-container">
-  <h3>Grilla de Información</h3>
+  <h3  style="text-align: center;">Grilla de Información</h3>
+  <button mat-raised-button class="boton-de-comentario" color="primary" (click)=" agregarComentario() ">
+    Agregar fila
+  </button>
 
   <table mat-table [dataSource]="dataSourceCodigo" multiTemplateDataRows class="mat-elevation-z8">
 
@@ -146,8 +149,10 @@
       <td mat-cell *matCellDef="let element">
         {{ getDescripcionBase(element.codigo) }}
         <ng-container *ngFor="let detalle of getArticulosParaArticulo(element.codigo)">
-          {{ (detalle.cantidad || 0) + (detalle.articulo?.color?.codigo || '') }}
-        </ng-container>
+          <span *ngIf="!(detalle.articulo?.codigo || '').startsWith('MEN')">
+            {{ (detalle.cantidad || 0) + (detalle.articulo?.color?.codigo || '') }}
+          </span>
+                </ng-container>
       </td>
     </ng-container>
   
@@ -179,12 +184,15 @@
     <ng-container matColumnDef="Descuento">
       <th mat-header-cell *matHeaderCellDef>Descuento</th>
       <td mat-cell *matCellDef="let element">
-        <input type="number"
-               class="input-pequeño"
-               [(ngModel)]="descuentos[element.codigo]"
-               (keydown.enter)="aplicarDescuentoUnitario(element.codigo); actualizarTotales()"
-               (click)="$event.stopPropagation()"> %
-        </td>
+        <div class="input-con-sufijo">
+          <input type="text"
+                 [(ngModel)]="descuentos[element.codigo]"
+                 (keydown.enter)="aplicarDescuentoUnitario(element.codigo); actualizarTotales()"
+                 (click)="$event.stopPropagation()"
+                 class="input-pequeño alineado-derecha">
+          <span class="sufijo">%</span>
+        </div>
+      </td>
     </ng-container>
   
     <ng-container matColumnDef="Borrar">
@@ -286,9 +294,15 @@
     <div class="descuento-total">
       <mat-form-field appearance="outline" class="input-descuento-total">
         <mat-label>Descuento general (%)</mat-label>
-        <input matInput type="number" [(ngModel)]="descTotal" (keydown.enter)="actualizarTotales()" />
+        <input matInput
+               type="text"
+               [(ngModel)]="descTotal"
+               (keydown.enter)="actualizarTotales()"
+               style="text-align: right;" />
+        <span matSuffix>%</span>
       </mat-form-field>
     </div>
+    
   </div>
   
     <!-- Botón principal para generar presupuesto -->

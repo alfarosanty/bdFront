@@ -1,5 +1,5 @@
 import { Component, Inject } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map, startWith } from 'rxjs/operators'
 import { Articulo } from 'src/app/models/articulo.model';
@@ -333,7 +333,7 @@ listarClientes(): void {
   }
 
   aplicarDescuentoUnitario(codigo: string) {
-    const porcentaje = this.descuentos[codigo] || 0;
+    const porcentaje = Number(this.descuentos[codigo]) || 0;
     const articulos = this.mapaPresupuestoArticulos?.get(codigo);
   
     if (articulos) {
@@ -693,12 +693,20 @@ listarClientes(): void {
         };
     
       } else {
+
+        let domicilio = '';
+        let localidad = '';
+        let provincia = '';
+        if(this.currentCliente?.domicilio){ domicilio = this.currentCliente?.domicilio}
+        if(this.currentCliente?.localidad){ localidad = this.currentCliente?.localidad}
+        if(this.currentCliente?.provincia){ provincia = this.currentCliente?.provincia}
+
         // === PDF para EMPLEADO ===
         const tablaBody: any[] = [
           [
             { text: 'Código', style: 'tableHeader' },
-            { text: 'Cantidad', style: 'tableHeader' },
-            { text: 'Descripción completa', style: 'tableHeader' }
+            { text: 'Descripcion completa', style: 'tableHeader' },
+            { text: 'Cantidad', style: 'tableHeader' }
           ]
         ];
     
@@ -712,8 +720,8 @@ listarClientes(): void {
     
           tablaBody.push([
             { text: clave, style: 'tableCellString' },
-            { text: totalCantidad.toString(), style: 'tableCellNumber' },
-            { text: `${descripcion} ${descripcionCompleta}`, style: 'tableCellString' }
+            { text: `${descripcion} ${descripcionCompleta}`, style: 'tableCellString' },
+            { text: totalCantidad.toString(), style: 'tableCellNumber' }
           ]);
         });
     
@@ -724,9 +732,12 @@ listarClientes(): void {
                 {
                   width: '*',
                   stack: [
-                    { text: `Fecha: ${this.formatearFecha(this.fechaPresupuesto)}`, style: 'caption', alignment: 'left' },
-                    { text: `Cliente: ${this.currentCliente?.razonSocial} (${this.currentCliente?.id})`, style: 'caption', alignment: 'left' }
-                  ]
+                    { text: `Presupuesto N° ${this.idPresupuestoActual}`, style: 'headerBold' },
+                    { text: `Cliente: ${this.currentCliente?.razonSocial} (${this.currentCliente?.id})`, style: 'headerBold' },
+                    { text: `Fecha: ${this.formatearFecha(this.fechaPresupuesto)}`, style: 'headerBold' },
+                    { text: `\nDirección: ${domicilio} ${localidad} ${provincia}`, style: 'caption' },
+                    { text: `Teléfono: ${this.currentCliente?.telefono}`, style: 'caption' },
+                    { text: `CUIT: ${this.currentCliente?.cuit}`, style: 'caption' }                  ]
                 },
                 {
                   width: 'auto',
@@ -743,14 +754,9 @@ listarClientes(): void {
               ]
             },
             {
-              text: `Presupuesto Interno N° ${this.idPresupuestoActual}`,
-              style: 'header',
-              margin: [0, 20, 0, 10]
-            },
-            {
               table: {
                 headerRows: 1,
-                widths: [80, 60, '*'],
+                widths: [95, '*', 50],
                 body: tablaBody
               },
               layout: 'lightHorizontalLines',
@@ -882,7 +888,10 @@ procesarMapaDeArticulos() {
   if(this.presupuestoAAcceder)
   this.mapaPresuXArtParaAcceder = new Map()
   this.presupuestoAAcceder?.articulos?.forEach(presuArt => {
-    const key = presuArt.articulo?.codigo!;
+    let key = presuArt.articulo?.codigo!;
+    if(presuArt.articulo?.codigo == "GEN"){
+      key = presuArt.codigo!
+    }
     
     if (this.mapaPresuXArtParaAcceder?.has(key)) {
       const listaDePresuArtActualizada = (this.mapaPresuXArtParaAcceder.get(key) || []);
@@ -991,25 +1000,98 @@ intentoDeCrearCurrentPresupuesto(){
   }
 }
 
+agregarComentario() {
+  // Datos iniciales para el diálogo, pueden ser vacíos o con valores por defecto
+  const dataInicial = {
+    codigo: "MEN",
+    descripcion: '',
+    precioUnitario: 0,
+    cantidad: 1,
+    // podrías agregar más campos si quieres editar color, código, etc.
+  };
+  const dialogRef = this.dialog.open(EditarGenericoDialogComponent, {
+    width: '350px',
+    data: dataInicial
+  });
+
+  dialogRef.afterClosed().subscribe(result => {
+    if(this.mapaPresupuestoArticulos?.has(dataInicial.codigo)){
+      const cantDeMensajes = Array.from(this.mapaPresupuestoArticulos.entries())
+      .filter(([codigo, lista]) => codigo.startsWith('MEN')) // Filtra las entradas cuyas claves empiezan con 'MEN'
+      .map(([codigo, lista]) => lista).length; // Mapea para quedarte solo con el array de artículos/mensajes
+
+      dataInicial.codigo = dataInicial.codigo + String((cantDeMensajes ?? 0) + 1);
+    }
+    if (result) {
+      // Construimos el Articulo
+      const nuevoArticulo = new Articulo();
+      nuevoArticulo.id = 0;
+      
+
+      // Construimos el PresupuestoArticulo que incluye el Articulo y otros campos
+      const nuevoPresupuestoArticulo = new PresupuestoArticulo();
+      nuevoPresupuestoArticulo.articulo = nuevoArticulo;
+      nuevoPresupuestoArticulo.cantidad = result.cantidad;
+      nuevoPresupuestoArticulo.cantidadActual = 0;
+      nuevoPresupuestoArticulo.precioUnitario = result.precioUnitario;
+      nuevoPresupuestoArticulo.descripcion = result.descripcion;
+      nuevoPresupuestoArticulo.codigo = dataInicial.codigo;
+      // agregar descuento, stock, presupuesto si hace falta
+
+      dataInicial.codigo = "MEN"
+
+      console.log(this.mapaPresupuestoArticulos)
+
+      this.guardarPresupuestoArticulo(nuevoPresupuestoArticulo);
+    }
+  });
+
+}
+
+guardarPresupuestoArticulo(pa: PresupuestoArticulo) {
+  console.log("entra a guardarm presupuesto")
+  // Ejemplo: agregamos a un arreglo local (ajusta según tu lógica)
+
+  this.mapaPresupuestoArticulos?.set(pa.codigo!, [pa]);
+  this.actualizarDataSource()
+  this.actualizarTotales()
+
+  // O si tienes un servicio, aquí llamarías para persistir en backend
+  // this.presupuestoArticuloService.crear(pa).subscribe(...)
+}
+
+
 }
 
 
 @Component({
   selector: 'app-editar-generico-dialog',
   templateUrl: './editar-generico-dialog.component.html',
+  styleUrls: ['./editar-generico-dialog.component.css'] // <-- ¡ACÁ VA LA LÍNEA QUE FALTA!
 })
 export class EditarGenericoDialogComponent {
+  form: FormGroup;
+
   constructor(
+    private fb: FormBuilder,
     public dialogRef: MatDialogRef<EditarGenericoDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { descripcion: string; precio: number }
-  ) {}
+    @Inject(MAT_DIALOG_DATA) public data: any
+  ) {
+    this.form = this.fb.group({
+      cantidad: [data.cantidad || 1, [Validators.required, Validators.min(1)]],
+      codigo: [data.codigo || '', Validators.required],
+      descripcion: [data.descripcion || '', Validators.required],
+      precioUnitario: [data.precioUnitario || 0, [Validators.required, Validators.min(0)]]
+    });
+  }
 
   onNoClick(): void {
     this.dialogRef.close();
   }
 
   guardar(): void {
-    this.dialogRef.close(this.data);
+    if (this.form.valid) {
+      this.dialogRef.close(this.form.value);
+    }
   }
 }
-

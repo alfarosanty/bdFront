@@ -409,4 +409,33 @@ th.mat-header-cell, td.mat-cell {
     vertical-align: middle;
     border: 1px solid #000000; /* contorno gris oscuro */
   }
+  .input-con-sufijo {
+    position: relative;
+    display: inline-block;
+    width: 100%; /* o 50%, 30% según el layout */
+    max-width: 120px; /* opcional, para limitar tamaño */
+  }
   
+  .input-con-sufijo input {
+    padding-right: 15%; /* reserva espacio para el % */
+    box-sizing: border-box;
+    width: 100%;
+  }
+  
+  .sufijo {
+    position: absolute;
+    right: 5%;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #555;
+    font-size: 0.9em;
+  }
+  
+  .alineado-derecha {
+    text-align: right;
+  }
+  
+.boton-de-comentario{
+  margin-bottom: 1%;
+}
