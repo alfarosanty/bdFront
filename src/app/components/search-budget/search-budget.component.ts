@@ -1,4 +1,4 @@
-import { Component, Inject } from '@angular/core';
+import { Component, ElementRef, Inject } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map, startWith } from 'rxjs/operators'
@@ -16,6 +16,10 @@ import { trigger, state, style, transition, animate } from '@angular/animations'
 import { EstadoPresupuesto } from 'src/app/models/estado-presupuesto.model';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { ArticuloPrecio } from 'src/app/models/articulo-precio.model';
+import { ViewChild, ChangeDetectorRef } from '@angular/core';
+import { MatSelect } from '@angular/material/select';
+
+
 
 (pdfMake as any).vfs = (pdfFonts as any).vfs;
 
@@ -38,6 +42,13 @@ import { ArticuloPrecio } from 'src/app/models/articulo-precio.model';
   styleUrls: ['./search-budget.component.css']
 })
 export class SearchBudgetComponent {
+// DATOS DE FOCUS EN HTML
+  @ViewChild('inputColores') inputColores!: MatSelect;
+  @ViewChild('inputCantidad') inputCantidad!: ElementRef<HTMLInputElement>;
+  @ViewChild('inputArticulos') inputArticulos!: ElementRef<HTMLInputElement>;
+
+
+
 //DATOS DEL PRESUPUESTO
 
   clientes?: Cliente[];
@@ -72,6 +83,7 @@ export class SearchBudgetComponent {
   idPresupuestoActual ?: Number;
 
   precioSubtotal?: number;
+  filterValue ='';
 
 
   //INPUT BUSQUEDA
@@ -88,7 +100,7 @@ export class SearchBudgetComponent {
   //END INPUT
  //MATTABLE DATA
 
- columnsToDisplay = ['Artículo', 'Descripcion', 'Cantidad', 'Precio Unitario', 'Precio Total', 'Descuento', 'Borrar', 'Editar'];
+ columnsToDisplay = ['Artículo', 'Descripcion', 'Cantidad', 'Precio Unitario', 'Precio Total', 'Descuento', 'Borrar'];
  articuloColumnsToDisplay = ['Articulo', 'Cantidad', 'Borrar'];
  expandedElement: any | undefined;
 
@@ -101,7 +113,7 @@ export class SearchBudgetComponent {
 ];
 
 
-  constructor(private clienteService: ClienteService, private articuloService:ArticuloService, private presupuestoService:PresupuestoService, private route : ActivatedRoute, public dialog: MatDialog) {}
+  constructor(private clienteService: ClienteService, private articuloService:ArticuloService, private presupuestoService:PresupuestoService, private route : ActivatedRoute, public dialog: MatDialog, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.listarClientes();
@@ -125,7 +137,7 @@ export class SearchBudgetComponent {
 
     this.fechaPresupuesto=new Date();
     this.filteredArticulos = this.articuloControl.valueChanges.pipe(startWith(''),map(value => this._filter(String(value))));
-
+    
     console.log("CLIENTES FILTRADOS:", this.filteredClientes)
     const presupuestoId = Number(this.route.snapshot.paramMap.get('id'));
     
@@ -139,13 +151,18 @@ export class SearchBudgetComponent {
   
       this.actualizarDataSource()
   }
+ 
+ 
 
   private _filter(value: string): string[] {
     console.log(value)
     console.log(this.options)
-    const filterValue = value.toLowerCase();
-    return this.options.filter(option => option.toLowerCase().includes(filterValue));
+    this.filterValue = value.toLowerCase();
+   // this.articuloControl.setValue(this.options.filter(option => option.toLowerCase().includes(this.filterValue))[0]);
+    this.articuloControl.value
+   return this.options.filter(option => option.toLowerCase().includes(this.filterValue));
   }
+
 
   private _filterClientes(value: string): Cliente[] {
     const filterValue = value.toLowerCase();
@@ -214,26 +231,14 @@ listarClientes(): void {
     console.log('Valor de Eximir IVA cambiado:', this.eximirIVA);
   }
 
-  seleccionarArticulo(){
-    const codigoAritculoSeleccionado = this.articuloSeleccionado.split(' ');
-    this.codigoArticulo = codigoAritculoSeleccionado[0];
-    console.log("código artículo del seleccionado: ", this.codigoArticulo)
-    this.mostrarVariedadColores();
-    const articuloPrecioDeseado = this.articulosPrecio.filter(articuloPrecio=>articuloPrecio.codigo ===this.codigoArticulo)[0]
-    this.articuloSeleccionado = articuloPrecioDeseado.codigo + " " + articuloPrecioDeseado.descripcion
-
-
-  }
-
   mostrarVariedadColores() {
     this.articulos = [];
-  
+    const articuloPrecioDeseado = this.articulosPrecio.filter(articuloPrecio=>articuloPrecio.codigo + " " + articuloPrecio.descripcion ===this.articuloSeleccionado)[0]
+
     // Verifica si hay un código de artículo
-    if (this.codigoArticulo) {
+    if (articuloPrecioDeseado) {
       // Separa el código en familia y medida
       console.log("artiulosPrecio", this.articulosPrecio)
-      console.log(this.articulosPrecio.filter(articuloPrecio=>articuloPrecio.codigo ===this.codigoArticulo))
-      const articuloPrecioDeseado = this.articulosPrecio.filter(articuloPrecio=>articuloPrecio.codigo ===this.codigoArticulo)[0]
       console.log(articuloPrecioDeseado)
       if(!articuloPrecioDeseado){alert("El artículo seleccionado no existe")}
       const idArticuloPrecioDeseado = articuloPrecioDeseado.id
@@ -242,7 +247,6 @@ listarClientes(): void {
       // Llama al servicio para obtener artículos según la familia y medida
       this.articuloService.getByArticuloPrecio(idArticuloPrecioDeseado).subscribe({
         next: (data) => {
-          console.log("ESTOS SON LOS COLORES QUE TRAE ", this.codigoArticulo, data.map(articulo=>articulo.color?.descripcion))
           this.articulos = data;
           this.articulos.sort((a, b) => {
             const descA = a.color?.descripcion?.toLowerCase() || '';
@@ -251,18 +255,27 @@ listarClientes(): void {
           });
           
             // Remover colores ya cargados
-          var idspa = this.mapaPresupuestoArticulos?.get(this.codigoArticulo)?.map(pa => pa.articulo?.id);
-  
+          var idspa = this.mapaPresupuestoArticulos?.get(articuloPrecioDeseado.codigo!)?.map(pa => pa.articulo?.id);
+          
           if (idspa) {
             this.articulos = this.articulos.filter(articulo => !(idspa?.includes(articulo.id)));
           }
   
           // Mostrar u ocultar colores según si hay artículos disponibles
           this.mostrarColores = this.articulos.length > 0;
+
+          this.cdr.detectChanges(); // fuerza a Angular a renderizar el mat-select
+
+        setTimeout(() => {
+          if (this.inputColores) {
+            this.inputColores.focus();
+            this.inputColores.open();
+          }
+        });
         },
         error: (e) => console.error('Error al obtener artículos:', e)
       });
-  
+
     } else {
       // Si no hay código de artículo, ocultar los colores
       this.mostrarColores = false;
@@ -323,6 +336,12 @@ listarClientes(): void {
       }
       this.actualizarDataSource()
       this.cantProducto = "0"
+      
+      setTimeout(() => {
+        this.inputArticulos.nativeElement.focus();
+        this.inputArticulos.nativeElement.select();
+      });
+
     }
     
 
@@ -514,9 +533,15 @@ listarClientes(): void {
         // Recorrer el mapa de artículos y agregarlos al presupuesto
         this.mapaPresupuestoArticulos?.forEach((valor, clave) => {
           valor.forEach(presuArt => {
-            console.log(presuArt.articulo?.color?.descripcion + ' ' + presuArt.cantidad);
+            console.log("PRESUART ANTES DE ACTUALIZAZR", presuArt)
             presuArt.cantidadPendiente = presuArt.cantidad;
-            presuArt.codigo = presuArt.articulo?.familia?.codigo + "/" + presuArt.articulo?.medida?.codigo
+            if(presuArt.articulo?.codigo!="GEN"){
+            presuArt.codigo = presuArt.articulo?.codigo
+            presuArt.descripcion = presuArt.articulo?.descripcion
+          }
+          console.log("PRESUART después DE ACTUALIZAZR", presuArt)
+          console.log(presuArt.articulo)
+
             this.currentPresupuesto!.articulos?.push(presuArt);
           });
         });
@@ -534,7 +559,7 @@ listarClientes(): void {
           })
           if (this.idPresupuestoActual) {
             // Aquí puedes reiniciar el formulario y mostrar el número del presupuesto
-            console.log('Presupuesto creado con ID:', this.idPresupuestoActual);
+            alert('Presupuesto creado exitosamente');
           }
         } else {
           // Si el presupuesto ya existe, actualizarlo
@@ -545,7 +570,7 @@ listarClientes(): void {
           });
           if (this.idPresupuestoActual) {
             // Aquí puedes reiniciar el formulario y mostrar el número del presupuesto
-            console.log('Presupuesto actualizado con ID:', this.idPresupuestoActual);
+            alert('Presupuesto actualizado exitosamente');
           }
         }
     
@@ -592,10 +617,15 @@ listarClientes(): void {
           } else if (presupuestosArticulos[0].descuento !== undefined) {
             descuentoUnitario = String(presupuestosArticulos[0].descuento) + "%";
           }
-          const descripcion = presupuestosArticulos[0].articulo?.descripcion || '';
-          const descripcionCompleta = presupuestosArticulos
+          let descripcion = presupuestosArticulos[0].articulo?.descripcion || '';
+          let descripcionCompleta = presupuestosArticulos
             .map(pa => `${pa.cantidad || 0}${pa.articulo?.color?.codigo || ''}`)
             .join(' ');
+
+            if(clave.startsWith("MEN")){
+              descripcion = presupuestosArticulos[0].descripcion!
+              descripcionCompleta = ''
+            }
          
             const precioUnitario = formatNumberWithThousandsSeparator((presupuestosArticulos[0].precioUnitario || 0).toFixed(2));
             const subtotalXArticulo = formatNumberWithThousandsSeparator((this.calcularPrecioConDescuento(presupuestosArticulos[0]) * (totalCantidad || 0)).toFixed(2));
@@ -713,10 +743,15 @@ listarClientes(): void {
         this.mapaPresupuestoArticulos?.forEach((presupuestosArticulos, clave) => {
           const cantidades = presupuestosArticulos.map(pa => pa.cantidad || 0);
           const totalCantidad = cantidades.reduce((acc, c) => acc + c, 0);
-          const descripcion = presupuestosArticulos[0].articulo?.descripcion || '';
-          const descripcionCompleta = presupuestosArticulos
+          let descripcion = presupuestosArticulos[0].articulo?.descripcion || '';
+          let descripcionCompleta = presupuestosArticulos
             .map(pa => `${pa.cantidad || 0}${pa.articulo?.color?.codigo || ''}`)
             .join(' ');
+            
+            if(clave.startsWith("MEN")){
+              descripcion = presupuestosArticulos[0].descripcion!
+              descripcionCompleta = ''
+            }
     
           tablaBody.push([
             { text: clave, style: 'tableCellString' },
@@ -887,12 +922,18 @@ cargarDetallesPresupuesto(id: Number) {
 procesarMapaDeArticulos() {
   if(this.presupuestoAAcceder)
   this.mapaPresuXArtParaAcceder = new Map()
+console.log(this.presupuestoAAcceder?.articulos)
   this.presupuestoAAcceder?.articulos?.forEach(presuArt => {
-    let key = presuArt.articulo?.codigo!;
-    if(presuArt.articulo?.codigo == "GEN"){
+    console.log("PRESUART CARGANDO",presuArt)
+    console.log("EL CODIGO ARTICULO ES:", presuArt.articulo?.codigo)
+
+    let key
+    if(presuArt.articulo?.codigo == 'GEN'){
+      console.log("ENTRÓ AL IF")
       key = presuArt.codigo!
-    }
-    
+    } else {key = presuArt.articulo?.codigo!;}
+    console.log("la key es:", key)
+
     if (this.mapaPresuXArtParaAcceder?.has(key)) {
       const listaDePresuArtActualizada = (this.mapaPresuXArtParaAcceder.get(key) || []);
       listaDePresuArtActualizada.push(presuArt);
@@ -950,6 +991,11 @@ cantidadActualDepoducto():string {
 actualizarArticuloSeleccionado(){
   if (this.articulos && this.articulos.length > 0) {
     this.currentArticulo = this.articulos[this.articuloColorIndex]; // Actualiza el artículo seleccionado
+    setTimeout(() => {
+      if (this.inputCantidad) {
+        this.inputCantidad.nativeElement.focus();
+      }
+    });
   }
 }
 
@@ -979,6 +1025,9 @@ getArticulosParaArticulo(codigo: string): PresupuestoArticulo[] {
 
 getDescripcionBase(codigo: string): string {
   const entry = this.mapaPresupuestoArticulos?.get(codigo);
+  if(codigo.startsWith("MEN")){
+    return (entry![0].descripcion || '')
+  }
   if (entry && entry.length > 0) {
     return `${entry[0].descripcion || ''}`;
   /*  const art = entry[0].articulo;
@@ -1026,6 +1075,11 @@ agregarComentario() {
       // Construimos el Articulo
       const nuevoArticulo = new Articulo();
       nuevoArticulo.id = 0;
+      nuevoArticulo.codigo="GEN"
+      nuevoArticulo.descripcion="GENERICO"
+      nuevoArticulo.color = {id:37, codigo:"GN", descripcion:"GENERICO"}
+      nuevoArticulo.medida = {id:0, codigo:"GEN", descripcion:"GENERICO"}
+      nuevoArticulo.articuloPrecio={id:0, codigo:"GEN", descripcion:"GENERICO", precio1:0}
       
 
       // Construimos el PresupuestoArticulo que incluye el Articulo y otros campos
@@ -1036,6 +1090,7 @@ agregarComentario() {
       nuevoPresupuestoArticulo.precioUnitario = result.precioUnitario;
       nuevoPresupuestoArticulo.descripcion = result.descripcion;
       nuevoPresupuestoArticulo.codigo = dataInicial.codigo;
+      console.log(nuevoPresupuestoArticulo)
       // agregar descuento, stock, presupuesto si hace falta
 
       dataInicial.codigo = "MEN"
@@ -1049,15 +1104,12 @@ agregarComentario() {
 }
 
 guardarPresupuestoArticulo(pa: PresupuestoArticulo) {
-  console.log("entra a guardarm presupuesto")
-  // Ejemplo: agregamos a un arreglo local (ajusta según tu lógica)
 
   this.mapaPresupuestoArticulos?.set(pa.codigo!, [pa]);
   this.actualizarDataSource()
   this.actualizarTotales()
 
-  // O si tienes un servicio, aquí llamarías para persistir en backend
-  // this.presupuestoArticuloService.crear(pa).subscribe(...)
+
 }
 
 
