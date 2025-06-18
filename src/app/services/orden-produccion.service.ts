@@ -19,16 +19,10 @@ export class OrdenProduccionService {
 
   }
 
-  actualizar(ordenDePedido :PedidoProduccion)  {
-   return this.http.post(`${baseUrl}/actualizar`, ordenDePedido).subscribe(
-    response => {
-      console.log('Respuesta de la API:', response);
-    },
-    error => {
-      console.error('Error en la llamada POST:', error);
-    }
-  );
+  actualizar(ordenDePedido: PedidoProduccion): Observable<number> {
+    return this.http.post<number>(`${baseUrl}/actualizar`, ordenDePedido);
   }
+  
 
   getByTaller(id:any): Observable<PedidoProduccion[]> {
     return this.http.get<PedidoProduccion[]>(`${baseUrl}/GetPedidoProduccionByTaller/${id} `);

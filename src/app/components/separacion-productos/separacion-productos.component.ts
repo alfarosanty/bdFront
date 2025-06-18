@@ -160,7 +160,7 @@ logoBase64: String = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAADMCAYA
 
   getCantidadTotal(presupuestoArticulos: PresupuestoArticulo[]): number {
     return (presupuestoArticulos
-      .map(articulo => articulo.cantidadActual)  // Extrae la propiedad 'cantidad'
+      .map(articulo => articulo.cantidad)  // Extrae la propiedad 'cantidad'
       .reduce((total, cantidad) => (total || 0) + (cantidad || 0), 0) || 0) ;  // Suma las cantidades
   }
 
@@ -408,7 +408,7 @@ cantidadActualDepoducto():string {
       const articuloExistente = pa.find(a => a.articulo?.id == this.currentArticulo?.id);
       
       if (articuloExistente) {
-        return articuloExistente!.cantidadActual!.toString(); // Devuelve la cantidad actual como string para mostrarla
+        return articuloExistente!.cantidad!.toString(); // Devuelve la cantidad actual como string para mostrarla
       }
     }
   }
@@ -502,10 +502,10 @@ actualizarArticuloSeleccionado(){
       }
     } else {
       // Si no todos tienen stock y no hay estado seleccionado, mostrar alerta
-      if (!this.presupuestoAAcceder.estadoPresupuesto) {
+      if (!this.estadoPedido) {
         alert("No seleccionó un estado del pedido");
         return;
-      }
+      } else this.presupuestoAAcceder.estadoPresupuesto!.id= this.estadoPedido
     }
 
     console.log(this.presupuestoAAcceder);

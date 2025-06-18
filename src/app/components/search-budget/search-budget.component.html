@@ -24,7 +24,7 @@
                  [matAutocomplete]="autoCliente"
                  (input)="clienteControl.setValue(clienteControl.value?.toUpperCase(), { emitEvent: false })"
                  (keydown.enter)="inputArticulos.focus()">
-            <mat-autocomplete #autoCliente="matAutocomplete" (optionSelected)="seleccionarCliente();">
+            <mat-autocomplete #autoCliente="matAutocomplete" autoActiveFirstOption (optionSelected)="seleccionarCliente();">
             <mat-option *ngFor="let c of filteredClientes | async" [value]="c.razonSocial">
               {{ c.razonSocial }}
             </mat-option>
@@ -307,15 +307,21 @@
   
     <!-- Backdrop con opciones -->
     <div class="backdrop" *ngIf="showBackDrop">
+      <div class="mensaje-confirmacion animado">
+        <span class="icono">✅</span>
+        <span>¡Presupuesto creado correctamente!</span>
+      </div>
+
+      <div class="checklist-container">
+        <mat-radio-group [(ngModel)]="presupuestoCliente">
+          <mat-radio-button [value]="true"><strong>Cliente</strong></mat-radio-button>
+          <mat-radio-button [value]="false"><strong>Empleado</strong></mat-radio-button>
+        </mat-radio-group>
+      </div>
+
       <div class="button-container">
         <button mat-raised-button color="primary" (click)="generarPDF()">Generar PDF</button>
         <button mat-raised-button color="warn" (click)="cancelarPDF()">No Generar PDF</button>
-      </div>
-      <div class="checklist-container">
-        <mat-radio-group [(ngModel)]="presupuestoCliente">
-          <mat-radio-button [value]="true">Cliente</mat-radio-button>
-          <mat-radio-button [value]="false">Empleado</mat-radio-button>
-        </mat-radio-group>
       </div>
     </div>
   </div>

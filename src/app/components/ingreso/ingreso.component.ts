@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map, startWith } from 'rxjs/operators'
@@ -7,7 +7,6 @@ import { PresupuestoArticulo } from 'src/app/models/presupuesto-articulo.model';
 import { Presupuesto } from 'src/app/models/presupuesto.model';
 import { ArticuloService } from 'src/app/services/articulo.service';
 import { PresupuestoService } from 'src/app/services/budget.service';
-import { jsPDF }  from 'jspdf';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Taller } from 'src/app/models/taller.model';
 import { PedidoProduccion } from 'src/app/models/pedido-produccion.model';
@@ -16,14 +15,13 @@ import { TallerService } from 'src/app/services/taller.service';
 import { IngresoService } from 'src/app/services/ingreso.service';
 import { IngresoMercaderia } from 'src/app/models/ingreso-mercaderia.model';
 import { RegistroDescuento } from 'src/app/models/registro-descuento.model';
-import autoTable from 'jspdf-autotable';
 import { firstValueFrom } from 'rxjs';
 import { EstadoPresupuesto } from 'src/app/models/estado-presupuesto.model';
-import { MatTableDataSource } from '@angular/material/table';
 import * as pdfMake from 'pdfmake/build/pdfmake';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { ArticuloPrecio } from 'src/app/models/articulo-precio.model';
+import { MatSelect } from '@angular/material/select';
 
 (pdfMake as any).vfs = (pdfFonts as any).vfs;
 
@@ -42,6 +40,11 @@ import { ArticuloPrecio } from 'src/app/models/articulo-precio.model';
   ],
 })
 export class IngresoComponent {
+  // DATOS DE FOCUS EN HTML
+  @ViewChild('inputColores') inputColores!: MatSelect;
+  @ViewChild('inputCantidad') inputCantidad!: ElementRef<HTMLInputElement>;
+  @ViewChild('inputArticulos') inputArticulos!: ElementRef<HTMLInputElement>;
+
 
   
   talleres?: Taller[];
@@ -74,21 +77,21 @@ export class IngresoComponent {
   articuloColorIndex = -1;
 
   //INPUT BUSQUEDA
-  myControl = new FormControl();
+  articuloControl = new FormControl();
   options: string[] = [];
-  filteredOptions: Observable<string[]>= new Observable<string[]>();
+  filteredArticulos: Observable<string[]>= new Observable<string[]>();
   articuloSeleccionado ='';
  //END INPUT
 
  //MAT COMPONENTS
-  columnsToDisplay = ['Codigo', 'Descripcion', 'Cantidad', 'Borrar', 'Editar'];
-  articuloColumnsToDisplay = ['Articulo', 'Cantidad'];
+  columnsToDisplay = ['Artículo', 'Descripcion', 'Cantidad', 'Borrar'];
+  articuloColumnsToDisplay = ['Artículo', 'Cantidad', 'Borrar'];
   expandedElement: any | null;
   dataSourceCodigo: any[] = []; // debe contener objetos con: codigo, descripcion
   mostrarConfirmacionPDF = false;
 
 
-  constructor(private tallerService:TallerService, private articuloService:ArticuloService, private ingresoService:IngresoService, private ordenProduccionService: OrdenProduccionService, private presupuestoService: PresupuestoService , private route : ActivatedRoute) {}
+  constructor(private tallerService:TallerService, private articuloService:ArticuloService, private ingresoService:IngresoService, private ordenProduccionService: OrdenProduccionService, private presupuestoService: PresupuestoService , private route : ActivatedRoute, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.listarTalleres();
@@ -113,7 +116,7 @@ export class IngresoComponent {
 
 
 
-    this.filteredOptions = this.myControl.valueChanges.pipe(startWith(''),map(value => this._filter(String(value))));
+    this.filteredArticulos = this.articuloControl.valueChanges.pipe(startWith(''),map(value => this._filter(String(value))));
 
     this.actualizarDataSource();
 
@@ -186,25 +189,14 @@ listarTalleres(): void {
     this.codigoArticulo = this.codigoArticulo.toUpperCase();
   }
 
-
-  seleccionarArticulo(){
-    const codigoAritculoSeleccionado = this.articuloSeleccionado.split(' ');
-    this.codigoArticulo = codigoAritculoSeleccionado[0];
-    console.log("código artículo del seleccionado: ", this.codigoArticulo)
-    this.mostrarVariedadColores();
-
-
-  }
-
   mostrarVariedadColores() {
     this.articulos = [];
-  
+    const articuloPrecioDeseado = this.articulosPrecio.filter(articuloPrecio=>articuloPrecio.codigo + " " + articuloPrecio.descripcion ===this.articuloSeleccionado)[0]
+
     // Verifica si hay un código de artículo
-    if (this.codigoArticulo) {
+    if (articuloPrecioDeseado) {
       // Separa el código en familia y medida
       console.log("artiulosPrecio", this.articulosPrecio)
-      console.log(this.articulosPrecio.filter(articuloPrecio=>articuloPrecio.codigo ===this.codigoArticulo))
-      const articuloPrecioDeseado = this.articulosPrecio.filter(articuloPrecio=>articuloPrecio.codigo ===this.codigoArticulo)[0]
       console.log(articuloPrecioDeseado)
       if(!articuloPrecioDeseado){alert("El artículo seleccionado no existe")}
       const idArticuloPrecioDeseado = articuloPrecioDeseado.id
@@ -213,79 +205,106 @@ listarTalleres(): void {
       // Llama al servicio para obtener artículos según la familia y medida
       this.articuloService.getByArticuloPrecio(idArticuloPrecioDeseado).subscribe({
         next: (data) => {
-          console.log("ESTOS SON LOS COLORES QUE TRAE ", this.codigoArticulo, data.map(articulo=>articulo.color?.descripcion))
           this.articulos = data;
+          this.articulos.sort((a, b) => {
+            const descA = a.color?.descripcion?.toLowerCase() || '';
+            const descB = b.color?.descripcion?.toLowerCase() || '';
+            return descA.localeCompare(descB);
+          });
+          
             // Remover colores ya cargados
-          var idspa = this.mapaPresupuestoArticulos?.get(this.codigoArticulo)?.map(pa => pa.articulo?.id);
-  
+          var idspa = this.mapaPresupuestoArticulos?.get(articuloPrecioDeseado.codigo!)?.map(pa => pa.articulo?.id);
+          
           if (idspa) {
             this.articulos = this.articulos.filter(articulo => !(idspa?.includes(articulo.id)));
           }
   
           // Mostrar u ocultar colores según si hay artículos disponibles
           this.mostrarColores = this.articulos.length > 0;
+
+          this.cdr.detectChanges(); // fuerza a Angular a renderizar el mat-select
+
+        setTimeout(() => {
+          if (this.inputColores) {
+            this.inputColores.focus();
+            this.inputColores.open();
+          }
+        });
         },
         error: (e) => console.error('Error al obtener artículos:', e)
       });
-  
+
     } else {
       // Si no hay código de artículo, ocultar los colores
       this.mostrarColores = false;
     }
   }
+  
 
 
-  mostrarColoresDisponibles(articulo : Articulo) : string {
-    return (articulo.color?.descripcion || "");
-    }
+mostrarColoresDisponibles(articulo : Articulo) : string {
+  return (articulo.color?.descripcion || "");
+  }
   
-  
+
+
+
   agregarArticulo() {
-    if (this.articulos) {
-      this.currentArticulo = this.articulos[this.articuloColorIndex];
-      this.articulos = this.articulos.filter(articulo => articulo.id !== this.currentArticulo?.id);
+    if (!this.articulos) return;
+  
+    this.currentArticulo = this.articulos[this.articuloColorIndex];
+  
+    this.articulos = this.articulos.filter(
+      articulo => articulo.id !== this.currentArticulo?.id
+    );
+  
+    if (!this.currentArticulo) return;
+  
+    // Validar y convertir la cantidad ingresada
+    const cantidadNum = Number(this.cantProducto);
+    const claveMapa: string = this.currentArticulo.codigo!;
+    console.log("🔑 Clave del mapa:", claveMapa);
+  
+    let pa: PresupuestoArticulo[] = this.mapaPresupuestoArticulos?.get(claveMapa) ?? [];
+  
+    const articuloExistente = pa.find(
+      a => a.articulo?.id === this.currentArticulo?.id
+    );
+  
+    if (articuloExistente) {
+      articuloExistente.cantidad = cantidadNum;
+      articuloExistente.cantidadActual = cantidadNum;
+      articuloExistente.cantidadOriginal = cantidadNum;
+      articuloExistente.cantidadPendiente = cantidadNum;
+      console.log("✅ Actualizado artículo existente con nueva cantidad:", cantidadNum);
+    } else {
+      const nuevoArticulo: PresupuestoArticulo = {
+        articulo: this.currentArticulo,
+        cantidad: cantidadNum,
+        cantidadActual: cantidadNum,
+        cantidadOriginal: cantidadNum,
+        cantidadPendiente: cantidadNum,
+        descripcion: this.currentArticulo.descripcion,
+        hayStock: false
+      };
+  
+      pa.push(nuevoArticulo);
+      console.log("🆕 Agregado nuevo artículo:", nuevoArticulo);
     }
-    
-    if (this.currentArticulo) {
-      const claveMapa: string = this.currentArticulo?.familia?.codigo + "/" + this.currentArticulo.medida?.codigo;
-    
-      let pa: PresupuestoArticulo[] = [];
+  
+    this.mapaPresupuestoArticulos?.set(claveMapa, pa);
+        console.log("🧾 Cantidades en la clave:", pa.map(p => p.cantidad));
+  
+    this.actualizarDataSource();
+  
+    this.cantProducto = "0";
+  
+    setTimeout(() => {
+      this.inputArticulos.nativeElement.focus();
+      this.inputArticulos.nativeElement.select();
+    });
+  }
       
-      if (this.mapaPresupuestoArticulos?.has(claveMapa)) {
-      pa = this.mapaPresupuestoArticulos.get(claveMapa) as PresupuestoArticulo[];
-          
-      // Buscar si el artículo ya existe en el array
-      const articuloExistente = pa.find(a => a.articulo?.id === this.currentArticulo?.id);
-          
-      if (articuloExistente) {
-      // Sobreescribir la cantidad en lugar de sumarla
-        articuloExistente.cantidadActual = Number(this.cantProducto);
-        articuloExistente.precioUnitario = this.currentArticulo.articuloPrecio?.precio1;
-          } else {
-            // Si no existe, agregarlo como un nuevo artículo
-            pa.push({
-              articulo: this.currentArticulo,
-              cantidadActual: Number(this.cantProducto),
-              precioUnitario: this.currentArticulo.articuloPrecio?.precio1,
-              hayStock: false
-            });
-          }
-        } else {
-          // Si no existe la clave, simplemente creamos el artículo por primera vez
-          pa.push({
-            articulo: this.currentArticulo,
-            cantidadActual: Number(this.cantProducto),
-            precioUnitario: this.currentArticulo.articuloPrecio?.precio1,
-            hayStock: false
-          });
-        }
-    
-        this.mapaPresupuestoArticulos?.set(claveMapa, pa);
-    
-      }
-      this.actualizarDataSource();
-    }
-    
 
   getCantidadTotal(presupuestoArticulos: PresupuestoArticulo[]): number {
     return (presupuestoArticulos
@@ -310,11 +329,41 @@ listarTalleres(): void {
     }
   }
 
-  borrarFila(key : any){
+borrarFila(key : any){
     
-    this.mapaPresupuestoArticulos?.delete(key);
-    this.actualizarDataSource();
+  this.mapaPresupuestoArticulos?.delete(key);
+  this.actualizarDataSource();
   
+  }
+
+
+borrarArticulo(key: any, color: string) {
+  const articulos = this.mapaPresupuestoArticulos?.get(key);
+  if (articulos) {
+  const index = articulos.findIndex(presuArt => presuArt.articulo?.color?.codigo === color);
+  if (index !== -1) {
+      articulos.splice(index, 1);
+      this.mapaPresupuestoArticulos?.set(key, articulos);
+      
+        // Si la lista está vacía, eliminar la clave
+        if (articulos.length === 0) {
+          this.mapaPresupuestoArticulos?.delete(key);
+          }
+      
+          // Guarda el código expandido actual antes de actualizar
+          const codigoExpandido = this.expandedElement?.codigo;
+      
+          this.actualizarDataSource();
+      
+          // Reasignar el elemento expandido si sigue existiendo
+          const nuevoElementoExpandido = this.dataSourceCodigo.find(e => e.codigo === codigoExpandido);
+          if (nuevoElementoExpandido) {
+          this.expandedElement = nuevoElementoExpandido;
+          } else {
+            this.expandedElement = undefined; // Si ya no existe, lo cerramos
+        }
+        }
+      }
     }
 
     editarFila(key: any) {
@@ -369,8 +418,8 @@ listarTalleres(): void {
     
         console.log("Este es la orden de produccion generada", this.currentIngresoMercaderia);
         this.ingresoService.crear(this.currentIngresoMercaderia)
-}
-this.mostrarConfirmacionPDF=true
+        this.mostrarConfirmacionPDF=true
+} else return
     }
 
     confirmarGenerarPDF(generar: boolean) {
@@ -487,7 +536,7 @@ this.mostrarConfirmacionPDF=true
                 stack: [
                   {
                     image: imagenBase64,
-                    fit: [120, 60],
+                    fit: [150, 85],
                     alignment: 'center',
                   },
                   { text: 'Loria 1140 - Lomas de Zamora', style: 'caption', alignment: 'center' },
@@ -518,7 +567,7 @@ this.mostrarConfirmacionPDF=true
       this.mapaArticulosModificados?.forEach((articulos, clave) => {
         articulos.forEach(articulo => {
           const a = articulo.articuloAfectado;
-          const descripcion = `${a?.familia?.codigo ?? 'N/A'}/${a?.medida?.codigo ?? 'N/A'} ${a?.color?.codigo ?? 'N/A'}`;
+          const descripcion = `${a?.codigo ?? 'N/A'} ${a?.descripcion ?? 'N/A'} ${a?.color?.codigo ?? 'N/A'}`;
           tablaBody.push([
             { text: clave, style: 'tableCell' },
             { text: descripcion, style: 'tableCell' },
@@ -566,7 +615,7 @@ getStyles() {
       bold: true,
       fontSize: 11,
       color: 'white',
-      fillColor: '#4a4a4a',
+      fillColor: '#2C3E50',
       alignment: 'center',
       margin: [0, 6, 0, 6]
     },
@@ -579,7 +628,7 @@ getStyles() {
       bold: true,
       fontSize: 11,
       color: 'white',
-      fillColor: '#4a90e2',
+      fillColor: '#2C3E50',
       alignment: 'center',
       margin: [0, 6, 0, 6]
     },
@@ -598,11 +647,22 @@ getStyles() {
 
 
 
-validarDatosRequeridos() : Boolean{
+validarDatosRequeridos(): boolean {
+  console.log("ESTE ES EL TALLER ACTUAL", this.currentTaller)
+  if (!this.currentTaller || Object.keys(this.currentTaller).length === 0 ) {
+    console.log("entra al if")
+    alert('Debe seleccionar un taller.');
+    return true;
+  }
 
-  return Object.keys((this.currentTaller || "")).length === 0 || this.currentTaller == undefined || this.mapaPresupuestoArticulos?.size == 0 
+  if (!this.mapaPresupuestoArticulos || this.mapaPresupuestoArticulos.size === 0) {
+    alert('Debe agregar al menos un artículo al presupuesto.');
+    return true;
+  }
 
+  return false;
 }
+
 
 cargarDetallesIngresoMercaderia(id: Number) {
   this.ingresoService.get(id).subscribe({
@@ -627,7 +687,7 @@ procesarMapaDeArticulos() {
   this.mapaPresuXArtParaAcceder = new Map()
   this.ingresoMercaderiaAAcceder?.articulos?.forEach(pedidoArt => {
     pedidoArt.cantidadActual = pedidoArt.cantidad
-    const key = pedidoArt.articulo?.familia?.codigo + "/" + pedidoArt.articulo?.medida?.codigo;
+    const key = pedidoArt.articulo?.codigo!
     
     if (this.mapaPresuXArtParaAcceder?.has(key)) {
       const listaDePedidoArtActualizada = (this.mapaPresuXArtParaAcceder.get(key) || []);
@@ -662,16 +722,17 @@ actualizarMapaPresupuestoArticulo(nuevoMap: Map<string, PresupuestoArticulo[]>){
     }
   }
 }
+
 cantidadActualDepoducto():string {
   if (this.currentArticulo) {
-    const claveMapa: string = this.currentArticulo?.familia?.codigo + "/" + this.currentArticulo.medida?.codigo;
+  const claveMapa: string = this.currentArticulo?.codigo!;
     
     if (this.mapaPresupuestoArticulos?.has(claveMapa)) {
       const pa = this.mapaPresupuestoArticulos.get(claveMapa) as PresupuestoArticulo[];
       const articuloExistente = pa.find(a => a.articulo?.id == this.currentArticulo?.id);
       
       if (articuloExistente) {
-        return articuloExistente!.cantidadActual!.toString(); // Devuelve la cantidad actual como string para mostrarla
+        return articuloExistente!.cantidad!.toString(); // Devuelve la cantidad actual como string para mostrarla
       }
     }
   }
@@ -681,8 +742,14 @@ cantidadActualDepoducto():string {
 actualizarArticuloSeleccionado(){
   if (this.articulos && this.articulos.length > 0) {
     this.currentArticulo = this.articulos[this.articuloColorIndex]; // Actualiza el artículo seleccionado
+    setTimeout(() => {
+      if (this.inputCantidad) {
+        this.inputCantidad.nativeElement.focus();
+      }
+    });
   }
 }
+
 
 filtrarIngresosXFecha(){
   if(this.fechaIngresoMercaderia){
@@ -694,16 +761,18 @@ filtrarIngresosXFecha(){
 
 aplicarIngresoAPedidosProduccion(){
 
-  this.ordenProduccionService.getByTaller(this.currentTaller?.id).subscribe({
-    next: (data) => {
-      console.log(data);
-      this.pedidosProduccionXTaller = data;
-      console.log("Taller que se buscó pedidos de producción ", this.currentTaller);
-      console.log("Los pedidos de producción son los siguientes: ", this.pedidosProduccionXTaller);
-      this.generarPDFcontrolPendientes();
-    },
-    error: (e) => console.error(e)
-  });
+
+    this.ordenProduccionService.getByTaller(this.currentTaller?.id).subscribe({
+      next: (data) => {
+        console.log(data);
+        this.pedidosProduccionXTaller = data;
+        console.log("Taller que se buscó pedidos de producción ", this.currentTaller);
+        console.log("Los pedidos de producción son los siguientes: ", this.pedidosProduccionXTaller);
+        this.generarPDFcontrolPendientes();
+      },
+      
+      error: (e) => console.error(e)
+    });
 
 }
 
@@ -774,6 +843,8 @@ aclararProductoPendentesDisminuidos() {
 
     console.log(this.mapaArticulosModificados)
 
+    this.actualizarPedidosProduccion()
+
   }
 
   noTienePendientes(unaCantidadPendiente : number): boolean{
@@ -797,11 +868,13 @@ async actualizarPedidosProduccion() {
     if (!ppSeleccionado) continue;
 
     try {
+      if(ppSeleccionado.idPresupuesto){
       const presuAsociado = await firstValueFrom(
         this.presupuestoService.get(ppSeleccionado.idPresupuesto)
       );
       this.presupuestosAModificar.push(presuAsociado);
       console.log("Presupuesto cargado:", presuAsociado);
+    } else {console.log("No hay presupuesto asociado")}
     } catch (error) {
       console.error("Error al obtener presupuesto", error);
     }
@@ -815,7 +888,13 @@ async actualizarPedidosProduccion() {
         articulo: registro.articuloAfectado,
         cantidad: registro.cantidadPedidaOriginal,
         cantidadPendiente: registro.pendienteDespues,
-        hayStock: this.noTienePendientes(registro.pendienteDespues!)
+        cantidadActual: registro.pendienteDespues,
+        cantidadOriginal: registro.cantidadPedidaOriginal,
+        hayStock: this.noTienePendientes(registro.pendienteDespues!),
+        idPedidoProduccion : registro.idPedidoProduccion,
+        codigo: registro.articuloAfectado?.codigo,
+        descripcion: registro.articuloAfectado?.descripcion
+
       };
       ppSeleccionado.articulos.push(articuloActualizado);
     }
@@ -826,7 +905,12 @@ async actualizarPedidosProduccion() {
     }
 
     console.log("Pedido producción actualizado:", ppSeleccionado);
-    this.ordenProduccionService.actualizar(ppSeleccionado);
+    this.ordenProduccionService.actualizar(ppSeleccionado).subscribe((id: number) => {  
+      console.log('🔄 Orden de pedido actualizada con ID:', id);
+    }, error => {
+      console.error('❌ Error al actualizar la orden de pedido:', error);
+    });
+    console.log("Pedido producción actualizado")
   }
 
   // Asegurate que esto se ejecute después de cargar todos los presupuestos
@@ -872,19 +956,36 @@ actualizarPresupuestos(){
 }
 
 
-getArticulosParaArticulo(codigo: string) {
-  return this.mapaPresupuestoArticulos?.get(codigo) || [];
+getArticulosParaArticulo(codigo: string): PresupuestoArticulo[] {
+  const item = this.dataSourceCodigo.find(el => el.codigo === codigo);
+  return item?.articulos || [];
 }
+
+getDescripcionBase(codigo: string): string {
+  const entry = this.mapaPresupuestoArticulos?.get(codigo);
+  if(codigo.startsWith("MEN")){
+    return (entry![0].descripcion || '')
+  }
+  if (entry && entry.length > 0) {
+    return `${entry[0].descripcion || ''}`;
+  /*  const art = entry[0].articulo;
+    return `${art?.familia?.descripcion || ''} ${art?.medida?.descripcion || ''}`;*/
+  }
+  return '';
+}
+
 
 actualizarDataSource() {
   this.dataSourceCodigo = Array.from(this.mapaPresupuestoArticulos!.entries()).map(([codigo, articulos]) => {
     return {
       codigo,
-      descripcion: articulos[0]?.articulo?.familia?.descripcion + ' ' + articulos[0]?.articulo?.medida?.descripcion
+      descripcion: articulos[0].descripcion,
+      articulos // 👈 esto es clave para acceder después a los datos
     };
   });
-}
+  console.log(this.dataSourceCodigo)
 
+}
 
 }
 

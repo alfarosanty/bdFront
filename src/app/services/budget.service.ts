@@ -25,6 +25,7 @@ export class PresupuestoService {
 
   actualizar(presupuesto :Presupuesto): Observable<Object>   {
     alert('url' + baseUrl);
+    console.log('pedidoProducción actualizado')
    return this.http.post(`${baseUrl}/actualizar`, presupuesto);
   }
 

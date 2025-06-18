@@ -268,7 +268,40 @@ th.mat-header-cell, td.mat-cell {
     flex-direction: column; /* Establece los elementos en columna */
     justify-content: center; /* Centra los elementos verticalmente */
     align-items: center; /* Centra los elementos horizontalmente */
-    z-index: 10;
+    z-index: 1000;
+  }
+
+  .mensaje-confirmacion {
+    background-color: #e0f7e9; /* verde suave */
+    color: #1b5e20;
+    padding: 16px 24px;
+    border-radius: 12px;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+    animation: fadeInScale 0.4s ease-out;
+  }
+
+  .icono {
+    font-size: 24px;
+    background-color: white;
+    border-radius: 50%;
+    padding: 4px;
+  }
+  
+  @keyframes fadeInScale {
+    from {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
   }
   
   /* Modal */
@@ -396,9 +429,6 @@ th.mat-header-cell, td.mat-cell {
     text-align: center;
   }
 
-.mat-table {
-    cursor: pointer;
-  }
 
   .color-circle {
     display: inline-block;

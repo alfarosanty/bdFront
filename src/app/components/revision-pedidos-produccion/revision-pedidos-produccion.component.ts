@@ -198,7 +198,7 @@ listarTalleres(): void {
 
   getCantidadTotal(presupuestoArticulos: PresupuestoArticulo[]): number {
     return (presupuestoArticulos
-      .map(articulo => articulo.cantidadActual)  // Extrae la propiedad 'cantidad'
+      .map(articulo => articulo.cantidad)  // Extrae la propiedad 'cantidad'
       .reduce((total, cantidad) => (total || 0) + (cantidad || 0), 0) || 0) ;  // Suma las cantidades
   }
 
@@ -229,11 +229,11 @@ listarTalleres(): void {
     ];
   
     this.mapaPresupuestoArticulos?.forEach((presupuestosArticulos, clave) => {
-      const cantidades = presupuestosArticulos.map(pa => pa.cantidadActual);
+      const cantidades = presupuestosArticulos.map(pa => pa.cantidad);
       const totalCantidad = cantidades.reduce((acc, c) => (acc || 0) + (c || 0), 0);
       const descripcion = presupuestosArticulos[0].articulo?.descripcion || '';
       const descripcionCompleta = presupuestosArticulos.map(pa =>
-        `${pa.cantidadActual || 0}${pa.articulo?.color?.codigo ? ' ' + pa.articulo.color.codigo : ''}`
+        `${pa.cantidad || 0}${pa.articulo?.color?.codigo ? ' ' + pa.articulo.color.codigo : ''}`
       ).join(' ');
       tablaBody.push([
         { text: clave, style: 'tableCell' },
@@ -812,7 +812,7 @@ procesarMapaDeArticulos() {
     const key = pedidoArt.articulo?.familia?.codigo + "/" + pedidoArt.articulo?.medida?.codigo;
 
     pedidoArt.cantidadOriginal = pedidoArt.cantidad
-    pedidoArt.cantidadActual = pedidoArt.cantidad
+    pedidoArt.cantidad = pedidoArt.cantidad
 
 
     if (this.mapaPresuXArtParaAcceder?.has(key)) {
@@ -861,7 +861,7 @@ cantidadActualDepoducto():string {
       const articuloExistente = pa.find(a => a.articulo?.id == this.currentArticulo?.id);
       
       if (articuloExistente) {
-        return articuloExistente!.cantidadActual!.toString(); // Devuelve la cantidad actual como string para mostrarla
+        return articuloExistente!.cantidad!.toString(); // Devuelve la cantidad actual como string para mostrarla
       }
     }
   }

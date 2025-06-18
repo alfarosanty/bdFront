@@ -8,6 +8,7 @@
     max-width: 100%;  /* Aumenta el ancho del contenedor general */
     width: 90%;
     margin:auto;
+    cursor: pointer;
 }
 
 .superior-container {
@@ -248,6 +249,52 @@ th.mat-header-cell, td.mat-cell {
     align-items: center; /* Centra los elementos horizontalmente */
     z-index: 10;
   }
+
+ /* Asegura que todas las tablas ocupen el 100% */
+table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  /* Estilo general para celdas */
+  .mat-header-cell, .mat-cell {
+    padding: 8px;
+    border-bottom: 1px solid #ccc;
+  }
+  
+  /* Fila de detalle expandido */
+  tr.example-detail-row {
+    height: 0;
+  }
+  
+  /* Hover y active */
+  tr.example-element-row:not(.example-expanded-row):hover {
+    background: whitesmoke;
+  }
+  tr.example-element-row:not(.example-expanded-row):active {
+    background: #efefef;
+  }
+  
+  /* Para evitar separación visual cuando se expande */
+  .example-element-row td {
+    border-bottom-width: 0;
+  }
+  
+  /* Contenedor del detalle expandido */
+  .detalle-expandido {
+    width: 100%;
+    margin-top: 0;
+    padding: 0; /* ✅ eliminamos padding que desalineaba */
+    background-color: white;
+  }
+  
+  /* Estilo para tabla interna del detalle */
+  .detalle-expandido table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  /* Opcional: estilos generales ya existentes */
   
   /* Modal */
   .modal {
@@ -260,7 +307,24 @@ th.mat-header-cell, td.mat-cell {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   }
 
-  .modal-overlay {
+.checklist-label {
+    font-weight: bold;
+    margin-top: 10px; /* Espacio entre los radio buttons */
+    display: flex; /* Usamos Flexbox para alinear los elementos */
+    align-items: center; /* Alinea el radio button con el texto */
+    justify-content: center; /* Centra los elementos dentro de cada label */
+  }
+
+input[type="radio"] {
+    margin-right: 5%; /* Espacio entre el radio button y el texto */
+  }
+
+.checklist-container {
+    text-align: center; /* Centra el contenido */
+  }
+
+  
+.modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -274,7 +338,7 @@ th.mat-header-cell, td.mat-cell {
     z-index: 9999;
   }
   
-  .modal-content {
+.modal-content {
     background: #ffffff;
     padding: 2rem 3rem;
     border-radius: 12px;
@@ -282,30 +346,43 @@ th.mat-header-cell, td.mat-cell {
     width: 40%;
     box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.4);
   }
-  
-  .modal-buttons {
-    margin-top: 1.5rem;
+
+.example-element-detail {
+    overflow: hidden;
     display: flex;
-    gap: 1rem;
-    justify-content: center;
+    flex-direction: column;
+    padding: 16px;
   }
 
-  .checklist-label {
-    font-weight: bold;
-    margin-top: 10px; /* Espacio entre los radio buttons */
-    display: flex; /* Usamos Flexbox para alinear los elementos */
-    align-items: center; /* Alinea el radio button con el texto */
-    justify-content: center; /* Centra los elementos dentro de cada label */
+.example-detail-row td {
+    padding: 0;
+    border: none;
   }
 
-  input[type="radio"] {
-    margin-right: 5%; /* Espacio entre el radio button y el texto */
+table {
+    width: 100%;
   }
 
-  .checklist-container {
-    text-align: center; /* Centra el contenido */
+tr.example-detail-row {
+    height: 0;
   }
-
+  
+tr.example-element-row:not(.example-expanded-row):hover {
+    background: whitesmoke;
+  }
+  
+tr.example-element-row:not(.example-expanded-row):active {
+    background: #efefef;
+  }
+  
+.example-element-row td {
+    border-bottom-width: 0;
+  }
+    
+.zero-padding{
+    padding: 0;
+  }
+  
   .boton-lindo {
     font-size: 90%;
     padding: 18% 50%;
@@ -330,5 +407,6 @@ th.mat-header-cell, td.mat-cell {
     border-radius: 50%;
     margin-right: 8px;
     vertical-align: middle;
-    border: 1px solid #000000; /* contorno gris oscuro */
+    border: 1px solid #000000;
   }
+  
