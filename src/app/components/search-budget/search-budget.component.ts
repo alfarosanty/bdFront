@@ -73,10 +73,11 @@ export class SearchBudgetComponent {
   descTotal = '';
   mostrarColores = false;
   eximirIVA = false;
+  opcionSeleccionada: string = 'cliente';
   presupuestoCliente = true;
   showBackDrop=false;
   currentIndex = -1;
-  articuloColorIndex = -1;
+  articuloColorIndex: number | null = null;
   mostrarBotonGuardar = true;
   descAModificar ?: string
   precioUniAModificar ?: number
@@ -290,7 +291,7 @@ listarClientes(): void {
   
   agregarArticulo() {
     if (this.articulos) {
-      this.currentArticulo = this.articulos[this.articuloColorIndex];
+      this.currentArticulo = this.articulos[this.articuloColorIndex!];
       this.articulos = this.articulos.filter(articulo => articulo.id !== this.currentArticulo?.id);
     }
     
@@ -335,6 +336,8 @@ listarClientes(): void {
     
       }
       this.actualizarDataSource()
+
+      this.articuloColorIndex = null;
       this.cantProducto = "0"
       
       setTimeout(() => {
@@ -583,6 +586,17 @@ listarClientes(): void {
       }
     }
 
+procesarSeleccion() {
+  if (this.opcionSeleccionada === 'cliente') {
+    this.presupuestoCliente = true;
+    this.generarPDF();
+  } else if (this.opcionSeleccionada === 'interno') {
+    this.presupuestoCliente = false;
+    this.generarPDF();
+  } else if (this.opcionSeleccionada === 'finalizar') {
+    this.cancelarPDF();
+  }
+}
     
 
     generarPDF() {
@@ -803,7 +817,7 @@ listarClientes(): void {
       }
     
       // Generar el PDF
-      const nombreArchivo = `Presupuesto_${this.currentCliente?.razonSocial}_${this.formatearFecha(this.fechaPresupuesto)}.pdf`;
+      const nombreArchivo = `Presupuesto_${this.currentCliente?.razonSocial}_Fecha:${this.formatearFecha(this.fechaPresupuesto)}_N°${this.idPresupuestoActual}.pdf`;
       pdfMake.createPdf(docDefinition).download(nombreArchivo);
     }
      
@@ -990,7 +1004,7 @@ cantidadActualDepoducto():string {
 
 actualizarArticuloSeleccionado(){
   if (this.articulos && this.articulos.length > 0) {
-    this.currentArticulo = this.articulos[this.articuloColorIndex]; // Actualiza el artículo seleccionado
+    this.currentArticulo = this.articulos[this.articuloColorIndex!]; // Actualiza el artículo seleccionado
     setTimeout(() => {
       if (this.inputCantidad) {
         this.inputCantidad.nativeElement.focus();

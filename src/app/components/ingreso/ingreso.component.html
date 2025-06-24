@@ -218,20 +218,19 @@
       </div>
   </div>
 
-      <!-- Modal de Confirmación -->
-<div class="modal-overlay" *ngIf="mostrarConfirmacionPDF">
-    <div class="modal-content">
-      <h2>¿Deseás generar el PDF?</h2>
-      <div class="modal-buttons">
-        <button mat-raised-button color="primary" (click)="confirmarGenerarPDF(true)">
-          Sí, generar PDF
-        </button>
-        <button mat-raised-button color="warn" (click)="confirmarGenerarPDF(false)">
-          No, solo finalizar
-        </button>
-      </div>
-    </div>
+<!-- Backdrop con opciones -->
+<div class="backdrop" *ngIf="mostrarConfirmacionPDF">
+  <div class="mensaje-confirmacion animado">
+    <span class="icono">✅</span>
+    <span>¡Se creó el Ingreso de mercadería </span>
   </div>
+
+  <div class="button-container botones-separados">
+    <button mat-raised-button class="boton-opcion" color="primary" (click)="confirmarGenerarPDF(true)">PDF Interno</button>
+    <button mat-raised-button class="boton-opcion" color="accent" (click)=" generarPDFcontrolPendientes()">PDF Control</button>
+    <button mat-raised-button class="boton-opcion" color="warn" (click)="cancelarPDF()">Finalizar</button>
+  </div>
+</div>
 
 
       

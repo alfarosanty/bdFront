@@ -69,7 +69,7 @@ export class PedidoProduccionComponent {
 
 
   currentIndex = -1;
-  articuloColorIndex = -1;
+  articuloColorIndex: number | null = null;
 
   //INPUT BUSQUEDA
   articuloControl = new FormControl();
@@ -271,8 +271,9 @@ listarTalleres(): void {
     
       this.actualizarDataSource();
     
+      this.articuloColorIndex = null;
       this.cantProducto = "0";
-    
+          
       setTimeout(() => {
         this.inputArticulos.nativeElement.focus();
         this.inputArticulos.nativeElement.select();
@@ -438,7 +439,7 @@ getCantidadTotal(presupuestoArticulos: PresupuestoArticulo[]): number {
           if (idPresupuesto) {
             this.presupuestoService.get(idPresupuesto).subscribe({
               next: (data) => {
-                const clienteAsociado = data?.cliente?.razonSocial ?? 'Aca se pone cualquier cosa';
+                const clienteAsociado = data?.cliente?.razonSocial ?? 'Cliente no encontrado';
                 console.log(clienteAsociado)
                 this.generarExcel(clienteAsociado);
               },
@@ -565,6 +566,12 @@ getStyles() {
     }
   };
 }
+
+cancelarPDF(){
+  this.mostrarConfirmacionPDF=false;
+  return;
+}
+
 
 generarExcel(nombreClienteAsociado:string) {
   const workbook = new ExcelJS.Workbook();
@@ -731,7 +738,7 @@ cantidadActualDepoducto():string {
 
 actualizarArticuloSeleccionado(){
   if (this.articulos && this.articulos.length > 0) {
-    this.currentArticulo = this.articulos[this.articuloColorIndex]; // Actualiza el artículo seleccionado
+    this.currentArticulo = this.articulos[this.articuloColorIndex!]; // Actualiza el artículo seleccionado
     setTimeout(() => {
       if (this.inputCantidad) {
         this.inputCantidad.nativeElement.focus();

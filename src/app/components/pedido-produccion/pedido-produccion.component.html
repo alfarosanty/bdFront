@@ -229,19 +229,21 @@
       </div>
 
 
-    <!-- Backdrop con opciones -->
-    <div class="backdrop" *ngIf="mostrarConfirmacionPDF">
-        <div class="button-container">
-          <button mat-raised-button color="primary" (click)="confirmarGenerarPDF(generacionPDF); confirmarGenerarExcel(!generacionPDF)">Generar PDF</button>
-          <button mat-raised-button color="warn" (click)="confirmarGenerarPDF(false)">No Generar PDF</button>
-        </div>
-        <div class="checklist-container">
-          <mat-radio-group [(ngModel)]="generacionPDF">
-            <mat-radio-button [value]="true">PDF</mat-radio-button>
-            <mat-radio-button [value]="false">Excel</mat-radio-button>
-          </mat-radio-group>
-        </div>
-      </div>
+<!-- Backdrop con opciones -->
+<div class="backdrop" *ngIf="mostrarConfirmacionPDF">
+    <div class="mensaje-confirmacion animado">
+      <span class="icono">✅</span>
+      <span>¡Se creó el Pedido Produccion N° {{ idPedidoProduccionActual }} </span>
+    </div>
+
+    <div class="button-container botones-separados">
+      <button mat-raised-button class="boton-opcion" color="primary" (click)="generacionPDF = true; confirmarGenerarPDF(generacionPDF)">PDF Interno</button>
+      <button mat-raised-button class="boton-opcion" color="accent" (click)="generacionPDF = false; confirmarGenerarExcel(!generacionPDF)">Excel Interno</button>
+      <button mat-raised-button class="boton-opcion" color="warn" (click)="cancelarPDF()">Finalizar</button>
+    </div>
+</div>
+
+      
     </div>
   </div>
 

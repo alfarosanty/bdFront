@@ -74,7 +74,7 @@ export class IngresoComponent {
 
 
   currentIndex = -1;
-  articuloColorIndex = -1;
+  articuloColorIndex: number | null = null;
 
   //INPUT BUSQUEDA
   articuloControl = new FormControl();
@@ -252,7 +252,7 @@ mostrarColoresDisponibles(articulo : Articulo) : string {
   agregarArticulo() {
     if (!this.articulos) return;
   
-    this.currentArticulo = this.articulos[this.articuloColorIndex];
+    this.currentArticulo = this.articulos[this.articuloColorIndex!];
   
     this.articulos = this.articulos.filter(
       articulo => articulo.id !== this.currentArticulo?.id
@@ -297,6 +297,7 @@ mostrarColoresDisponibles(articulo : Articulo) : string {
   
     this.actualizarDataSource();
   
+    this.articuloColorIndex = null;
     this.cantProducto = "0";
   
     setTimeout(() => {
@@ -426,7 +427,6 @@ borrarArticulo(key: any, color: string) {
       if (generar) {
         this.generarPDF();
       }
-      this.mostrarConfirmacionPDF = false;
     }
 
     
@@ -505,7 +505,6 @@ borrarArticulo(key: any, color: string) {
     }
 
     generarPDFcontrolPendientes() {
-      this.aclararProductoPendentesDisminuidos();
       if (this.mapaArticulosModificados?.size === 0) {
         alert("No hay ningún pedido producción con estado EN TALLER que tenga artículos para modificar");
         return;
@@ -615,7 +614,7 @@ getStyles() {
       bold: true,
       fontSize: 11,
       color: 'white',
-      fillColor: '#2C3E50',
+      fillColor: '#4a4a4a',
       alignment: 'center',
       margin: [0, 6, 0, 6]
     },
@@ -642,6 +641,11 @@ getStyles() {
       margin: [0, 10, 0, 10]
     }
   };
+}
+
+cancelarPDF(){
+  this.mostrarConfirmacionPDF=false;
+  return;
 }
 
 
@@ -683,7 +687,9 @@ cargarDetallesIngresoMercaderia(id: Number) {
 
 
 procesarMapaDeArticulos() {
+  console.log("ESTE ES EL INGRESO A ACCEDER", this.ingresoMercaderiaAAcceder  )
   if(this.ingresoMercaderiaAAcceder)
+    console.log("ENTRÓ AL IF")
   this.mapaPresuXArtParaAcceder = new Map()
   this.ingresoMercaderiaAAcceder?.articulos?.forEach(pedidoArt => {
     pedidoArt.cantidadActual = pedidoArt.cantidad
@@ -721,6 +727,7 @@ actualizarMapaPresupuestoArticulo(nuevoMap: Map<string, PresupuestoArticulo[]>){
       this.mapaPresupuestoArticulos.set(key, value);
     }
   }
+  this.actualizarDataSource()
 }
 
 cantidadActualDepoducto():string {
@@ -741,7 +748,7 @@ cantidadActualDepoducto():string {
 
 actualizarArticuloSeleccionado(){
   if (this.articulos && this.articulos.length > 0) {
-    this.currentArticulo = this.articulos[this.articuloColorIndex]; // Actualiza el artículo seleccionado
+    this.currentArticulo = this.articulos[this.articuloColorIndex!]; // Actualiza el artículo seleccionado
     setTimeout(() => {
       if (this.inputCantidad) {
         this.inputCantidad.nativeElement.focus();
@@ -768,7 +775,7 @@ aplicarIngresoAPedidosProduccion(){
         this.pedidosProduccionXTaller = data;
         console.log("Taller que se buscó pedidos de producción ", this.currentTaller);
         console.log("Los pedidos de producción son los siguientes: ", this.pedidosProduccionXTaller);
-        this.generarPDFcontrolPendientes();
+        this.aclararProductoPendentesDisminuidos();
       },
       
       error: (e) => console.error(e)

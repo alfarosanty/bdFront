@@ -305,25 +305,21 @@
       </button>
     </div>
   
-    <!-- Backdrop con opciones -->
+<!-- Backdrop con opciones -->
     <div class="backdrop" *ngIf="showBackDrop">
       <div class="mensaje-confirmacion animado">
         <span class="icono">✅</span>
-        <span>¡Presupuesto creado correctamente!</span>
+        <span>¡Se creó el presupuesto N° {{ idPresupuestoActual }} para el cliente {{ currentCliente?.razonSocial }}!</span>
       </div>
 
-      <div class="checklist-container">
-        <mat-radio-group [(ngModel)]="presupuestoCliente">
-          <mat-radio-button [value]="true"><strong>Cliente</strong></mat-radio-button>
-          <mat-radio-button [value]="false"><strong>Empleado</strong></mat-radio-button>
-        </mat-radio-group>
-      </div>
-
-      <div class="button-container">
-        <button mat-raised-button color="primary" (click)="generarPDF()">Generar PDF</button>
-        <button mat-raised-button color="warn" (click)="cancelarPDF()">No Generar PDF</button>
+      <div class="button-container botones-separados">
+        <button mat-raised-button class="boton-opcion" color="primary" (click)="presupuestoCliente = true; generarPDF()">PDF Cliente</button>
+        <button mat-raised-button class="boton-opcion" color="accent" (click)="presupuestoCliente = false; generarPDF()">PDF Interno</button>
+        <button mat-raised-button class="boton-opcion" color="warn" (click)="cancelarPDF()">Finalizar</button>
       </div>
     </div>
+
+    
   </div>
 </div>
   
