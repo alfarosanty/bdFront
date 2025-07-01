@@ -12,8 +12,8 @@
 
         <select id="clientes" (change)="seleccionarTaller(); buscarIngresosXTaller(); inputArticulos.focus()" [(ngModel)]="currentIndex">
             <option >Seleccione un Taller</option>
-            <option *ngFor="let taller of talleres" [value]="taller.id" >
-                 {{taller.razonSocial}} 
+            <option *ngFor="let taller of talleres let i = index" [value]="i">
+              {{taller.razonSocial}} 
             </option>
           </select>
                     

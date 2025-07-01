@@ -1,0 +1,84 @@
+<div class = "general-container">
+
+    <div class="seleccion-y-colores-container">
+        <div class="seleccion-container">
+            <h3>Artículo</h3>
+    
+            <!--COMBO DE PRODUCTOS CON FILTRADO-->
+            <div >
+                <mat-form-field class="input-mat" appearance="outline">
+                    <mat-label>Seleccione un artículo...</mat-label>
+                    <input type="text"
+                          #inputArticulos
+                          [(ngModel)]="articuloSeleccionado"
+                          matInput
+                          [formControl]="articuloControl"
+                          [matAutocomplete]="auto"
+                          (keydown.enter)="mostrarVariedadColores()"
+                          
+                          (input)="articuloControl.setValue(articuloControl.value.toUpperCase(), { emitEvent: false })">
+                    <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption>
+                      <mat-option *ngFor="let option of filteredArticulos | async" [value]="option">
+                        {{ option }}
+                      </mat-option>
+                    </mat-autocomplete>
+                  </mat-form-field>
+                  
+    
+              </div>
+    
+        </div>
+    <!-- Este DIV aparecerá a la derecha cuando presiones Enter -->
+    <div class="colores-container" *ngIf="mostrarColores">
+      <h3>Color</h3>
+    
+      <div class="color-select-con-boton">
+        <mat-form-field appearance="outline" class="color-select">
+          <mat-select
+            #inputColores
+            [(value)]="articuloColorIndex"
+          >
+            <mat-option *ngFor="let color of coloresPosibles; let i = index" [value]="i">
+              <span class="color-circle" [ngStyle]="{ 'background-color': color?.colorHexa }"></span>
+              {{ color.descripcion }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      
+        <button mat-icon-button color="primary" (click)="onColorAgregar()" [disabled]="articuloColorIndex! < 0 || articuloColorIndex! === null">
+          <mat-icon>add</mat-icon>
+        </button>
+      </div>
+      
+      
+   </div>
+
+    </div>
+
+    <div class="resumen-articulos-container" *ngIf="articulosACrear.length > 0">
+        <h3>Artículo/s a agregar</h3>
+      
+        <p><strong>Código:</strong> {{ articulosACrear[0].codigo }}</p>
+        <p><strong>Descripción:</strong> {{ articulosACrear[0].descripcion }}</p>
+        <p><strong>Colores:</strong>
+          <span *ngFor="let articulo of articulosACrear; let last = last">
+            {{ articulo.color?.descripcion }}<span *ngIf="!last">, </span>
+          </span>
+        </p>
+      
+        <button mat-raised-button color="primary" (click)="crearArticulos()" >
+          Confirmar
+        </button>
+      </div>
+      
+
+
+</div>
+
+<!-- Backdrop con opciones -->
+<div class="backdrop" *ngIf="showBackDrop">
+    <div class="mensaje-confirmacion animado">
+      <span class="icono">✅</span>
+      <span>¡Se crearon los articulos correctamente!</span>
+    </div>
+  </div>

@@ -3,7 +3,7 @@ import { Factura } from '../models/factura.model';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environment/environment';
 
-const baseUrl = environment.apiUrl+'/Factura';
+const baseUrl = environment.localApiUrl+'/Factura';
 
 
 @Injectable({
@@ -14,8 +14,8 @@ export class FacturaService {
   constructor(private http: HttpClient) { }
 
   crear(factura :Factura)  {
-    alert('url ' + baseUrl);
-    alert(factura);
+   //alert('url ' + baseUrl);
+   
   return this.http.post(`${baseUrl}`, factura).subscribe(
     response => {
       console.log('Respuesta de la API:', response);

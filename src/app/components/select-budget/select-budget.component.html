@@ -31,7 +31,7 @@
               [matAutocomplete]="auto"
               (keydown.enter)="buscarPresupuestosXCliente()"
               (input)="myControl.setValue(myControl.value.toUpperCase(), { emitEvent: false })">
-            <mat-autocomplete #auto="matAutocomplete">
+            <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption>
               <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
                 {{ option }}
               </mat-option>

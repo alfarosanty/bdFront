@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 import { IngresoMercaderia } from '../models/ingreso-mercaderia.model';
 import { environment } from 'src/environment/environment';
 
-const baseUrl = environment.apiUrl+'/Ingreso';
+const baseUrl = environment.localApiUrl+'/Ingreso';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +16,7 @@ export class IngresoService {
   constructor(private http:HttpClient) {}
 
   crear(ingresoMercaderia : IngresoMercaderia)  {
-    alert('url' + baseUrl);
+    //alert('url' + baseUrl);
   return this.http.post(`${baseUrl}/crear`, ingresoMercaderia).subscribe(
     response => {
       console.log('Respuesta de la API:', response);
@@ -28,7 +28,7 @@ export class IngresoService {
   }
 
   actualizar(ingresoMercaderia :IngresoMercaderia)  {
-    alert('url' + baseUrl);
+    //alert('url' + baseUrl);
    return this.http.post(`${baseUrl}/actualizar`, ingresoMercaderia).subscribe(
     response => {
       console.log('Respuesta de la API:', response);

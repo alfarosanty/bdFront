@@ -13,7 +13,7 @@
         <label for="clientes">Seleccionar Taller:</label>
         <select  (change)="seleccionarTaller(); buscarOrdenXTaller(); inputArticulos.focus()" [(ngModel)]="currentIndex">
             <option >Seleccione un Taller</option>
-            <option *ngFor="let taller of talleres" [value]="taller.id" >
+            <option *ngFor="let taller of talleres let i = index" [value]="i">
                  {{taller.razonSocial}} 
             </option>
           </select>
@@ -57,8 +57,10 @@
         <div>
             <label for="estado">Estado del Pedido:</label>
             <select id="estado" [(ngModel)]="estadoPedido">
-                <option [value]="3">CREADO</option>
-                <option [value]="2">EN TALLER</option>
+                <option [value]="4">CREADO</option>
+                <option [value]="3">EN TALLER</option>
+                <option [value]="2">EN CORTE</option>
+
             </select>
         </div>
 

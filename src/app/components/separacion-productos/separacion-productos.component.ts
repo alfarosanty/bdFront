@@ -311,7 +311,10 @@ logoBase64: String = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAADMCAYA
     };
   }
   
-  
+  cancelarPDF(){
+    this.mostrarConfirmacionPDF=false;
+    return;
+  }
   
 
 
@@ -503,8 +506,7 @@ actualizarArticuloSeleccionado(){
     } else {
       // Si no todos tienen stock y no hay estado seleccionado, mostrar alerta
       if (!this.estadoPedido) {
-        alert("No seleccionó un estado del pedido");
-        return;
+        this.presupuestoAAcceder.estadoPresupuesto = { id: 1, descripcion: 'Creado', codigo: "CRE" }
       } else this.presupuestoAAcceder.estadoPresupuesto!.id= this.estadoPedido
     }
 
@@ -519,7 +521,6 @@ actualizarArticuloSeleccionado(){
   if (generar) {
     this.generarPDF();
   }
-  this.mostrarConfirmacionPDF = false;
 }
 
 generarMapaPresuArt(pedidoProduccion: PedidoProduccion): Map<string, PresupuestoArticulo[]> {

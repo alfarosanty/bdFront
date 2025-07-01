@@ -5,7 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environment/environment';
 import { ArticuloPrecio } from '../models/articulo-precio.model';
 
-const baseUrl = environment.apiUrl+'/Articulo';
+const baseUrl = environment.localApiUrl+'/Articulo';
 
 @Injectable({
   providedIn: 'root'
@@ -33,5 +33,8 @@ export class ArticuloService {
     return this.http.get<ArticuloPrecio[]>(`${baseUrl}/GetArticulosPrecio`);
   }
 
+  crearArticulos(articulos: Articulo[]): Observable<any> {
+    return this.http.post(`${baseUrl}/CrearArticulos`, articulos);
+  }
   
 }

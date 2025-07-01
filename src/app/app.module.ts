@@ -42,6 +42,7 @@ import { PresentacionComponent } from './components/presentacion/presentacion.co
 import { EditarGenericoDialogComponent, SearchBudgetComponent } from './components/search-budget/search-budget.component';
 import { EditarGenericoDialogFacturacionComponent, FacturacionComponent } from './components/facturacion/facturacion.component';
 import { SelectBudgetComponent } from './components/select-budget/select-budget.component';
+import { ArticuloConfiguracionComponent } from './components/articulo-configuracion/articulo-configuracion.component';
 
 
 
@@ -62,6 +63,7 @@ import { SelectBudgetComponent } from './components/select-budget/select-budget.
     EditarGenericoDialogComponent,
     EditarGenericoDialogFacturacionComponent,
     PresentacionComponent,
+    ArticuloConfiguracionComponent,
   ],
   imports: [
     MatSelectModule,

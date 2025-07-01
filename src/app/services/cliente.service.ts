@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environment/environment';
 
-const baseUrl = environment.apiUrl+'/Cliente';
+const baseUrl = environment.localApiUrl+'/Cliente';
 
 
 @Injectable({
@@ -15,7 +15,7 @@ export class ClienteService {
   constructor(private http: HttpClient) {}
 
   actualizar(cliente :Cliente)  {
-    alert('url' + '${baseUrl}');
+    //alert('url' + '${baseUrl}');
    return this.http.post(`${baseUrl}`, cliente).subscribe(
     response => {
       console.log('Respuesta de la API:', response);
@@ -27,7 +27,7 @@ export class ClienteService {
   }
 
   guardar(cliente :Cliente)  {
-    alert('url' + '${baseUrl}');
+    //alert('url' + '${baseUrl}');
    return this.http.post(`${baseUrl}`, cliente).subscribe(
     response => {
       console.log('Respuesta de la API:', response);

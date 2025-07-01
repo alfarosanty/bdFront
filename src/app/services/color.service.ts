@@ -1,20 +1,22 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Taller } from '../models/taller.model';
 import { environment } from 'src/environment/environment';
+import { Color } from '../models/color.model';
 
-const baseUrl = environment.localApiUrl+'/Taller';
+const baseUrl = environment.localApiUrl+'/Color';
+
 
 @Injectable({
   providedIn: 'root'
 })
-export class TallerService {
+export class ColorService {
 
   constructor(private http: HttpClient) { }
 
-  getAll():Observable<Taller[]>{
-    return this.http.get<Taller[]>(`${baseUrl}/GetTalleres `);
 
+  getAll(): Observable<Color[]> {
+    return this.http.get<Color[]>(`${baseUrl}/GetColores `);
   }
+
 }

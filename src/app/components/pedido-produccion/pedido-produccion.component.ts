@@ -145,8 +145,9 @@ listarTalleres(): void {
 
  seleccionarTaller(): void {
     if(this.talleres){
-      this.currentTaller = this.talleres[this.currentIndex-1];
+      this.currentTaller = this.talleres[this.currentIndex];
       console.log(this.currentTaller)
+      console.log("ESTE ES EL INDEX", this.currentIndex)
     }
 
       

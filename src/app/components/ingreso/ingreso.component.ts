@@ -150,14 +150,14 @@ listarTalleres(): void {
   }
  
 
- seleccionarTaller(): void {
+  seleccionarTaller(): void {
     if(this.talleres){
-      this.currentTaller = this.talleres[this.currentIndex-1];
+      this.currentTaller = this.talleres[this.currentIndex];
       console.log(this.currentTaller)
+      console.log("ESTE ES EL INDEX", this.currentIndex)
     }
-
-      
   }
+
   buscarIngresosXTaller(){
     if(this.currentTaller){
      this.ingresoService.getByTaller(this.currentTaller?.id).subscribe({
