@@ -5,7 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environment/environment';
 import { ArticuloPrecio } from '../models/articulo-precio.model';
 
-const baseUrl = environment.localApiUrl+'/Articulo';
+const baseUrl = environment.prodApiUrl+'/Articulo';
 
 @Injectable({
   providedIn: 'root'

@@ -5,7 +5,7 @@ import { Observable } from 'rxjs';
 import { IngresoMercaderia } from '../models/ingreso-mercaderia.model';
 import { environment } from 'src/environment/environment';
 
-const baseUrl = environment.localApiUrl+'/Ingreso';
+const baseUrl = environment.prodApiUrl+'/Ingreso';
 
 @Injectable({
   providedIn: 'root'

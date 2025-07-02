@@ -470,18 +470,6 @@ getCantidadTotal(presupuestoArticulos: PresupuestoArticulo[]): number {
                   { text: `Fecha: ${this.formatearFecha(this.fechaPedidoProduccion)}`, style: 'headerBold' },
                   ]
               },
-              {
-                width: 'auto',
-                stack: [
-                  {
-                    image: imagenBase64,
-                    fit: [150, 85],
-                    alignment: 'center',
-                  },
-                  { text: 'Loria 1140 - Lomas de Zamora', style: 'caption', alignment: 'center' },
-                  { text: 'Teléfono: 11-6958-2829', style: 'caption', alignment: 'center' }
-                ]
-              }
             ]
           }
         ],

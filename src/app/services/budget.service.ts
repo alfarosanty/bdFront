@@ -4,7 +4,7 @@ import { Presupuesto } from '../models/presupuesto.model';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environment/environment';
 
-const baseUrl = environment.localApiUrl+'/Presupuesto';
+const baseUrl = environment.prodApiUrl+'/Presupuesto';
 
 
 @Injectable({

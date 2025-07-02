@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from 'src/environment/environment';
 import { Color } from '../models/color.model';
 
-const baseUrl = environment.localApiUrl+'/Color';
+const baseUrl = environment.prodApiUrl+'/Color';
 
 
 @Injectable({

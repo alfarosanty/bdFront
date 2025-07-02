@@ -8,6 +8,9 @@
 ================================
 Pasos para realizar el launch
 1) usar IIS, programa de la propia PC
+
+ANTES DE CORRER EL COMANDO CAMBIAR TODAS LAS VARIABLES DE PUERTOS, BD, URLS, ETC.
+
 2) correr el comando: dotnet publish BlumeAPI.csproj -c Release -o "G:\Desa\programa\Binarios\PublicadoBack" (PARA EL BACKEND)
 3) configurar el IIS:
 

@@ -178,6 +178,10 @@ crearArticulos() {
     next: (ids: number[]) => {
       console.log('IDs generados:', ids);
       this.showBackDrop = true; // Se ejecutó correctamente el back
+
+      setTimeout(() => {
+        location.reload(); // recarga toda la página
+      }, 3000);
     },
     error: (err) => {
       console.error('Error al crear artículos:', err);

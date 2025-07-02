@@ -4,7 +4,7 @@ import { PedidoProduccion } from '../models/pedido-produccion.model';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environment/environment';
 
-const baseUrl = environment.localApiUrl+'/PedidoProduccion';
+const baseUrl = environment.prodApiUrl+'/PedidoProduccion';
 
 
 @Injectable({

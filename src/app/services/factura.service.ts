@@ -3,7 +3,7 @@ import { Factura } from '../models/factura.model';
 import { HttpClient } from '@angular/common/http';
 import { environment } from 'src/environment/environment';
 
-const baseUrl = environment.localApiUrl+'/Factura';
+const baseUrl = environment.prodApiUrl+'/Factura';
 
 
 @Injectable({
