@@ -1,61 +1,111 @@
-<div class="list row">
-    <div class="col-md-8">
-      <div class="input-group mb-3">
-        <input
-          type="text"
-          class="form-control"
-          placeholder="Buscar por producto"
-          [(ngModel)]="producto"
-        />
-        <div class="input-group-append">
-          <button
-            class="btn btn-outline-secondary"
-            type="button"
-            (click)="searchStock()"
-          >
-            Buscar
-          </button>
-        </div>
+<div class = "general-container">
+
+  <div class="seleccion-y-colores-container">
+      <div class="seleccion-container">
+          <h3>Artículo</h3>
+  
+          <!--COMBO DE PRODUCTOS CON FILTRADO-->
+          <div>
+              <mat-form-field class="input-mat" appearance="outline">
+                  <mat-label>Seleccione un artículo...</mat-label>
+                  <input type="text"
+                        #inputArticulos
+                        [(ngModel)]="articuloSeleccionado"
+                        matInput
+                        [formControl]="articuloControl"
+                        [matAutocomplete]="auto"
+                        (keydown.enter)="mostrarVariedadColores()"
+                        
+                        (input)="articuloControl.setValue(articuloControl.value.toUpperCase(), { emitEvent: false })">
+                  <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption>
+                    <mat-option *ngFor="let option of filteredArticulos | async" [value]="option">
+                      {{ option }}
+                    </mat-option>
+                  </mat-autocomplete>
+                </mat-form-field>
+                
+  
+            </div>
+  
       </div>
-    </div>
-<!--COMBO DE PRODUCTOS CON FILTRADO-->
-<div class="col-md-6">
 
 
-
-  <mat-form-field>
-    <mat-label>Selecciona una opción</mat-label>
-    <input type="text" matInput [formControl]="myControl" [matAutocomplete]="auto">
-    <mat-autocomplete #auto="matAutocomplete">
-      <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
-        {{ option }}
-      </mat-option>
-    </mat-autocomplete>
-  </mat-form-field>
-
-  
-
- </div>
-
-    <div class="col-md-6">
-      <h4>Listado de productos</h4>
-      <ul class="list-group">
-        <li class="list-group-item"
-          *ngFor="let stock of stocks; let i = index" [class.active]="i == currentIndex">
-
-          {{ stock.producto }} ({{ stock.cantidad }} Mts)
-        </li>
-      </ul>
-  
-      <button class="m-3 btn btn-sm btn-danger" (click)="removeAllStock()">
-        Eliminar todo
-      </button>
-    </div>
-    <div class="col-md-6">
-      <app-stock-details
-        [viewMode]="true"
-        [currentStock]="currentStock"
-      ></app-stock-details>
-    </div>
   </div>
+
+  <div class="grilla-container">
+    <h3  style="text-align: center;">Grilla de Información</h3>
   
+  <!--
+        <button mat-raised-button class="boton-de-comentario" color="primary" (click)=" agregarComentario() ">
+          Agregar fila
+        </button>
+  -->
+        <table mat-table [dataSource]="dataSourceCodigo" multiTemplateDataRows class="mat-elevation-z8">
+  
+          <!-- Columnas principales -->
+          <ng-container matColumnDef="Artículo">
+            <th mat-header-cell *matHeaderCellDef>Artículo</th>
+            <td mat-cell *matCellDef="let element">{{ element.codigo }}</td>
+          </ng-container>
+        
+          <ng-container matColumnDef="Descripcion">
+            <th mat-header-cell *matHeaderCellDef>Descripción</th>
+            <td mat-cell *matCellDef="let element">{{ element.descripcion }}</td>
+            </ng-container>
+
+          <ng-container matColumnDef="Stock">
+            <th mat-header-cell *matHeaderCellDef>Stock</th>
+            <td mat-cell *matCellDef="let element">{{ element.stock }}</td>
+            </ng-container>
+  
+        
+        
+          <!-- Detalle expandible -->
+          <ng-container matColumnDef="expandedDetail">
+            <td mat-cell *matCellDef="let element" [attr.colspan]="columnsToDisplay.length">
+              <div class="detalle-expandido mat-elevation-z2" [@detailExpand]="element === expandedElement ? 'expanded' : 'collapsed' ">
+                <table mat-table [dataSource]="getArticulosParaArticulo(element.codigo)" class="mat-elevation-z1">
+        
+                  <!-- ARTÍCULO -->
+                  <ng-container matColumnDef="Artículo">
+                    <th mat-header-cell *matHeaderCellDef>Artículo</th>
+                    <td mat-cell *matCellDef="let articulo">
+                      <span class="color-circle"
+                            [ngStyle]="{ 'background-color': articulo.color?.colorHexa || '#000' }">
+                      </span>
+                      {{ articulo?.descripcion }}
+                      {{ articulo?.color.descripcion }}
+                    </td>
+                  </ng-container>
+
+                  <!-- STOCK -->
+                  <ng-container matColumnDef="Stock">
+                    <th mat-header-cell *matHeaderCellDef>Stock</th>
+                    <td mat-cell *matCellDef="let articulo">
+                      {{ articulo?.stock}}
+                    </td>
+                  </ng-container>                    
+        
+                  <tr mat-header-row *matHeaderRowDef="articuloColumnsToDisplay"></tr>
+                  <tr mat-row *matRowDef="let row; columns: articuloColumnsToDisplay"></tr>
+                </table>
+              </div>
+            </td>
+          </ng-container>
+        
+          <!-- FILAS -->
+          <tr mat-header-row *matHeaderRowDef="columnsToDisplay"></tr>
+          <tr mat-row *matRowDef="let element; columns: columnsToDisplay"
+              class="example-element-row"
+              [class.example-expanded-row]="expandedElement === element"
+              (click)="expandedElement = expandedElement === element ? undefined : element">
+          </tr>
+          <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="example-detail-row"></tr>
+        
+        </table>
+        
+        
+      </div>
+
+</div>
+

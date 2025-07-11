@@ -50,7 +50,7 @@ export class PedidoProduccionComponent {
   familiaMedida: string[] = [];
   ordenesDePedidoXTaller: PedidoProduccion[] =[];
   mapaPresupuestoArticulos ?: Map<string,PresupuestoArticulo[]>;
-  mapaPresuXArtParaAcceder ?: Map<string,PresupuestoArticulo[]>
+  mapaPresuXArtParaAcceder ?: Map<string,PresupuestoArticulo[]>;
 
   ordenDePedidoSeleccionado?: PedidoProduccion
   currentTaller?: Taller;
@@ -184,7 +184,7 @@ listarTalleres(): void {
       console.log(`Artículo deseado: ${this.codigoArticulo} y su articuloPrecioId: ${idArticuloPrecioDeseado}`)
   
       // Llama al servicio para obtener artículos según la familia y medida
-      this.articuloService.getByArticuloPrecio(idArticuloPrecioDeseado).subscribe({
+      this.articuloService.getByArticuloPrecio(idArticuloPrecioDeseado, true).subscribe({
         next: (data) => {
           this.articulos = data;
           this.articulos.sort((a, b) => {
@@ -273,7 +273,7 @@ listarTalleres(): void {
       this.actualizarDataSource();
     
       this.articuloColorIndex = null;
-      this.cantProducto = "0";
+      this.cantProducto = ' ';
           
       setTimeout(() => {
         this.inputArticulos.nativeElement.focus();
@@ -373,6 +373,7 @@ getCantidadTotal(presupuestoArticulos: PresupuestoArticulo[]): number {
             presuArt.descripcion=presuArt.articulo?.descripcion
             console.log("LA CANTIDAD ES:", presuArt.cantidad)
             console.log("LA CANTIDAD PENDIENTE ES:", presuArt.cantidadPendiente)
+            
 
 
             this.currentPedidoProduccion!.articulos?.push(presuArt);

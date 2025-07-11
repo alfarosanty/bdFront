@@ -246,7 +246,7 @@ listarClientes(): void {
       console.log(`Artículo deseado: ${this.codigoArticulo} y su articuloPrecioId: ${idArticuloPrecioDeseado}`)
   
       // Llama al servicio para obtener artículos según la familia y medida
-      this.articuloService.getByArticuloPrecio(idArticuloPrecioDeseado).subscribe({
+      this.articuloService.getByArticuloPrecio(idArticuloPrecioDeseado, true).subscribe({
         next: (data) => {
           this.articulos = data;
           this.articulos.sort((a, b) => {
@@ -338,7 +338,7 @@ listarClientes(): void {
       this.actualizarDataSource()
 
       this.articuloColorIndex = null;
-      this.cantProducto = "0"
+      this.cantProducto = ' '
       
       setTimeout(() => {
         this.inputArticulos.nativeElement.focus();
@@ -429,7 +429,7 @@ listarClientes(): void {
     
       if (this.codigoArticulo) {
     
-        this.articuloService.getByArticuloPrecio(this.codigoArticulo).subscribe({
+        this.articuloService.getByArticuloPrecio(this.codigoArticulo,true).subscribe({
           next: (data) => {
             this.articulos = data;
             this.mostrarColores = this.articulos.length > 0;

@@ -1,5 +1,61 @@
-.list {
-    text-align: left;
-    max-width: 750px;
-    margin: auto;
-  }
+.general-container {
+  display: flex; /* Coloca los elementos en fila */
+  flex-direction: column;
+  justify-content: space-between; /* Separa los elementos */
+  align-items: flex-start; /* Alinea los elementos arriba */
+  padding: 20px; /* Espaciado interno */
+  border-radius: 10px; /* Bordes redondeados */
+  max-width: 100%;  /* Aumenta el ancho del contenedor general */
+  width: 90%;
+  margin:auto;
+  cursor: pointer;
+  user-select: none;
+}
+
+.seleccion-y-colores-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  width: 100%;
+}
+
+.color-circle {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 8px;
+  vertical-align: middle;
+  border: 1px solid #000000; /* contorno gris oscuro */
+}
+
+
+.grilla-container {
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+tr.example-element-row:not(.example-expanded-row):hover {
+  background: whitesmoke;
+}
+
+tr.example-element-row:not(.example-expanded-row):active {
+  background: #efefef;
+}
+
+.example-element-row td {
+  border-bottom-width: 0;
+}
+
+.example-detail-row td {
+  padding: 0;
+  border: none;
+}
+
+tr.example-detail-row {
+  height: 0;
+}
+

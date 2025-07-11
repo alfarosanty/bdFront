@@ -1,5 +1,5 @@
-import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { ChangeDetectorRef, Component, ElementRef, Inject, ViewChild } from '@angular/core';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map, startWith } from 'rxjs/operators'
 import { Articulo } from 'src/app/models/articulo.model';
@@ -21,7 +21,8 @@ import * as pdfMake from 'pdfmake/build/pdfmake';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { ArticuloPrecio } from 'src/app/models/articulo-precio.model';
-import { MatSelect } from '@angular/material/select';
+import { MatSelect, MatSelectModule } from '@angular/material/select';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 
 (pdfMake as any).vfs = (pdfFonts as any).vfs;
 
@@ -91,7 +92,7 @@ export class IngresoComponent {
   mostrarConfirmacionPDF = false;
 
 
-  constructor(private tallerService:TallerService, private articuloService:ArticuloService, private ingresoService:IngresoService, private ordenProduccionService: OrdenProduccionService, private presupuestoService: PresupuestoService , private route : ActivatedRoute, private cdr: ChangeDetectorRef) {}
+  constructor(private tallerService:TallerService, private articuloService:ArticuloService, private ingresoService:IngresoService, private ordenProduccionService: OrdenProduccionService, private presupuestoService: PresupuestoService , private route : ActivatedRoute, private cdr: ChangeDetectorRef, public dialog: MatDialog) {}
 
   ngOnInit(): void {
     this.listarTalleres();
@@ -203,7 +204,7 @@ listarTalleres(): void {
       console.log(`Artículo deseado: ${this.codigoArticulo} y su articuloPrecioId: ${idArticuloPrecioDeseado}`)
   
       // Llama al servicio para obtener artículos según la familia y medida
-      this.articuloService.getByArticuloPrecio(idArticuloPrecioDeseado).subscribe({
+      this.articuloService.getByArticuloPrecio(idArticuloPrecioDeseado, true).subscribe({
         next: (data) => {
           this.articulos = data;
           this.articulos.sort((a, b) => {
@@ -285,6 +286,7 @@ mostrarColoresDisponibles(articulo : Articulo) : string {
         cantidadOriginal: cantidadNum,
         cantidadPendiente: cantidadNum,
         descripcion: this.currentArticulo.descripcion,
+        codigo: this.currentArticulo.codigo,
         hayStock: false
       };
   
@@ -298,7 +300,7 @@ mostrarColoresDisponibles(articulo : Articulo) : string {
     this.actualizarDataSource();
   
     this.articuloColorIndex = null;
-    this.cantProducto = "0";
+    this.cantProducto = ' ';
   
     setTimeout(() => {
       this.inputArticulos.nativeElement.focus();
@@ -309,7 +311,7 @@ mostrarColoresDisponibles(articulo : Articulo) : string {
 
   getCantidadTotal(presupuestoArticulos: PresupuestoArticulo[]): number {
     return (presupuestoArticulos
-      .map(articulo => articulo.cantidadActual)  // Extrae la propiedad 'cantidad'
+      .map(articulo => articulo.cantidad)  // Extrae la propiedad 'cantidad'
       .reduce((total, cantidad) => (total || 0) + (cantidad || 0), 0) || 0) ;  // Suma las cantidades
   }
 
@@ -373,7 +375,7 @@ borrarArticulo(key: any, color: string) {
     
       if (this.codigoArticulo) {
     
-        this.articuloService.getByArticuloPrecio(this.codigoArticulo).subscribe({
+        this.articuloService.getByArticuloPrecio(this.codigoArticulo, true).subscribe({
           next: (data) => {
             this.articulos = data;
             this.mostrarColores = this.articulos.length > 0;
@@ -680,6 +682,7 @@ cargarDetallesIngresoMercaderia(id: Number) {
 
       // Llamar a procesarMapaDeArticulos cuando los datos se hayan cargado
       this.procesarMapaDeArticulos();
+      this.actualizarDataSource()
     },
     error: (e) => console.error(e)
   });
@@ -687,26 +690,33 @@ cargarDetallesIngresoMercaderia(id: Number) {
 
 
 procesarMapaDeArticulos() {
-  console.log("ESTE ES EL INGRESO A ACCEDER", this.ingresoMercaderiaAAcceder  )
   if(this.ingresoMercaderiaAAcceder)
-    console.log("ENTRÓ AL IF")
   this.mapaPresuXArtParaAcceder = new Map()
-  this.ingresoMercaderiaAAcceder?.articulos?.forEach(pedidoArt => {
-    pedidoArt.cantidadActual = pedidoArt.cantidad
-    const key = pedidoArt.articulo?.codigo!
-    
+  console.log(this.ingresoMercaderiaAAcceder?.articulos)
+  this.ingresoMercaderiaAAcceder?.articulos?.forEach(presuArt => {
+  console.log("PRESUART CARGANDO",presuArt)
+  console.log("EL CODIGO ARTICULO ES:", presuArt.articulo?.codigo)
+
+    let key
+    if(presuArt.articulo?.codigo == 'GEN'){
+      console.log("ENTRÓ AL IF")
+      key = presuArt.codigo!
+    } else {key = presuArt.articulo?.codigo!;}
+    console.log("la key es:", key)
+
     if (this.mapaPresuXArtParaAcceder?.has(key)) {
-      const listaDePedidoArtActualizada = (this.mapaPresuXArtParaAcceder.get(key) || []);
-      listaDePedidoArtActualizada.push(pedidoArt);
-      this.mapaPresuXArtParaAcceder.set(key, listaDePedidoArtActualizada);
+      const listaDePresuArtActualizada = (this.mapaPresuXArtParaAcceder.get(key) || []);
+      listaDePresuArtActualizada.push(presuArt);
+      this.mapaPresuXArtParaAcceder.set(key, listaDePresuArtActualizada);
 
     } else {
-      this.mapaPresuXArtParaAcceder?.set(key, [pedidoArt]);
+      this.mapaPresuXArtParaAcceder?.set(key, [presuArt]);
     } 
 
     this.mapaPresupuestoArticulos = new Map();
     this.actualizarMapaPresupuestoArticulo(this.mapaPresuXArtParaAcceder!);
-      });
+    console.log("Este es el presupuesto con articulos a acceder",   this.mapaPresupuestoArticulos)
+    });
 
 }
 
@@ -994,6 +1004,86 @@ actualizarDataSource() {
 
 }
 
+agregarComentario() {
+  // Datos iniciales para el diálogo, pueden ser vacíos o con valores por defecto
+  const dataInicial = {
+    codigo: "MEN",
+    descripcion: '',
+    precioUnitario: 0,
+    cantidad: 1,
+    // podrías agregar más campos si quieres editar color, código, etc.
+  };
+  const dialogRef = this.dialog.open(EditarGenericoDialogIngresoComponent, {
+    width: '350px',
+    data: dataInicial
+  });
+
+  dialogRef.afterClosed().subscribe(result => {
+    if(this.mapaPresupuestoArticulos?.has(dataInicial.codigo)){
+      const cantDeMensajes = Array.from(this.mapaPresupuestoArticulos.entries())
+      .filter(([codigo, lista]) => codigo.startsWith('MEN')) // Filtra las entradas cuyas claves empiezan con 'MEN'
+      .map(([codigo, lista]) => lista).length; // Mapea para quedarte solo con el array de artículos/mensajes
+
+      dataInicial.codigo = dataInicial.codigo + String((cantDeMensajes ?? 0) + 1);
+    }
+    if (result) {
+      // Construimos el Articulo
+      const nuevoArticulo = new Articulo();
+      nuevoArticulo.id = 0;
+      nuevoArticulo.codigo="GEN"
+      nuevoArticulo.descripcion="GENERICO"
+      nuevoArticulo.color = {id:37, codigo:"GN", descripcion:"GENERICO"}
+      nuevoArticulo.medida = {id:0, codigo:"GEN", descripcion:"GENERICO"}
+      nuevoArticulo.articuloPrecio={id:0, codigo:"GEN", descripcion:"GENERICO", precio1:0}
+      
+
+      // Construimos el PresupuestoArticulo que incluye el Articulo y otros campos
+      const nuevoPresupuestoArticulo = new PresupuestoArticulo();
+      nuevoPresupuestoArticulo.articulo = nuevoArticulo;
+      nuevoPresupuestoArticulo.cantidad = result.cantidad;
+      nuevoPresupuestoArticulo.cantidadActual = 0;
+      nuevoPresupuestoArticulo.precioUnitario = result.precioUnitario;
+      nuevoPresupuestoArticulo.descripcion = result.descripcion;
+      nuevoPresupuestoArticulo.codigo = dataInicial.codigo;
+      console.log(nuevoPresupuestoArticulo)
+      // agregar descuento, stock, presupuesto si hace falta
+
+      dataInicial.codigo = "MEN"
+
+      console.log(this.mapaPresupuestoArticulos)
+
+      this.guardarPresupuestoArticulo(nuevoPresupuestoArticulo);
+    }
+  });
+
+}
+
+guardarPresupuestoArticulo(pa: PresupuestoArticulo) {
+
+  this.mapaPresupuestoArticulos?.set(pa.codigo!, [pa]);
+  this.actualizarDataSource()
+
+}
+
+}
+
+@Component({
+  selector: 'app-editar-generico-dialog',
+  templateUrl: './editar-generico-dialog.component.html',
+})
+export class EditarGenericoDialogIngresoComponent {
+  constructor(
+    public dialogRef: MatDialogRef<EditarGenericoDialogIngresoComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: { descripcion: string; precio: number }
+  ) {}
+
+  onNoClick(): void {
+    this.dialogRef.close();
+  }
+
+  guardar(): void {
+    this.dialogRef.close(this.data);
+  }
 }
 
 

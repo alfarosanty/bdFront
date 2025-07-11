@@ -27,6 +27,7 @@ import {MatDialogModule} from '@angular/material/dialog';
 
 
 
+
 import { DragDropModule } from '@angular/cdk/drag-drop';
 
 
@@ -35,7 +36,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ClientesComponent } from './components/clientes/clientes.component';
 import { PedidoProduccionComponent } from './components/pedido-produccion/pedido-produccion.component';
-import { IngresoComponent } from './components/ingreso/ingreso.component';
+import { EditarGenericoDialogIngresoComponent, IngresoComponent } from './components/ingreso/ingreso.component';
 import { RevisionPedidosProduccionComponent } from './components/revision-pedidos-produccion/revision-pedidos-produccion.component';
 import { SeparacionProductosComponent } from './components/separacion-productos/separacion-productos.component';
 import { PresentacionComponent } from './components/presentacion/presentacion.component';
@@ -43,6 +44,7 @@ import { EditarGenericoDialogComponent, SearchBudgetComponent } from './componen
 import { EditarGenericoDialogFacturacionComponent, FacturacionComponent } from './components/facturacion/facturacion.component';
 import { SelectBudgetComponent } from './components/select-budget/select-budget.component';
 import { ArticuloConfiguracionComponent } from './components/articulo-configuracion/articulo-configuracion.component';
+import { RevisionFacturaComponent } from './components/revision-factura/revision-factura.component';
 
 
 
@@ -62,8 +64,10 @@ import { ArticuloConfiguracionComponent } from './components/articulo-configurac
     SeparacionProductosComponent,
     EditarGenericoDialogComponent,
     EditarGenericoDialogFacturacionComponent,
+    EditarGenericoDialogIngresoComponent,
     PresentacionComponent,
     ArticuloConfiguracionComponent,
+    RevisionFacturaComponent,
   ],
   imports: [
     MatSelectModule,

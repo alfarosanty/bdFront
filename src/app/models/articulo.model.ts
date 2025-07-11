@@ -11,6 +11,9 @@ export class Articulo {
     articuloPrecio?:ArticuloPrecio;
     familia?:Familia;
     medida?:Medida;
-    idFabricante?: number;    
+    idFabricante?: number;
+    nuevo?: Boolean;
+    habilitado?: Boolean;
+    stock?: number
 
 }

@@ -10,18 +10,26 @@
     <!-- Menú desplegable de clientes -->
     <div class="dropdown">
         <div>
-            <label for="descuento">Numero de Cliente:</label>
+            <label for="descuento">Numero de Cliente</label>
             <input type="text" id="numCliente" [(ngModel)]="numCliente" (keydown.enter)="seleccionarXnumeroCliente()">
         </div>
 
 
-        <label for="clientes">Seleccionar Cliente:</label>
-        <select  (change)="seleccionarCliente()" [(ngModel)]="currentIndex">
-            <option >Seleccione un cliente</option>
-            <option *ngFor="let cliente of clientes" [value]="cliente.id" >
-                 {{cliente.razonSocial}} 
-            </option>
-          </select>
+        <label for="clientes">Seleccionar Cliente</label>
+
+        <mat-form-field class="input-mat-cliente" appearance="outline">
+          <mat-label>Seleccione un cliente...</mat-label>
+          <input type="text"
+                 matInput
+                 [formControl]="clienteControl"
+                 [matAutocomplete]="autoCliente"
+                 (input)="clienteControl.setValue(clienteControl.value?.toUpperCase(), { emitEvent: false })"s>
+            <mat-autocomplete #autoCliente="matAutocomplete" autoActiveFirstOption (optionSelected)="seleccionarCliente();">
+            <mat-option *ngFor="let c of filteredClientes | async" [value]="c.razonSocial">
+              {{ c.razonSocial }}
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
                     
     </div>
 
@@ -32,13 +40,15 @@
   <h3>Selecciona un presupuesto de:</h3>
   <h3>{{currentCliente.razonSocial}}</h3>
 
-  <select [(ngModel)]="presupuestoAAcceder" (change)="cargarDetallesPresupuesto((presupuestoAAcceder?.id??0)); inputArticulo.focus()"> 
-      <option value="" disabled selected>Selecciona un presupuesto de:</option>
-      <option *ngFor="let presupuesto of presupuestosXCliente" [ngValue]="presupuesto">
-          {{ presupuesto.id }} - {{ formatearFecha(presupuesto.fecha!) }}
-        </option>
-
-  </select>
+  <mat-form-field>
+    <mat-label>Presupuesto</mat-label>
+    <mat-select [(value)]="idPresupuestoACargar" (selectionChange)="cargarDetallesPresupuesto(idPresupuestoACargar!)">
+      <mat-option *ngFor="let presupuesto of presupuestosXCliente" [value]="presupuesto?.id ?? null">
+        {{ presupuesto ? (presupuesto.id + ' -- ' + formatearFecha(presupuesto.fecha)) : 'None' }}
+      </mat-option>   
+    </mat-select>
+  </mat-form-field>
+  
  </div>
 </div>
 
@@ -48,63 +58,83 @@
     <h3>Datos del Comprobante</h3>
 
     <div class="datos-comprobante">
-        <div class="lista-group">
-            <label>Precio Lista:</label>
-            <input type="radio" name="lista" id="lista1"> <label for="lista1">Lista1</label>
-            <input type="radio" name="lista" id="lista2"> <label for="lista2">Lista2</label>
-        </div>
+      <div class="lista-group">
+        <label>Precio Lista:</label>
+        <input type="radio" name="lista" id="lista1"> <label for="lista1">Lista1</label>
+        <input type="radio" name="lista" id="lista2"> <label for="lista2">Lista2</label>
+      </div>
 
-        <div>
-          <mat-form-field class="margen-horizontal">
-            <mat-label>Fecha de Emisión:</mat-label>
-            <input matInput [matDatepicker]="picker" [(ngModel)]="fechaPresupuesto" name="fechaPresupuesto">
-            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-            <mat-datepicker #picker></mat-datepicker>
-          </mat-form-field>       
-        </div>
+      <mat-checkbox [(ngModel)]="eximirIVA" (change)="onEximirIVAChange()">
+        Eximir IVA
+      </mat-checkbox>
+    
+      <mat-checkbox [(ngModel)]="generaPresuBorrados">
+        Generar presupuesto
+      </mat-checkbox>
 
-        <mat-checkbox [(ngModel)]="eximirIVA" (change)="onEximirIVAChange()">
-          Eximir pago de IVA
-        </mat-checkbox>
-        
-        <mat-checkbox [(ngModel)]="generaPresuBorrados">
-          Generar presupuesto
-        </mat-checkbox>
-        
+      <!-- Forzar salto de línea -->
+<div style="width: 100%; height: 0;"></div>
+    
+      <div>
+        <mat-form-field class="combo-datos-fecha-emision">
+          <mat-label>Fecha de Emisión:</mat-label>
+          <input matInput [matDatepicker]="picker" [(ngModel)]="fechaFactura" name="fechaPresupuesto">
+          <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+          <mat-datepicker #picker></mat-datepicker>
+        </mat-form-field>
+      </div>
+    
+      <mat-form-field>
+        <mat-label>Tipo de Factura</mat-label>
+        <mat-select [(ngModel)]="tipoFactura" name="tipoFactura">
+          <mat-option value="A">Factura A</mat-option>
+          <mat-option value="B">Factura B</mat-option>
+        </mat-select>
+      </mat-form-field>
+      
+      <mat-form-field>
+        <mat-label>Punto de venta</mat-label>
+        <mat-select [(ngModel)]="puntoDeVenta" name="puntoDeVenta">
+          <mat-option *ngFor="let numero of puntosDeVentasPosibles" [value]="numero">
+            {{ numero }}
+          </mat-option>    
+        </mat-select>
+      </mat-form-field>
+    
+
     </div>
+    
 </div>
 
 
 
 <div class="presupuesto-container">
     <div class="seleccion-y-colores-container">
-    <div class="seleccion-container">
+      <div class="seleccion-container">
         <div>
             <label>Artículo:</label>
         </div>
 
         <!--COMBO DE PRODUCTOS CON FILTRADO-->
         <div >
-            <mat-form-field class="input-mat" appearance="outline">
-                <mat-label>Selecciona una opción</mat-label>
+            <mat-form-field class="input-mat-articulo" appearance="outline">
+                <mat-label>Seleccione un artículo...</mat-label>
                 <input type="text"
-                       #inputArticulo
-                       [(ngModel)]="articuloSeleccionado"
-                       matInput
-                       [formControl]="myControl"
-                       [matAutocomplete]="auto"
-                       (keydown.enter)="seleccionarArticulo();"
-                       (input)="myControl.setValue(myControl.value.toUpperCase(), { emitEvent: false })">
-                <mat-autocomplete #auto="matAutocomplete">
-                  <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
+                      #inputArticulos
+                      [(ngModel)]="articuloSeleccionado"
+                      matInput
+                      [formControl]="articuloControl"
+                      [matAutocomplete]="auto"
+                      (keydown.enter)="mostrarVariedadColores()"
+                      
+                      (input)="articuloControl.setValue(articuloControl.value.toUpperCase(), { emitEvent: false })">
+                <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption>
+                  <mat-option *ngFor="let option of filteredArticulos | async" [value]="option">
                     {{ option }}
                   </mat-option>
                 </mat-autocomplete>
               </mat-form-field>
-              
-
-   </div>
-
+          </div>
     </div>
 <!-- Este DIV aparecerá a la derecha cuando presiones Enter -->
 <div class="colores-container" *ngIf="mostrarColores">
@@ -112,7 +142,7 @@
   <label for="colores">Color</label>
 
   <mat-form-field appearance="outline" class="full-width">
-    <mat-select [(value)]="articuloColorIndex" (selectionChange)="actualizarArticuloSeleccionado()">
+    <mat-select  #inputColores [(value)]="articuloColorIndex" (selectionChange)="actualizarArticuloSeleccionado()">
       <mat-option *ngFor="let articulo of articulos; let i = index" [value]="i">
         <span class="color-circle" [ngStyle]="{ 'background-color': articulo.color?.colorHexa || '#000' }"></span>
         {{ mostrarColoresDisponibles(articulo) }}
@@ -121,15 +151,18 @@
   </mat-form-field>
 
   <label for="cantidades">Cantidad</label>
-  <input type="text" id="Cantidad" size="2" [(ngModel)]="cantProducto"
+  <input #inputCantidad type="text" id="Cantidad" size="2" [(ngModel)]="cantProducto"
          [placeholder]="cantidadActualDepoducto()"
-         (keydown.enter)="agregarArticulo(); actualizarTotales(); inputArticulo.focus()">
+         (keydown.enter)="agregarArticulo(); actualizarTotales()">
 </div>
 
 </div>
 
 <div class="grilla-container">
-  <h3>Grilla de Información</h3>
+  <h3  style="text-align: center;">Grilla de Información</h3>
+  <button mat-raised-button class="boton-de-comentario" color="primary" (click)=" agregarComentario() ">
+    Agregar fila
+  </button>
 
   <table mat-table [dataSource]="dataSourceCodigo" multiTemplateDataRows class="mat-elevation-z8">
 
@@ -144,8 +177,10 @@
       <td mat-cell *matCellDef="let element">
         {{ getDescripcionBase(element.codigo) }}
         <ng-container *ngFor="let detalle of getArticulosParaArticulo(element.codigo)">
-          {{ (detalle.cantidad || 0) + (detalle.articulo?.color?.codigo || '') }}
-        </ng-container>
+          <span *ngIf="!(detalle.articulo?.codigo || '').startsWith('GEN')">
+            {{ (detalle.cantidad || 0) + (detalle.articulo?.color?.codigo || '') }}
+          </span>
+                </ng-container>
       </td>
     </ng-container>
   
@@ -177,12 +212,15 @@
     <ng-container matColumnDef="Descuento">
       <th mat-header-cell *matHeaderCellDef>Descuento</th>
       <td mat-cell *matCellDef="let element">
-        <input type="number"
-               class="input-pequeño"
-               [(ngModel)]="descuentos[element.codigo]"
-               (keydown.enter)="aplicarDescuentoUnitario(element.codigo); actualizarTotales()"
-               (click)="$event.stopPropagation()"> %
-        </td>
+        <div class="input-con-sufijo">
+          <input type="text"
+                 [(ngModel)]="descuentos[element.codigo]"
+                 (keydown.enter)="aplicarDescuentoUnitario(element.codigo); actualizarTotales()"
+                 (click)="$event.stopPropagation()"
+                 class="input-pequeño alineado-derecha">
+          <span class="sufijo">%</span>
+        </div>
+      </td>
     </ng-container>
   
     <ng-container matColumnDef="Borrar">
@@ -194,14 +232,6 @@
       </td>
     </ng-container>
   
-    <ng-container matColumnDef="Editar">
-      <th mat-header-cell *matHeaderCellDef>Editar</th>
-      <td mat-cell *matCellDef="let element">
-        <button (click)="editarFila(element.codigo)" class="boton-borrar">
-          <i class="fas fa-edit" style="color: #003366;"></i>
-        </button>
-      </td>
-    </ng-container>
   
     <!-- Detalle expandible -->
     <ng-container matColumnDef="expandedDetail">
@@ -213,9 +243,14 @@
             <ng-container matColumnDef="Articulo">
               <th mat-header-cell *matHeaderCellDef>Artículo</th>
               <td mat-cell *matCellDef="let presuArt">
-                {{ presuArt.articulo.codigo }}
+                <span class="color-circle"
+                      [ngStyle]="{ 'background-color': presuArt.articulo.color?.colorHexa || '#000' }">
+                </span>
+                {{ presuArt.articulo?.codigo }}
+                {{ presuArt.articulo?.color.descripcion }}
               </td>
             </ng-container>
+            
   
             <!-- CANTIDAD -->
             <ng-container matColumnDef="Cantidad">
@@ -284,20 +319,28 @@
     </div>
   </div>
   
-    <!-- Botón principal para generar presupuesto -->
+    <!-- Botón principal para generar presupuesto  -->
     <div class="boton-generarPDF" *ngIf="mostrarBotonGuardar">
-      <button mat-raised-button color="primary" class="boton-lindo" (click)="guardarFactura(); generarPDF(); generarPresupuestoBorrados()">
+      <button mat-raised-button color="primary" class="boton-lindo" (click)="generarFactura()">
         Generar Factura
       </button>
     </div>
-  
-    <!-- Backdrop con opciones -->
+
+<!-- Backdrop con opciones  --> 
     <div class="backdrop" *ngIf="showBackDrop">
-      <div class="button-container">
-        <button mat-raised-button color="primary" (click)="generarPDF()">Generar PDF</button>
-        <button mat-raised-button color="warn" (click)="cancelarPDF()">No Generar PDF</button>
+      <div class="mensaje-confirmacion animado">
+        <span class="icono">✅</span>
+        <span>¡Se creó la factura N° {{ idFacturaActual }} para el cliente {{ currentCliente?.razonSocial }}!</span>
+      </div>
+
+      <div class="button-container botones-separados">
+        <button mat-raised-button class="boton-opcion" color="primary" (click)="presupuestoCliente = true; generarPDF()">PDF Cliente</button>
+        <button mat-raised-button class="boton-opcion" color="accent" (click)="presupuestoCliente = false; generarPDF()">PDF Interno</button>
+        <button mat-raised-button class="boton-opcion" color="warn" (click)="cancelarPDF()">Finalizar</button>
       </div>
     </div>
+
+    
   </div>
 </div>
-  
+

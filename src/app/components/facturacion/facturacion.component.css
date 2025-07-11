@@ -40,18 +40,6 @@
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Estilo del menú desplegable */
-.dropdown {
-    margin-bottom: 20px;
-}
-
-select {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #aaa;
-    border-radius: 5px;
-}
-
 .datosCliente-container{
     width: 50%;
     margin-right: -60%;
@@ -60,37 +48,19 @@ select {
 }
 
 
-/* Contenedor del comprobante */
 .datos-comprobante {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 20px; /* Espaciado uniforme */
+  display: flex;
+  flex-wrap: wrap; /* Permite que se ajuste si la pantalla es chica, podés sacar esto si querés forzar una sola línea */
+  align-items: center;
+  gap: 5%; /* Espacio entre elementos */
 }
 
-/* Cada grupo de elementos */
-.datos-comprobante div {
-    display: flex;
-    align-items: center;
-    gap: 5%; /* Espacio entre la etiqueta y el input */
-}
-
-/* Ajuste del tamaño de los inputs */
-.datos-comprobante input,
-.datos-comprobante select {
-    width: 75%; /* Ajusta el ancho según necesites */
-}
-
-/* Para que el grupo de lista esté alineado con el texto */
 .lista-group {
-    display: flex;
-    align-items: center;
-    
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-#vendedor{
-    width:200%;
-}
 
 .presupuesto-container{
     width: 100%;
@@ -118,10 +88,15 @@ select {
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-.input-mat {
+.input-mat-articulo {
     width: 100%;
     max-width: 600px; /* o poné el ancho que quieras */
-  }
+}
+
+.input-mat-cliente {
+    width: 80%;
+    max-width: 100%; /* o poné el ancho que quieras */
+}
   
 
 .colores-container {
@@ -133,60 +108,11 @@ select {
     background-color: #f9f9f9;
   }
 
-  .select-color {
-    width: 150px;
-    padding: 5px;
-    margin-top: 10px;
-    margin-bottom: 10px;
-    background-color: #fff;
-    font-size: 14px;
-    font-weight: bold;
-  }
-
   .grilla-container {
     width: 120%;
     margin: 0 auto;
     padding: 20px;
     border-radius: 10px;
-}
-
-/* Anchos de columnas para mat-table */
-.col-codigo {
-    width: 15%; /* 15% del ancho total */
-}
-
-.col-descripcion {
-    width: 100%; /* Ajuste según tu necesidad */
-}
-
-.col-cantidad {
-    width: 15%; /* 15% del ancho total */
-}
-
-.col-precio-unitario {
-    width: 15%; /* 15% del ancho total */
-}
-
-.col-precio-total {
-    width: 15%; /* 15% del ancho total */
-}
-
-.col-descuento {
-    width: 15%; /* 15% del ancho total */
-}
-
-.col-borrar {
-    width: 7%; /* 7% del ancho total */
-}
-
-.col-editar {
-    width: 7%; /* 8% del ancho total */
-}
-
-/* Estilos adicionales para que las celdas se alineen bien */
-th.mat-header-cell, td.mat-cell {
-    text-align: center; /* Centra el texto */
-    padding: 8px; /* Espacio alrededor del texto */
 }
 
 .grilla-totales {
@@ -222,16 +148,6 @@ th.mat-header-cell, td.mat-cell {
     width: 30%;
 }
 
-.boton-busqueda-articulo {
-    margin-top: 10px;
-}
-
-.boton-generarPDF {
-    margin-left: 2%;
-    margin-top: 10px;
-    display: inline-block; /* Asegura que los botones se alineen horizontalmente */
-}
-
 .boton-borrar {
     background-color: transparent;
     border: none;
@@ -248,106 +164,7 @@ th.mat-header-cell, td.mat-cell {
     margin-right: 5px;
 }
 
-/* Capa de fondo borroso */
-.backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(5px);
-    display: flex;
-    flex-direction: column; /* Establece los elementos en columna */
-    justify-content: center; /* Centra los elementos verticalmente */
-    align-items: center; /* Centra los elementos horizontalmente */
-    z-index: 10;
-  }
-  
-  /* Modal */
-  .modal {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-  }
-
-  .checklist-label {
-    font-weight: bold;
-    margin-top: 10px; /* Espacio entre los radio buttons */
-    display: flex; /* Usamos Flexbox para alinear los elementos */
-    align-items: center; /* Alinea el radio button con el texto */
-    justify-content: center; /* Centra los elementos dentro de cada label */
-  }
-
-  input[type="radio"] {
-    margin-right: 5%; /* Espacio entre el radio button y el texto */
-  }
-
-  .checklist-container {
-    text-align: center; /* Centra el contenido */
-  }
-  
-  .button-container {
-    margin-bottom: 20px;
-    text-align: center;
-  }
-  
-  .checklist-container {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-  }
-
-  .button-container {
-    display: flex;
-    gap: 16px;
-    margin-bottom: 16px;
-  }
-
-  .boton-lindo {
-    font-size: 90%;
-    padding: 18% 30%;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-  }
-  
-  .boton-lindo:hover {
-    background-color: #020749;
-    transform: scale(1.05);
-  }
-  
-  .boton-lindo mat-icon {
-    margin-right: 8%;
-  }
-
-  .margen-horizontal {
-    margin: 0 10%;
-  }
-
-  .modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .modal-content {
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-  }
-  
-  .example-element-detail {
+.example-element-detail {
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -398,3 +215,85 @@ th.mat-header-cell, td.mat-cell {
     vertical-align: middle;
     border: 1px solid #000000; /* contorno gris oscuro */
   }
+
+/* BOTONES DE GENERAR FACTURA */
+
+.boton-generarPDF {
+  margin-left: 2%;
+  margin-top: 10px;
+  display: inline-block; /* Asegura que los botones se alineen horizontalmente */
+}
+.boton-lindo {
+  font-size: 90%;
+  padding: 18% 30%;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  white-space: nowrap;
+
+}
+.boton-lindo:hover {
+  background-color: #020749;
+  transform: scale(1.05);
+}
+
+.backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+  display: flex;
+  flex-direction: column; /* Establece los elementos en columna */
+  justify-content: center; /* Centra los elementos verticalmente */
+  align-items: center; /* Centra los elementos horizontalmente */
+  z-index: 1000;
+}
+.mensaje-confirmacion {
+  background: white;
+  padding: 20px 30px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  font-size: 20px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 30px;
+  animation: aparecer 0.4s ease-out;
+}
+.icono {
+  font-size: 28px;
+  color: green;
+}
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.button-container {
+  margin-bottom: 20px;
+  text-align: center;
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+.boton-opcion {
+  flex: 1;                
+  min-width: 120px;       
+  max-width: 200px;       
+  height: 48px;           
+  font-size: 16px;
+  border-radius: 8px;
+  white-space: nowrap;
+}
+.combo-datos-fecha-emision{
+  width: 100%;
+}

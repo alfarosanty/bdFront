@@ -55,17 +55,78 @@
 
     </div>
 
-    <div class="resumen-articulos-container" *ngIf="articulosACrear.length > 0">
-        <h3>Artículo/s a agregar</h3>
-      
-        <p><strong>Código:</strong> {{ articulosACrear[0].codigo }}</p>
-        <p><strong>Descripción:</strong> {{ articulosACrear[0].descripcion }}</p>
-        <p><strong>Colores:</strong>
-          <span *ngFor="let articulo of articulosACrear; let last = last">
-            {{ articulo.color?.descripcion }}<span *ngIf="!last">, </span>
-          </span>
-        </p>
-      
+    <div class="grilla-container">
+      <h3  style="text-align: center;">Grilla de Información</h3>
+    
+    <!--
+          <button mat-raised-button class="boton-de-comentario" color="primary" (click)=" agregarComentario() ">
+            Agregar fila
+          </button>
+    -->
+          <table mat-table [dataSource]="dataSourceCodigo" multiTemplateDataRows class="mat-elevation-z8">
+    
+            <!-- Columnas principales -->
+            <ng-container matColumnDef="Artículo">
+              <th mat-header-cell *matHeaderCellDef>Artículo</th>
+              <td mat-cell *matCellDef="let element">{{ element.codigo }}</td>
+            </ng-container>
+          
+            <ng-container matColumnDef="Descripcion">
+              <th mat-header-cell *matHeaderCellDef>Descripción</th>
+              <td mat-cell *matCellDef="let element">{{ element.descripcion }}</td>
+              </ng-container>
+
+          
+          
+            <!-- Detalle expandible -->
+            <ng-container matColumnDef="expandedDetail">
+              <td mat-cell *matCellDef="let element" [attr.colspan]="columnsToDisplay.length">
+                <div class="detalle-expandido mat-elevation-z2" [@detailExpand]="element === expandedElement ? 'expanded' : 'collapsed'">
+                  <table mat-table [dataSource]="getArticulosParaArticulo(element.codigo)" class="mat-elevation-z1">
+          
+                    <!-- ARTÍCULO -->
+                    <ng-container matColumnDef="Artículo">
+                      <th mat-header-cell *matHeaderCellDef>Artículo</th>
+                      <td mat-cell *matCellDef="let articulo">
+                        <span class="color-circle"
+                              [ngStyle]="{ 'background-color': articulo.color?.colorHexa || '#000' }">
+                        </span>
+                        {{ articulo?.descripcion }}
+                        {{ articulo?.color.descripcion }}
+                      </td>
+                    </ng-container>
+
+                    <!-- HABILITAR -->
+                    <ng-container matColumnDef="Habilitado">
+                      <th mat-header-cell *matHeaderCellDef>Habilitado</th>
+                      <td mat-cell *matCellDef="let articulo">
+                        <mat-checkbox [(ngModel)]="articulo.habilitado"></mat-checkbox>
+                      </td>
+                    </ng-container>                    
+          
+                    <tr mat-header-row *matHeaderRowDef="articuloColumnsToDisplay"></tr>
+                    <tr mat-row *matRowDef="let row; columns: articuloColumnsToDisplay"></tr>
+                  </table>
+                </div>
+              </td>
+            </ng-container>
+          
+            <!-- FILAS -->
+            <tr mat-header-row *matHeaderRowDef="columnsToDisplay"></tr>
+            <tr mat-row *matRowDef="let element; columns: columnsToDisplay"
+                class="example-element-row"
+                [class.example-expanded-row]="expandedElement === element"
+                (click)="expandedElement = expandedElement === element ? undefined : element">
+            </tr>
+            <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="example-detail-row"></tr>
+          
+          </table>
+          
+          
+        </div>
+
+
+        <div>
         <button mat-raised-button color="primary" (click)="crearArticulos()" >
           Confirmar
         </button>

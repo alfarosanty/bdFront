@@ -4,7 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environment/environment';
 
-const baseUrl = environment.prodApiUrl+'/Cliente';
+const baseUrl = environment.localApiUrl+'/Cliente';
 
 
 @Injectable({

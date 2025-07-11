@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { Taller } from '../models/taller.model';
 import { environment } from 'src/environment/environment';
 
-const baseUrl = environment.prodApiUrl+'/Taller';
+const baseUrl = environment.localApiUrl+'/Taller';
 
 @Injectable({
   providedIn: 'root'

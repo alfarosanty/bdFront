@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { Tutorial } from '../models/tutorial.model';
 import { environment } from 'src/environment/environment';
 
-const baseUrl = environment.prodApiUrl+'/api/tutorials';
+const baseUrl = environment.localApiUrl+'/api/tutorials';
 
 @Injectable({
   providedIn: 'root',

@@ -1,3 +1,4 @@
+import { animate, state, style, transition, trigger } from '@angular/animations';
 import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatSelect } from '@angular/material/select';
@@ -8,10 +9,18 @@ import { Color } from 'src/app/models/color.model';
 import { ArticuloService } from 'src/app/services/articulo.service';
 import { ColorService } from 'src/app/services/color.service';
 
+
 @Component({
   selector: 'app-articulo-configuracion',
   templateUrl: './articulo-configuracion.component.html',
-  styleUrls: ['./articulo-configuracion.component.css']
+  styleUrls: ['./articulo-configuracion.component.css'],
+  animations: [
+    trigger('detailExpand', [
+      state('collapsed', style({ height: '0px', minHeight: '0' })),
+      state('expanded', style({ height: '*' })),
+      transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)'))
+    ])
+  ],
 })
 export class ArticuloConfiguracionComponent {
 
@@ -28,14 +37,14 @@ codigoArticulo = '';
 articuloColorIndex: number | null = null;
 mostrarColores = false;
 
-
 //LISTAS
 articulos: Articulo[]=[];
 articulosPrecio: ArticuloPrecio[]=[];
 colores: Color[] = [];
-articulosACrear: Articulo[]=[];
 coloresPosibles: Color[]=[];
 
+//MAPAS
+mapaArticulosACrear ?: Map<string,Articulo[]> = new Map();
 
 // INPUTS
 articuloControl = new FormControl();
@@ -45,6 +54,13 @@ filterValue ='';
 
 // FLAGS
 showBackDrop = false
+
+//MAT COMPONENTS
+columnsToDisplay = ['Artículo', 'Descripcion'];
+articuloColumnsToDisplay = ['Artículo', 'Habilitado'];
+expandedElement: any | null;
+dataSourceCodigo: any[] = []; // debe contener objetos con: codigo, descripcion
+
 
 
 
@@ -101,16 +117,18 @@ mostrarVariedadColores() {
     const idArticuloPrecioDeseado = articuloPrecioDeseado.id
 
     // Llama al servicio para obtener artículos según la familia y medida
-    this.articuloService.getByArticuloPrecio(idArticuloPrecioDeseado).subscribe({
+    this.articuloService.getByArticuloPrecio(idArticuloPrecioDeseado, false).subscribe({
       next: (data) => {
         this.articulos = data;
-        this.coloresDisponibles()
+        console.log("los articulos son:", this.articulos)
+        this.coloresDisponibles();
         this.articulos.sort((a, b) => {
           const descA = a.color?.descripcion?.toLowerCase() || '';
           const descB = b.color?.descripcion?.toLowerCase() || '';
           return descA.localeCompare(descB);
-
         });
+
+        this.cargarMapa(this.articulos, this.mapaArticulosACrear!)
         
 
         // Mostrar u ocultar colores según si hay artículos disponibles
@@ -165,16 +183,20 @@ agregarArticulo(colorSeleccionado: Color): void {
 
   articuloNuevo.id = undefined;
   articuloNuevo.color = colorSeleccionado;
+  articuloNuevo.nuevo = true;
 
   console.log("articulo a crear: ", articuloNuevo);
 
-  this.articulosACrear.push(articuloNuevo);
-  console.log("articulos a crear: ", this.articulosACrear);
+  const articulosExistentes = this.mapaArticulosACrear?.get(articuloNuevo.codigo!);
+  articulosExistentes?.push(articuloNuevo)
+  this.mapaArticulosACrear?.set(articuloNuevo.codigo!, articulosExistentes!)
+  console.log("articulos a crear: ", this.mapaArticulosACrear);
+  this.actualizarDataSource()
 }
 
 
 crearArticulos() {
-  this.articuloService.crearArticulos(this.articulosACrear).subscribe({
+  this.articuloService.crearArticulos(this.mapaArticulosACrear?.get(this.articulos[0].codigo!)!).subscribe({
     next: (ids: number[]) => {
       console.log('IDs generados:', ids);
       this.showBackDrop = true; // Se ejecutó correctamente el back
@@ -188,10 +210,65 @@ crearArticulos() {
       alert('Ocurrió un error al crear los artículos. Verifique e intente nuevamente.');
     }
   });
+
+}
+
+cargarMapa(articulos: Articulo[], mapaACargar: Map<string, Articulo[]>) {
+  if (!articulos || articulos.length === 0) {
+    return;
+  }
+
+  mapaACargar.clear();
+
+  const clave = articulos[0].codigo;
+
+  if (mapaACargar.has(clave!)) {
+    const existentes = mapaACargar.get(clave!);
+    if (existentes) {
+      existentes.push(...articulos);
+    }
+  } else {
+    mapaACargar.set(clave!, [...articulos]);
+  }
+
+  console.log("este es el mapa a cargar", mapaACargar);
+  this.actualizarDataSource();
 }
 
 
 
+getDescripcionBase(codigo: string): string {
+  const entry = this.mapaArticulosACrear?.get(codigo);
+  if(codigo.startsWith("MEN")){
+    return (entry![0].descripcion || '')
+  }
+  if (entry && entry.length > 0) {
+    return `${entry[0].descripcion || ''}`;
+  /*  const art = entry[0].articulo;
+    return `${art?.familia?.descripcion || ''} ${art?.medida?.descripcion || ''}`;*/
+  }
+  return '';
+}
+
+getArticulosParaArticulo(codigo: string) {
+  return this.mapaArticulosACrear?.get(codigo) || [];
+}
+
+borrarArticulo(key: any, color: string) {
+
+}
+
+actualizarDataSource() {
+  console.log("entra a actualiar", this.mapaArticulosACrear)
+  this.dataSourceCodigo = Array.from(this.mapaArticulosACrear!.entries()).map(([codigo, articulos]) => {
+    return {
+      codigo,
+      descripcion: articulos[0]?.descripcion
+    };
+  });
+
+  console.log("El data Source es:",this.dataSourceCodigo)
+}
 
 
 }
