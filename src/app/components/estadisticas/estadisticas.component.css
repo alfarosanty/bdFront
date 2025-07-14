@@ -1,0 +1,106 @@
+.container-principal {
+  display: flex;
+  height: 100vh;
+  background: #fff;
+}
+
+.menu-lateral {
+  width:15%;
+  background-color: #fff;
+  display: flex;
+  flex-direction: row;
+  align-items: start;
+  padding-top: 1%;
+}
+
+.menu-button {
+  margin-bottom: 20px;
+}
+
+.menu-label {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #333;
+  user-select: none;
+  padding-top: 6%;
+}
+
+.contenido-filtros {
+  flex-grow: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.filtro {
+  background: #fff;
+  border-radius: 6px;
+  padding: 20px;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+table {
+  width: 100%;
+}
+
+th.mat-sort-header-sorted {
+  color: black;
+}
+
+.boton-busqueda-filtrado {
+  margin-top: 20px;
+}
+
+.filtro-default {
+  text-align: center;
+  padding: 2rem;
+  border-radius: 8px;
+  background-color: #f5f5f5;
+  margin-top: 2rem;
+}
+
+.filtro-titulo {
+  margin: 1rem 0 0.5rem;
+}
+
+.filtro-texto {
+  color: #666;
+  margin: 0;
+}
+
+/* BOTONES */
+
+.botones-acciones {
+  display: flex;
+  gap: 2%;           /* separación entre botones usando % */
+  margin-top: 1.5rem; /* margin-top en rem para escala relativa */
+  flex-wrap: wrap;
+}
+
+.btn-buscar {
+  min-width: 10%;         /* mínimo ancho: 30% del contenedor padre */
+  height: 2.5rem;           /* altura fija, aprox 48px */
+  font-size: 0.875rem;    /* 14px en rem */
+  font-weight: 500;
+  padding: 0 4%;          /* padding horizontal proporcional */
+  text-transform: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.35rem; /* 4px en rem */
+}
+
+
+
+.boton-Excel {
+  background-color: #005304 !important;
+  color: white !important;
+}
+
+.boton-PDF {
+  background-color: #800404 !important;
+  color: white !important;
+}
+
+
+

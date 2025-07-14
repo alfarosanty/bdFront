@@ -1,0 +1,131 @@
+<div class="container-principal">
+  <!-- Menú lateral -->
+  <nav class="menu-lateral">
+    <button mat-icon-button [matMenuTriggerFor]="menu" aria-label="Seleccionar filtro" class="menu-button">
+      <mat-icon>more_vert</mat-icon>
+    </button>
+  
+    <span class="menu-label">
+      📊 Estadística: <strong>{{ filtroSeleccionadoTexto }}</strong>
+    </span>
+    
+  
+    <mat-menu #menu="matMenu">
+      <button mat-menu-item
+              *ngFor="let item of menuListItems"
+              (click)="setFiltroSeleccionado(item.id)"
+              class="menu-item">
+        <mat-icon>{{ item.icon }}</mat-icon>
+        <span>{{ item.label }}</span>
+      </button>
+    </mat-menu>
+  </nav>
+  
+
+  <!-- Contenido filtros -->
+  <section class="contenido-filtros">
+    <ng-container *ngIf="templateSeleccionado; else sinFiltro">
+      <ng-container *ngTemplateOutlet="templateSeleccionado"></ng-container>
+    </ng-container>
+
+    <ng-template #filtro1Tpl>
+      <div class="filtro filtro1">
+        <form [formGroup]="range">
+          <mat-form-field appearance="outline">
+            <mat-label>Seleccione rango de fechas</mat-label>
+            <mat-date-range-input [rangePicker]="picker">
+              <input matStartDate formControlName="fechaInicio" placeholder="Desde">
+              <input matEndDate formControlName="fechaFin" placeholder="Hasta">
+            </mat-date-range-input>
+            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-date-range-picker #picker></mat-date-range-picker>
+    
+            <mat-error *ngIf="range.controls.fechaInicio.hasError('matStartDateInvalid')">
+              Fecha de inicio inválida
+            </mat-error>
+            <mat-error *ngIf="range.controls.fechaFin.hasError('matEndDateInvalid')">
+              Fecha de fin inválida
+            </mat-error>
+          </mat-form-field>
+        </form>
+
+        <h3  style="text-align: center;">Grilla de Información</h3>
+
+    <table mat-table [dataSource]="dataSourceCodigo" matSort (matSortChange)="announceSortChange($event)"
+       class="mat-elevation-z8">
+
+      <!-- Name Column -->
+      <ng-container matColumnDef="Cliente">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by name"> Nombre </th>
+        <td mat-cell *matCellDef="let element"> 
+          {{element.cliente.razonSocial}} 
+        </td>
+      </ng-container>
+
+      <!-- Dinero Column -->
+      <ng-container matColumnDef="Monto">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by monto"> Monto </th>
+        <td mat-cell *matCellDef="let element">
+          $ {{ formatearMonto(element.dinero) }}
+        </td>
+        
+      </ng-container>
+
+      <!-- cantidad Column -->
+      <ng-container matColumnDef="Cantidad">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Sort by cantidad"> Cantidad </th>
+        <td mat-cell *matCellDef="let element"> 
+          {{element.cantidadArticulos}} 
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedFacturacionXClienteColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedFacturacionXClienteColumns;"></tr>
+    </table>
+
+
+<div class="botones-acciones">
+  <button mat-raised-button color="primary" class="btn-buscar boton-busqueda-filtrado" (click)="buscarData()">Buscar</button>
+  <button mat-raised-button class="btn-buscar boton-Excel">Generar Excel</button>
+  <button mat-raised-button class="btn-buscar boton-PDF">Generar PDF</button>
+</div>
+
+  </div>
+    </ng-template>
+    
+    <ng-template #filtro2Tpl>
+      <div class="filtro filtro2">
+        <form [formGroup]="range">
+          <mat-form-field appearance="outline">
+            <mat-label>Seleccione rango de fechas</mat-label>
+            <mat-date-range-input [rangePicker]="picker">
+              <input matStartDate formControlName="fechaInicio" placeholder="Desde">
+              <input matEndDate formControlName="fechaFin" placeholder="Hasta">
+            </mat-date-range-input>
+            <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+            <mat-date-range-picker #picker></mat-date-range-picker>
+    
+            <mat-error *ngIf="range.controls.fechaInicio.hasError('matStartDateInvalid')">
+              Fecha de inicio inválida
+            </mat-error>
+            <mat-error *ngIf="range.controls.fechaFin.hasError('matEndDateInvalid')">
+              Fecha de fin inválida
+            </mat-error>
+          </mat-form-field>
+        </form>
+        <button mat-raised-button color="primary" class="btn-buscar boton-busqueda-filtrado" (click)="buscarData()">Buscar</button>
+
+      </div>
+    </ng-template>    
+  
+    <ng-template #sinFiltro>
+      <div class="filtro-default mat-elevation-z3">
+        <mat-icon>help_outline</mat-icon>
+        <h2 class="filtro-titulo">Sin filtro seleccionado</h2>
+        <p class="filtro-texto">Por favor, seleccioná una opción desde el menú lateral para comenzar.</p>
+      </div>
+    </ng-template>
+    
+  </section>
+  
+</div>

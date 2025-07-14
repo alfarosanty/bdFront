@@ -307,7 +307,7 @@ mostrarColoresDisponibles(articulo : Articulo) : string {
       this.inputArticulos.nativeElement.select();
     });
   }
-      
+
 
   getCantidadTotal(presupuestoArticulos: PresupuestoArticulo[]): number {
     return (presupuestoArticulos

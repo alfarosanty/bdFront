@@ -13,6 +13,7 @@ import { RevisionPedidosProduccionComponent } from './components/revision-pedido
 import { SeparacionProductosComponent } from './components/separacion-productos/separacion-productos.component';
 import { PresentacionComponent } from './components/presentacion/presentacion.component';
 import { ArticuloConfiguracionComponent } from './components/articulo-configuracion/articulo-configuracion.component';
+import { EstadisticasComponent } from './components/estadisticas/estadisticas.component';
 
 
 const routes: Routes = [
@@ -31,6 +32,7 @@ const routes: Routes = [
   { path:  'revisionPedidoProduccion', component: RevisionPedidosProduccionComponent},
   { path:  'seleccionarPresupuesto/:id', component: SeparacionProductosComponent},
   { path:  'configuracionArticulo', component: ArticuloConfiguracionComponent},
+  { path:  'estadisticas', component: EstadisticasComponent},
 
 
 

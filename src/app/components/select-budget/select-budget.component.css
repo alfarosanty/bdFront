@@ -75,7 +75,7 @@
   .boton-container {
     display: flex; /* Usa Flexbox para alinear los botones */
     justify-content: center; /* Centra los botones horizontalmente */
-    gap: 650px; /* Espacio entre los botones */
+    gap: 1050px; /* Espacio entre los botones */
     margin-top: 20px; /* Espacio superior */
   }
   

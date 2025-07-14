@@ -24,6 +24,8 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MAT_DATE_LOCALE } from '@angular/material/core';
 import {MatDialogModule} from '@angular/material/dialog';
+import {MatMenuModule} from '@angular/material/menu';
+
 
 
 
@@ -45,6 +47,8 @@ import { EditarGenericoDialogFacturacionComponent, FacturacionComponent } from '
 import { SelectBudgetComponent } from './components/select-budget/select-budget.component';
 import { ArticuloConfiguracionComponent } from './components/articulo-configuracion/articulo-configuracion.component';
 import { RevisionFacturaComponent } from './components/revision-factura/revision-factura.component';
+import { EstadisticasComponent } from './components/estadisticas/estadisticas.component';
+import { MatSortModule } from '@angular/material/sort';
 
 
 
@@ -68,6 +72,7 @@ import { RevisionFacturaComponent } from './components/revision-factura/revision
     PresentacionComponent,
     ArticuloConfiguracionComponent,
     RevisionFacturaComponent,
+    EstadisticasComponent,
   ],
   imports: [
     MatSelectModule,
@@ -90,6 +95,11 @@ import { RevisionFacturaComponent } from './components/revision-factura/revision
     MatNativeDateModule,
     MatDialogModule,
     DragDropModule,
+    MatIconModule,
+    MatButtonModule,
+    MatMenuModule,
+    MatSortModule,
+
   ],
   
   providers: [
