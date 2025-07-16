@@ -95,11 +95,13 @@ th.mat-sort-header-sorted {
 .boton-Excel {
   background-color: #005304 !important;
   color: white !important;
+  margin-top: 1.65%;
 }
 
 .boton-PDF {
   background-color: #800404 !important;
   color: white !important;
+  margin-top: 1.65%;
 }
 
 

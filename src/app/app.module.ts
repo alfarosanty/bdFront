@@ -25,6 +25,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MAT_DATE_LOCALE } from '@angular/material/core';
 import {MatDialogModule} from '@angular/material/dialog';
 import {MatMenuModule} from '@angular/material/menu';
+import {MatProgressBarModule} from '@angular/material/progress-bar';
 
 
 
@@ -49,6 +50,7 @@ import { ArticuloConfiguracionComponent } from './components/articulo-configurac
 import { RevisionFacturaComponent } from './components/revision-factura/revision-factura.component';
 import { EstadisticasComponent } from './components/estadisticas/estadisticas.component';
 import { MatSortModule } from '@angular/material/sort';
+import { ActualizacionPreciosComponent } from './components/actualizacion-precios/actualizacion-precios.component';
 
 
 
@@ -73,6 +75,7 @@ import { MatSortModule } from '@angular/material/sort';
     ArticuloConfiguracionComponent,
     RevisionFacturaComponent,
     EstadisticasComponent,
+    ActualizacionPreciosComponent,
   ],
   imports: [
     MatSelectModule,
@@ -99,7 +102,7 @@ import { MatSortModule } from '@angular/material/sort';
     MatButtonModule,
     MatMenuModule,
     MatSortModule,
-
+    MatProgressBarModule,
   ],
   
   providers: [

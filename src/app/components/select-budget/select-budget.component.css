@@ -1,7 +1,5 @@
-.superior-container{
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 5%;
+.superior-container {
+  margin-bottom: 5%;
 }
 
 .search-panel {
@@ -72,12 +70,19 @@
     margin-bottom: 10px; /* Espaciado entre los divs */
   }
 
-  .boton-container {
-    display: flex; /* Usa Flexbox para alinear los botones */
-    justify-content: center; /* Centra los botones horizontalmente */
-    gap: 1050px; /* Espacio entre los botones */
-    margin-top: 20px; /* Espacio superior */
-  }
+/* Este contenedor alinea los botones a los extremos */
+.boton-container {
+  display: flex;
+  justify-content: space-between; /* separa los botones */
+  align-items: center;
+  padding: 0 5%; /* margen lateral opcional */
+  margin-top: 20px;
+}
+
+/* Opcional: para que los botones tengan tamaño mínimo uniforme */
+.boton-container button {
+  min-width: 180px;
+}
   
   .boton-seleccionarPresupuesto {
     display: inline-flex; /* Asegura que los botones estén alineados horizontalmente */

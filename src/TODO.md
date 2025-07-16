@@ -46,7 +46,7 @@ Poné un nombre, ejemplo: IIS puerto 8080 → Finalizar.
 
 4) Correr el siguiente comando(FRONTEND): ng build --configuration production --output-path G:\Desa\programa\Binarios\PublicadoFront
 
-5) Crear el web.config (no te lo crea por defecto):
+5) Crear el web.config (no te lo crea por defecto) y modificarlo en la computadora receptora (no se pone el .config):
 <?xml version="1.0" encoding="utf-8"?>
 <configuration>
   <system.webServer>

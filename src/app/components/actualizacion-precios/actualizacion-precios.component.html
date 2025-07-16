@@ -1,0 +1,127 @@
+<!-- Fila de inputs -->
+<div class="fila-articulos">
+    <!-- Autocompletado -->
+    <mat-form-field class="input-mat" appearance="outline">
+      <mat-label>Seleccione un artículo...</mat-label>
+      <input type="text"
+            #inputArticulos
+            [(ngModel)]="articuloSeleccionado"
+            matInput
+            [formControl]="articuloControl"
+            [matAutocomplete]="auto"
+
+            (input)="articuloControl.setValue(articuloControl.value?.toUpperCase(), { emitEvent: false })">
+        <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption (optionSelected)="onArticuloSeleccionado($event.option.value)">
+        <mat-option *ngFor="let option of filteredArticulos | async" [value]="option">
+          {{ option }}
+        </mat-option>
+      </mat-autocomplete>
+    </mat-form-field>
+  
+    <!-- Descripción -->
+    <mat-form-field class="input-mat" appearance="outline">
+      <mat-label>Descripción</mat-label>
+      <input matInput [(ngModel)]="articuloPrecioSeleccionado.descripcion">
+    </mat-form-field>
+  
+    <!-- Precio 1 -->
+    <mat-form-field class="input-mat" appearance="outline">
+      <mat-label>Precio 1</mat-label>
+      <input matInput type="number" [(ngModel)]="articuloPrecioSeleccionado.precio1">
+    </mat-form-field>
+  
+    <!-- Precio 2 -->
+    <mat-form-field class="input-mat" appearance="outline">
+      <mat-label>Precio 2</mat-label>
+      <input matInput type="number" [(ngModel)]="articuloPrecioSeleccionado.precio2">
+    </mat-form-field>
+  
+    <!-- Precio 3 -->
+    <mat-form-field class="input-mat" appearance="outline">
+      <mat-label>Precio 3</mat-label>
+      <input matInput type="number" [(ngModel)]="articuloPrecioSeleccionado.precio3">
+    </mat-form-field>
+  </div>
+  
+
+
+<div>
+
+    <div class="excel-upload-container" (drop)="onDrop($event)" (dragover)="onDragOver($event)">
+        <input type="file" id="excelInput" (change)="onArchivoExcelSeleccionado($event)" accept=".xlsx,.xls,.csv" hidden />
+        <label for="excelInput" class="excel-drop-zone">
+          <mat-icon>cloud_upload</mat-icon>
+          <span>Soltá tu Excel acá o hacé clic para buscar</span>
+        </label>
+      
+        <mat-progress-bar *ngIf="cargandoExcel" mode="determinate" [value]="progresoCarga"></mat-progress-bar>
+        <p *ngIf="cargaCompleta" class="mensaje-carga">✔ Archivo cargado correctamente</p>
+        <p class="texto-progreso">Cargando... {{ progresoCarga }}%</p>
+      </div>
+          
+
+
+<button mat-raised-button color="primary" class="btn-buscar boton-busqueda-filtrado" (click)="actualizarArticulo(articuloPrecioSeleccionado)">Actualizar</button>
+
+
+
+    <h3  style="text-align: center;">Grilla de Información</h3>
+
+    <table mat-table [dataSource]="dataSourceCodigo" multiTemplateDataRows class="mat-elevation-z8">
+
+
+  <!-- Codigo Column -->
+  <ng-container matColumnDef="Código">
+    <th mat-header-cell *matHeaderCellDef> Código </th>
+    <td mat-cell *matCellDef="let element"> 
+      {{element.codigo}} 
+    </td>
+  </ng-container>
+
+    <!-- Descripcion Column -->
+    <ng-container matColumnDef="Descripción">
+        <th mat-header-cell *matHeaderCellDef> Descripción </th>
+        <td mat-cell *matCellDef="let element"> 
+          {{element.descripcion}} 
+        </td>
+      </ng-container>
+
+  <!-- Dinero Column -->
+  <ng-container matColumnDef="Precio 1">
+    <th mat-header-cell *matHeaderCellDef> Precio 1 </th>
+    <td mat-cell *matCellDef="let element">
+    $ {{formatearMonto(element.precio1)}}
+    </td>
+    
+  </ng-container>
+
+<!-- Dinero Column -->
+<ng-container matColumnDef="Precio 2">
+    <th mat-header-cell *matHeaderCellDef> Precio 2 </th>
+    <td mat-cell *matCellDef="let element">
+    $ {{formatearMonto(element.precio2)}}
+    </td>
+        
+  </ng-container>
+
+    <!-- Dinero Column -->
+  <ng-container matColumnDef="Precio 3">
+    <th mat-header-cell *matHeaderCellDef> Precio 3 </th>
+    <td mat-cell *matCellDef="let element">
+    $ {{formatearMonto(element.precio3)}}
+    </td>
+    
+  </ng-container>
+
+  <tr mat-header-row *matHeaderRowDef="displayedArticuloPrecioColumns"></tr>
+  <tr mat-row *matRowDef="let row; columns: displayedArticuloPrecioColumns;"></tr>
+</table>
+
+
+<div class="botones-acciones">
+<!-- <button mat-raised-button class="btn-buscar boton-PDF" (click)="generarPDF()">Generar PDF</button>
+<button mat-raised-button class="btn-buscar boton-Excel" (click)="generarExcel()">Generar Excel</button>
+-->
+</div>
+
+</div>

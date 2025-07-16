@@ -290,6 +290,10 @@ listarClientes(): void {
   
   
   agregarArticulo() {
+
+    if(this.cantProducto == '' || this.cantProducto == undefined){
+      return
+    }
     if (this.articulos) {
       this.currentArticulo = this.articulos[this.articuloColorIndex!];
       this.articulos = this.articulos.filter(articulo => articulo.id !== this.currentArticulo?.id);
@@ -420,6 +424,7 @@ listarClientes(): void {
           }
         }
       }
+      this.mostrarVariedadColores()
     }
     
 

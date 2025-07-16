@@ -86,13 +86,13 @@
 
 <div class="botones-acciones">
   <button mat-raised-button color="primary" class="btn-buscar boton-busqueda-filtrado" (click)="buscarData()">Buscar</button>
-  <button mat-raised-button class="btn-buscar boton-Excel">Generar Excel</button>
-  <button mat-raised-button class="btn-buscar boton-PDF">Generar PDF</button>
+  <button mat-raised-button class="btn-buscar boton-PDF" (click)="generarPDF()">Generar PDF</button>
+  <button mat-raised-button class="btn-buscar boton-Excel" (click)="generarExcel()">Generar Excel</button>
 </div>
 
   </div>
     </ng-template>
-    
+<!--    
     <ng-template #filtro2Tpl>
       <div class="filtro filtro2">
         <form [formGroup]="range">
@@ -117,9 +117,9 @@
 
       </div>
     </ng-template>    
-  
+  -->
     <ng-template #sinFiltro>
-      <div class="filtro-default mat-elevation-z3">
+      <div class="filtro-default mat-elevation-z3" >
         <mat-icon>help_outline</mat-icon>
         <h2 class="filtro-titulo">Sin filtro seleccionado</h2>
         <p class="filtro-texto">Por favor, seleccioná una opción desde el menú lateral para comenzar.</p>

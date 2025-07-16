@@ -56,6 +56,16 @@
       <ng-container *ngIf="column === 'Articulo'">{{ element.codigo }}</ng-container>
       <ng-container *ngIf="column === 'Cantidad'">{{ element.cantidadTotal }}</ng-container>
       <ng-container *ngIf="column === 'Descripcion'">{{ element.descripcion }}</ng-container>
+      <ng-container *ngIf="column === 'Taller'">
+        <mat-form-field appearance="outline"class="combo-taller" (click)="$event.stopPropagation()">
+          <mat-select [(value)]="element.taller" placeholder="Seleccionar taller" (selectionChange)="actualizarTallerParaCodigo(element, $event.value)">
+            <mat-option *ngFor="let taller of talleres" [value]="taller">
+              {{ taller.razonSocial }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </ng-container>
+      
     </td>
   </ng-container>
 
@@ -91,6 +101,21 @@
               <mat-checkbox [(ngModel)]="presuArt.hayStock"></mat-checkbox>
             </td>
           </ng-container>
+
+          <!-- COLUMNA TALLER -->
+          <ng-container matColumnDef="Taller">
+            <th mat-header-cell *matHeaderCellDef>Taller</th>
+            <td mat-cell *matCellDef="let presuArt">
+              <mat-form-field appearance="outline" class="combo-taller" (click)="$event.stopPropagation()">
+                <mat-select [(ngModel)]="presuArt.articulo.idFabricante" placeholder="Seleccionar taller"     (selectionChange)="actualizarTallerIndividual(presuArt, $event.value)">>
+                  <mat-option *ngFor="let taller of talleres" [value]="taller.id">
+                    {{ taller.razonSocial }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            </td>
+          </ng-container>
+          
           
 
           <!-- Filas para la tabla expandida -->

@@ -60,7 +60,7 @@ export class PedidoProduccionComponent {
 
   pedidoProduccionAAcceder ?: PedidoProduccion
   fechaPedidoProduccion?: Date;
-  estadoPedido = 3;
+  estadoPedido = 4;
   producto = '';
   codigoArticulo = '';
   cantProducto = '';
@@ -156,7 +156,7 @@ listarTalleres(): void {
     if(this.currentTaller){
      this.ordenDeProduccionService.getByTaller(this.currentTaller?.id).subscribe({
       next: (data) => {
-        this.ordenesDePedidoXTaller = data;
+        this.ordenesDePedidoXTaller = data.sort((a, b) => b.id! - a.id!);
         console.log("LAS ORDENES DE PRODUCCION DE " + this.currentTaller?.razonSocial + " SON:",this.ordenesDePedidoXTaller)
       },
       error: (e) => console.error(e)

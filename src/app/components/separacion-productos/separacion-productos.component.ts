@@ -62,7 +62,7 @@ logoBase64: String = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAADMCAYA
   currentArticulo ?: Articulo;
   currentPresupuesto ?: Presupuesto;
 
-  dataSourceCodigo = new MatTableDataSource<{ codigo: string; cantidadTotal: number; descripcion :string }>();
+  dataSourceCodigo = new MatTableDataSource<{ codigo: string; cantidadTotal: number; descripcion :string, taller: Taller }>();
   dataSourceArticulos = new MatTableDataSource<{ presuArt: PresupuestoArticulo[] }>();
 
 
@@ -76,15 +76,15 @@ logoBase64: String = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAADMCAYA
   mostrarColores = false;
   mostrarConfirmacionPDF = false;
   showBackDrop=false;
-  estadoPedido?:number
+  estadoPedido = 1
 
 
   currentIndex = -1;
   articuloColorIndex = -1;
 
 
-  columnsToDisplay = ['Articulo', 'Cantidad', 'Descripcion'];
-  articuloColumnsToDisplay = ['Articulo', 'Cantidad', 'Hay stock'];
+  columnsToDisplay = ['Articulo', 'Cantidad', 'Descripcion', 'Taller'];
+  articuloColumnsToDisplay = ['Articulo', 'Cantidad', 'Hay stock', 'Taller'];
   expandedElement: PresupuestoArticulo | undefined;
 
   //INPUT BUSQUEDA
@@ -194,11 +194,6 @@ logoBase64: String = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAADMCAYA
             },
             {
               stack: [
-                {
-                  image: this.logoBase64, // La imagen en base64
-                  fit: [200, 200], // Tamaño de la imagen
-                  alignment: 'center', // Alineación al centro
-                },
                 {
                   text: 'Loria 1140 - Lomas de Zamora',
                   style: 'caption',
@@ -382,7 +377,8 @@ actualizarMapaPresupuestoArticulo(nuevoMap: Map<string, PresupuestoArticulo[]>){
       ([codigo, presupuestosArticulos]) => ({
         codigo,
         cantidadTotal : this.cantidadTotalXCodigo(codigo),
-        descripcion : presupuestosArticulos[0].articulo?.descripcion!
+        descripcion : presupuestosArticulos[0].articulo?.descripcion!,
+        taller : this.talleres?.filter(taller=>taller.id == presupuestosArticulos[0].articulo?.idFabricante)[0]!
       })
     );
   }
@@ -390,10 +386,12 @@ actualizarMapaPresupuestoArticulo(nuevoMap: Map<string, PresupuestoArticulo[]>){
   if(this.mapaPresupuestoArticulos){
     this.dataSourceArticulos.data = Array.from(this.mapaPresupuestoArticulos.entries()).map(
       ([codigo, presupuestosArticulos]) => ({
-      presuArt : presupuestosArticulos  
+      presuArt : presupuestosArticulos
       })
     );
   }
+
+  console.log("Aca esta el dataSource",this.dataSourceCodigo)
 }
 
 cantidadTotalXCodigo(unCodigo: string): number {
@@ -424,6 +422,40 @@ actualizarArticuloSeleccionado(){
   }
 }
 
+actualizarTallerParaCodigo(element: any, nuevoTaller: Taller) {
+  const codigoArticulo = element.codigo;
+
+  if (!this.mapaPresupuestoArticulos?.has(codigoArticulo)) return;
+
+  const lista = this.mapaPresupuestoArticulos.get(codigoArticulo);
+  if (!lista) return;
+
+  lista.forEach(pa => {
+    pa.articulo!.idFabricante = Number(nuevoTaller.id);
+  });
+
+  // Si también querés actualizar el `taller` (objeto completo) para reflejarlo en pantalla:
+  element.taller = nuevoTaller;
+
+  console.log("este es el mapa actualizado", this.mapaPresupuestoArticulos)
+
+}
+
+actualizarTallerIndividual(presuArt: PresupuestoArticulo, nuevoTallerId: number) {
+  const codigo = presuArt.codigo;
+
+  if (!this.mapaPresupuestoArticulos?.has(codigo!)) return;
+
+  const lista = this.mapaPresupuestoArticulos.get(codigo!);
+  if (!lista) return;
+
+  const entrada = lista.find(pa => pa.articulo?.id === presuArt.articulo?.id);
+  if (entrada) {
+    entrada.articulo!.idFabricante = nuevoTallerId;
+  }
+
+  console.log("este es el mapa actualizado", this.mapaPresupuestoArticulos)
+}
 
 
   formatearFecha(fecha: any): string {

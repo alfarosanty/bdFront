@@ -6,6 +6,12 @@ import { MatSort, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { RespuestaEstadistica } from 'src/app/models/respuesta-estadistica.model';
 import { FacturaService } from 'src/app/services/factura.service';
+import * as pdfMake from 'pdfmake/build/pdfmake';
+import * as pdfFonts from 'pdfmake/build/vfs_fonts';
+import * as FileSaver from 'file-saver';
+import * as ExcelJS from 'exceljs';
+
+(pdfMake as any).vfs = (pdfFonts as any).vfs;
 
 @Component({
   selector: 'app-estadisticas',
@@ -19,7 +25,7 @@ export class EstadisticasComponent {
 
 
 @ViewChild('filtro1Tpl', { static: true }) filtro1Tpl!: TemplateRef<any>;
-@ViewChild('filtro2Tpl', { static: true }) filtro2Tpl!: TemplateRef<any>;
+//@ViewChild('filtro2Tpl', { static: true }) filtro2Tpl!: TemplateRef<any>;
 private _sort!: MatSort;
 
 @ViewChild(MatSort)
@@ -32,7 +38,7 @@ set sort(sort: MatSort) {
 
 menuListItems = [
   { id: 'filtro1', icon: 'monetization_on', label: 'Facturación x Cliente' },
-  { id: 'filtro2', icon: 'bar_chart', label: 'Productos vendidos' },
+//  { id: 'filtro2', icon: 'bar_chart', label: 'Productos vendidos' },
   { id: 'None', icon: 'clear', label: 'Sin filtro' }
 ];
 
@@ -55,7 +61,7 @@ ngOnInit() {
   // El mapa se puede inicializar acá si los templates ya están definidos
   this.templateMap = {
     filtro1: this.filtro1Tpl,
-    filtro2: this.filtro2Tpl
+//    filtro2: this.filtro2Tpl
   };
 }
 
@@ -112,6 +118,10 @@ setFiltroSeleccionado(id: string) {
   if (this._sort && this.dataSourceCodigo) {
     this.dataSourceCodigo.sort = this._sort;
   }
+  this.dataSourceCodigo.data = [];
+  this.range.value.fechaInicio = this.getPrimerDiaMes();
+  this.range.value.fechaFin = new Date();
+
 }
 
 
@@ -200,6 +210,150 @@ actualizarDataSource(nuevaData: RespuestaEstadistica[]) {
   } else {
     console.warn('Sort aún no está disponible al actualizar dataSource');
   }
+}
+
+generarPDF() {
+  const docDefinition: any = {
+    content: [
+      {
+        columns: [
+          {
+            width: '*',
+            stack: [
+              { text: `Resumen estadístico de facturación`, style: 'headerBold' },
+              { text: `Fecha inicial: ${this.formatearFecha(this.range.value.fechaInicio!)}`, style: 'headerBold' },
+              { text: `Fecha final: ${this.formatearFecha(this.range.value.fechaFin!)}`, style: 'headerBold' },
+              ]
+          },
+        ]
+      }
+    ],
+    styles: this.getStyles(),
+  };
+
+  const tablaBody = [
+    [
+      { text: 'Cliente', style: 'tableHeader' },
+      { text: 'Monto', style: 'tableHeader' },
+      { text: 'Cantidad', style: 'tableHeader' }
+    ]
+  ];
+
+  this.dataSourceCodigo.data.forEach((item: RespuestaEstadistica) => {
+    tablaBody.push([
+      { text: item.cliente?.razonSocial || '', style: 'tableCellString' },
+      { text: this.formatearMonto(item.dinero) || '0.00', style: 'tableCellString' },
+      { text: item.cantidadArticulos?.toString() || '0', style: 'tableCellString' }
+    ]);
+  });
+
+  docDefinition.content.push({
+    table: {
+      headerRows: 1,
+      widths: ['*', 120, 105],
+      body: tablaBody
+    },
+    layout: 'lightHorizontalLines',
+    style: 'table'
+  });
+
+  // Generar el PDF
+  pdfMake.createPdf(docDefinition).download(`Estadisticas-por-cliente-${this.formatearFecha(new Date())}.pdf`);
+}
+
+getStyles() {
+return {
+headerBold: {
+  fontSize: 13,
+  bold: true,
+  margin: [0, 1, 0, 1]
+},
+caption: {
+  fontSize: 10,
+  margin: [0, 1, 0, 1],
+  color: 'dark gray'
+},
+tableHeader: {
+  bold: true,
+  fontSize: 11,
+  color: 'white',
+  fillColor: '#4a4a4a',
+  alignment: 'center',
+  margin: [0, 6, 0, 6]
+},
+tableCellNumber: {
+  fontSize: 10,
+  alignment: 'center',
+  margin: [0, 5, 0, 5]
+},
+tableCellString: {
+  fontSize: 10,
+  alignment: 'center',
+  margin: [0, 5, 0, 5]
+},
+footer: {
+  fontSize: 11,
+  italics: true,
+  alignment: 'center',
+  margin: [0, 15, 0, 0]
+},
+table: {
+  margin: [0, 10, 0, 10]
+}
+};
+}
+
+generarExcel() {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('Estadísticas por Cliente');
+
+  const fechaHoy = new Date();
+  const titulo1 = worksheet.addRow([`Estadísticas por cliente - ${this.formatearFecha(fechaHoy)}`]);
+  titulo1.font = { size: 16, bold: true };
+
+  worksheet.addRow([]); // Fila vacía
+
+  // Encabezado
+  worksheet.addRow(['Cliente', 'Monto', 'Cantidad']);
+  const headerRow = worksheet.getRow(3); // Suponiendo que está en la fila 3
+
+  headerRow.eachCell((cell) => {
+    cell.font = {
+      bold: true,
+      size: 14,
+      color: { argb: 'FFFFFFFF' }
+    };
+    cell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF4A4A4A' }
+    };
+    cell.alignment = { vertical: 'middle', horizontal: 'center' };
+    cell.border = {
+      bottom: { style: 'thin' }
+    };
+  });
+
+  // Datos desde dataSourceCodigo
+  this.dataSourceCodigo.data.forEach(item => {
+    const row = worksheet.addRow([
+      item.cliente?.razonSocial || '',
+      this.formatearMonto(item.dinero) || '0.00',
+      item.cantidadArticulos?.toString() || '0'
+    ]);
+    row.font = { size: 13 };
+  });
+
+  // Ajustar anchos de columnas
+  worksheet.columns.forEach(column => {
+    column.width = 25;
+  });
+
+  // Descargar Excel
+  workbook.xlsx.writeBuffer().then((buffer) => {
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    FileSaver.saveAs(blob, `Estadisticas-por-cliente-${this.formatearFecha(fechaHoy)}.xlsx`);
+  });
 }
 
 

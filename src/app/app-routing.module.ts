@@ -14,6 +14,8 @@ import { SeparacionProductosComponent } from './components/separacion-productos/
 import { PresentacionComponent } from './components/presentacion/presentacion.component';
 import { ArticuloConfiguracionComponent } from './components/articulo-configuracion/articulo-configuracion.component';
 import { EstadisticasComponent } from './components/estadisticas/estadisticas.component';
+import { ActualizacionPreciosComponent } from './components/actualizacion-precios/actualizacion-precios.component';
+
 
 
 const routes: Routes = [
@@ -33,6 +35,8 @@ const routes: Routes = [
   { path:  'seleccionarPresupuesto/:id', component: SeparacionProductosComponent},
   { path:  'configuracionArticulo', component: ArticuloConfiguracionComponent},
   { path:  'estadisticas', component: EstadisticasComponent},
+  { path:  'actualizacionPrecios', component: ActualizacionPreciosComponent},
+
 
 
 

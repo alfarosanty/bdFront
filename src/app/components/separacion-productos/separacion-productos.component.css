@@ -372,3 +372,36 @@ select {
     font-size: 16px;
     border-radius: 8px;
   }
+
+/* MAT TABLE */
+
+.celda-contenedor {
+  display: flex;
+  align-items: center;
+  height: 50%;
+  padding: 0;
+  margin: 0;
+}
+
+.combo-taller {
+  width: 35%;
+}
+
+::ng-deep .combo-taller .mat-mdc-form-field-infix {
+  height: 10px !important;
+}
+
+::ng-deep .combo-taller .mat-mdc-select-min-line {
+  font-family: 'Arial', sans-serif; /* o la que quieras */
+  font-size: 13px;
+  color: #000000;
+}
+
+.mat-mdc-text-field-wrapper {
+  width: 120px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  box-sizing: border-box;
+}
