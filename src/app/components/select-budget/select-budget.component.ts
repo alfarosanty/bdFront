@@ -78,23 +78,32 @@ export class SelectBudgetComponent {
 
   }
 
-  buscarPresupuestosXCliente(){
-    console.log("se ejecutó el método")
-    console.log(this.clienteSeleccionado)
-    if(this.clienteSeleccionado){
-     const clienteBuscado = this.clientes?.find(cliente=> cliente.razonSocial == this.clienteSeleccionado);
-     console.log(clienteBuscado)
-     this.presupuestoService.getByCliente(clienteBuscado?.id).subscribe({
-      next: (data) => {
-        this.presupuestosXCliente = data;
-        console.log(this.presupuestosXCliente);
-        console.log(data)
-      },
-      error: (e) => console.error(e)
-
-    });
+  buscarPresupuestosXCliente() {
+    console.log("se ejecutó el método");
+    console.log(this.clienteSeleccionado);
+  
+    if (this.clienteSeleccionado) {
+      const clienteBuscado = this.clientes?.find(cliente => cliente.razonSocial == this.clienteSeleccionado);
+      console.log(clienteBuscado);
+  
+      this.presupuestoService.getByCliente(clienteBuscado?.id).subscribe({
+        next: (data) => {
+          const opcionNinguno = new Presupuesto({
+            id: 0,
+            cliente: clienteBuscado,
+            fecha: null!
+          });
+  
+          this.presupuestosXCliente = [opcionNinguno, ...data];
+          this.presupuestoSeleccionado = opcionNinguno;
+  
+          console.log(this.presupuestosXCliente);
+        },
+        error: (e) => console.error(e)
+      });
     }
   }
+  
 
   buscarPresupuestoXNumero(){
 
@@ -142,6 +151,10 @@ export class SelectBudgetComponent {
     } else {
       return '';
     }
+  }
+
+  mostrarPresupuestoSeleccionado(){
+    console.log(this.presupuestoSeleccionado)
   }
   
   }

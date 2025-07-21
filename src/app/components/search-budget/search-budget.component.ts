@@ -18,6 +18,7 @@ import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dial
 import { ArticuloPrecio } from 'src/app/models/articulo-precio.model';
 import { ViewChild, ChangeDetectorRef } from '@angular/core';
 import { MatSelect } from '@angular/material/select';
+import { ConsultaMedida } from 'src/app/models/consulta-medida.model';
 
 
 
@@ -99,6 +100,9 @@ export class SearchBudgetComponent {
   clienteSeleccionado ='';
 
   //END INPUT
+
+// LISTAS
+medidasConsultadas?: ConsultaMedida[]
  //MATTABLE DATA
 
  columnsToDisplay = ['Artículo', 'Descripcion', 'Cantidad', 'Precio Unitario', 'Precio Total', 'Descuento', 'Borrar'];
@@ -114,7 +118,7 @@ export class SearchBudgetComponent {
 ];
 
 
-  constructor(private clienteService: ClienteService, private articuloService:ArticuloService, private presupuestoService:PresupuestoService, private route : ActivatedRoute, public dialog: MatDialog, private cdr: ChangeDetectorRef) {}
+  constructor(private clienteService: ClienteService, private articuloService:ArticuloService, private presupuestoService:PresupuestoService, private route : ActivatedRoute, public dialog: MatDialog, private cdr: ChangeDetectorRef, private router: Router) {}
 
   ngOnInit(): void {
     this.listarClientes();
@@ -602,12 +606,13 @@ procesarSeleccion() {
     this.cancelarPDF();
   }
 }
-    
+
 
     generarPDF() {
     
       let docDefinition: any;
-    
+      
+      let agregadoNombrePDF = ''
       if (this.presupuestoCliente) {
         // === PDF para CLIENTE ===
         const tablaBody: any[] = [
@@ -742,6 +747,7 @@ procesarSeleccion() {
         };
     
       } else {
+        agregadoNombrePDF = '_Interno'
 
         let domicilio = '';
         let localidad = '';
@@ -778,6 +784,22 @@ procesarSeleccion() {
             { text: totalCantidad.toString(), style: 'tableCellNumber' }
           ]);
         });
+
+        const medidasConCantidades = this.medidasConsultadas!;
+
+        const medidasTablaBody = [
+          [
+            { text: 'Medida', style: 'tableHeader' },
+            { text: 'Cantidad', style: 'tableHeader' }
+          ]
+        ];
+
+        medidasConCantidades.forEach(medida => {
+          medidasTablaBody.push([
+            { text: medida.medida!, style: 'tableCellString' },
+            { text: medida.cantidad?.toString()!, style: 'tableCellNumber' }
+          ]);
+        });
     
         docDefinition = {
           content: [
@@ -791,7 +813,8 @@ procesarSeleccion() {
                     { text: `Fecha: ${this.formatearFecha(this.fechaPresupuesto)}`, style: 'headerBold' },
                     { text: `\nDirección: ${domicilio} ${localidad} ${provincia}`, style: 'caption' },
                     { text: `Teléfono: ${this.currentCliente?.telefono}`, style: 'caption' },
-                    { text: `CUIT: ${this.currentCliente?.cuit}`, style: 'caption' }                  ]
+                    { text: `CUIT: ${this.currentCliente?.cuit}`, style: 'caption' }
+                  ]
                 },
                 {
                   width: 'auto',
@@ -815,6 +838,16 @@ procesarSeleccion() {
               },
               layout: 'lightHorizontalLines',
               style: 'table'
+            },
+            { text: '\nMedidas necesarias:', style: 'headerBold' },
+            {
+              table: {
+                headerRows: 1,
+                widths: [80, 80],
+                body: medidasTablaBody
+              },
+              layout: 'lightHorizontalLines',
+              style: 'table'
             }
           ],
           styles: this.getStyles()
@@ -822,10 +855,12 @@ procesarSeleccion() {
       }
     
       // Generar el PDF
-      const nombreArchivo = `Presupuesto_${this.currentCliente?.razonSocial}_Fecha:${this.formatearFecha(this.fechaPresupuesto)}_N°${this.idPresupuestoActual}.pdf`;
+      const nombreArchivo = `Presupuesto_${this.currentCliente?.razonSocial}_Fecha:${this.formatearFecha(this.fechaPresupuesto)}_N°${this.idPresupuestoActual}` + agregadoNombrePDF + `.pdf`;
       pdfMake.createPdf(docDefinition).download(nombreArchivo);
     }
      
+
+
 
   getStyles() {
       return {
@@ -884,12 +919,172 @@ procesarSeleccion() {
       };
     }
     
+  imprimirPDFInterno() {
+    
+      let docDefinition: any;
+      
+        let domicilio = '';
+        let localidad = '';
+        let provincia = '';
+        if(this.currentCliente?.domicilio){ domicilio = this.currentCliente?.domicilio}
+        if(this.currentCliente?.localidad){ localidad = this.currentCliente?.localidad}
+        if(this.currentCliente?.provincia){ provincia = this.currentCliente?.provincia}
 
-cancelarPDF(){
-  this.showBackDrop=false;
-  return;
+        // === PDF para EMPLEADO ===
+        const tablaBody: any[] = [
+          [
+            { text: 'Código', style: 'tableHeader' },
+            { text: 'Descripcion completa', style: 'tableHeader' },
+            { text: 'Cantidad', style: 'tableHeader' }
+          ]
+        ];
+    
+        this.mapaPresupuestoArticulos?.forEach((presupuestosArticulos, clave) => {
+          const cantidades = presupuestosArticulos.map(pa => pa.cantidad || 0);
+          const totalCantidad = cantidades.reduce((acc, c) => acc + c, 0);
+          let descripcion = presupuestosArticulos[0].articulo?.descripcion || '';
+          let descripcionCompleta = presupuestosArticulos
+            .map(pa => `${pa.cantidad || 0}${pa.articulo?.color?.codigo || ''}`)
+            .join(' ');
+            
+            if(clave.startsWith("MEN")){
+              descripcion = presupuestosArticulos[0].descripcion!
+              descripcionCompleta = ''
+            }
+    
+          tablaBody.push([
+            { text: clave, style: 'tableCellString' },
+            { text: `${descripcion} ${descripcionCompleta}`, style: 'tableCellString' },
+            { text: totalCantidad.toString(), style: 'tableCellNumber' }
+          ]);
+        });
+
+        const medidasConCantidades = this.medidasConsultadas!;
+
+        const medidasTablaBody = [
+          [
+            { text: 'Medida', style: 'tableHeader' },
+            { text: 'Cantidad', style: 'tableHeader' }
+          ]
+        ];
+
+        medidasConCantidades.forEach(medida => {
+          medidasTablaBody.push([
+            { text: medida.medida!, style: 'tableCellString' },
+            { text: medida.cantidad?.toString()!, style: 'tableCellNumber' }
+          ]);
+        });
+    
+        docDefinition = {
+          content: [
+            {
+              columns: [
+                {
+                  width: '*',
+                  stack: [
+                    { text: `Presupuesto N° ${this.idPresupuestoActual}`, style: 'headerBold' },
+                    { text: `Cliente: ${this.currentCliente?.razonSocial} (${this.currentCliente?.id})`, style: 'headerBold' },
+                    { text: `Fecha: ${this.formatearFecha(this.fechaPresupuesto)}`, style: 'headerBold' },
+                    { text: `\nDirección: ${domicilio} ${localidad} ${provincia}`, style: 'caption' },
+                    { text: `Teléfono: ${this.currentCliente?.telefono}`, style: 'caption' },
+                    { text: `CUIT: ${this.currentCliente?.cuit}`, style: 'caption' }
+                  ]
+                },
+                {
+                  width: 'auto',
+                  stack: [
+                    {
+                      image: imagenBase64,
+                      fit: [120, 60],
+                      alignment: 'center',
+                    },
+                    { text: 'Loria 1140 - Lomas de Zamora', style: 'caption', alignment: 'center' },
+                    { text: 'Teléfono: 11-6958-2829', style: 'caption', alignment: 'center' }
+                  ]
+                }
+              ]
+            },
+            {
+              table: {
+                headerRows: 1,
+                widths: [95, '*', 50],
+                body: tablaBody
+              },
+              layout: 'lightHorizontalLines',
+              style: 'table'
+            },
+            { text: '\nMedidas necesarias:', style: 'headerBold' },
+            {
+              table: {
+                headerRows: 1,
+                widths: [80, 80],
+                body: medidasTablaBody
+              },
+              layout: 'lightHorizontalLines',
+              style: 'table'
+            }
+          ],
+          styles: this.getStyles()
+        };
+        
+
+    
+      // Generar el PDF
+      const ventana = window.open('', '_blank');
+      pdfMake.createPdf(docDefinition).open({}, ventana);
+    
+      setTimeout(() => {
+        ventana?.print();
+    }, 500);    
+  }
+
+  cancelarPDF() {
+    if(!this.presupuestoAAcceder){
+      window.location.reload();
+    } else 
+    {    
+      this.router.navigate(['/searchBudget']);
+    }
+  }
+
+
+consultaMedidasNecesariasEImprimir() {
+  let listaDeArticulos = Array.from(this.mapaPresupuestoArticulos!.values()).flatMap(presuArt => presuArt);
+  console.log("los articulos a preguntar", listaDeArticulos);
+  const listaDeIDSPermitidos = [1,2,3,4,5,7]
+  listaDeArticulos = listaDeArticulos.filter(presuArt=>listaDeIDSPermitidos.includes(presuArt.articulo?.medida?.id!))
+
+  this.articuloService.consultarMedidasNecesarias(listaDeArticulos).subscribe({
+    next: (response) => {
+      console.log("Respuesta del backend:", response);
+      // Acá podés guardar la respuesta, por ejemplo:
+      this.medidasConsultadas = response;
+      this.imprimirPDFInterno()
+    },
+    error: (err) => {
+      console.error("Error al consultar medidas necesarias:", err);
+    }
+  });
 }
 
+consultaMedidasNecesariasYGenerarPDF() {
+  let listaDeArticulos = Array.from(this.mapaPresupuestoArticulos!.values()).flatMap(presuArt => presuArt);
+  console.log("los articulos a preguntar", listaDeArticulos);
+  const listaDeIDSPermitidos = [1,2,3,4,5,7]
+  listaDeArticulos = listaDeArticulos.filter(presuArt=>listaDeIDSPermitidos.includes(presuArt.articulo?.medida?.id!))
+
+  this.articuloService.consultarMedidasNecesarias(listaDeArticulos).subscribe({
+    next: (response) => {
+      console.log("Respuesta del backend:", response);
+      // Acá podés guardar la respuesta, por ejemplo:
+      this.medidasConsultadas = response;
+      this.generarPDF()
+    },
+    error: (err) => {
+      console.error("Error al consultar medidas necesarias:", err);
+    }
+  });
+}
 
 
 

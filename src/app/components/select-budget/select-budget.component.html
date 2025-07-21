@@ -42,7 +42,7 @@
         <!-- Barra de presupuestos a la derecha -->
         <div class="presupuestos-bar">
           <h3>Presupuestos</h3>
-          <select [(ngModel)]="presupuestoSeleccionado">
+          <select [(ngModel)]="presupuestoSeleccionado" (change)="mostrarPresupuestoSeleccionado()"  >
             <option value="" disabled selected>Selecciona un presupuesto</option>
             <option *ngFor="let presupuesto of presupuestosXCliente" [ngValue]="presupuesto">
               {{ presupuesto.id }} - {{ getFecha(presupuesto.fecha!) }}

@@ -23,12 +23,24 @@ private _liveAnnouncer = inject(LiveAnnouncer);
 dataSourceCodigo : ArticuloPrecio[] = [];
 displayedArticuloPrecioColumns: string[] = ['Código', 'Descripción',  'Precio 1', 'Precio 2', 'Precio 3'];
 
+// FLAGS
+showBackDrop=false;
+
+
 // LISTAS
 articulosPrecio: ArticuloPrecio[]=[];
+informacionDeExcel: any[] = [];
+
+// NG MODELS
+cantidadArticulosActualizados?: number;
+cantidadArticulosCreados?: number;
 
 // MAPAS
 mapaArticulosPreciosDeBD ?: Map<string, ArticuloPrecio> = new Map()
 mapaArticulosPreciosAMostrar ?: Map<string, ArticuloPrecio> = new Map()
+mapaArticulosPreciosAActualizar ?: Map<string, ArticuloPrecio> = new Map()
+mapaArticulosPreciosACrear ?: Map<string, ArticuloPrecio> = new Map()
+
 
 //INPUT BUSQUEDA
 articuloControl = new FormControl();
@@ -104,9 +116,54 @@ onArticuloSeleccionado(articulo: string) {
 
 }
 
-actualizarArticulo(articuloPrecio: ArticuloPrecio){
+actualizarArticulos() {
+  const articulosPrecioACrear = Array.from(this.mapaArticulosPreciosACrear?.values() || []);
+  const articulosPrecioAActualizar = Array.from(this.mapaArticulosPreciosAActualizar?.values() || []);
 
+  let actualizarOk = false;
+  let crearOk = false;
+
+  if (articulosPrecioAActualizar.length > 0) {
+    this.articuloService.actualizarArticulosPrecios(articulosPrecioAActualizar).subscribe({
+      next: (res) => {
+        console.log('Artículos actualizados correctamente', res);
+        actualizarOk = true;
+        if ((articulosPrecioACrear.length === 0 || crearOk) && actualizarOk) {
+          this.showBackDrop = true;
+          this.cantidadArticulosActualizados = articulosPrecioAActualizar.length
+          setTimeout(() => location.reload(), 3000);
+        }
+      },
+      error: (err) => {
+        alert('Error al actualizar artículos: ' + err.message || err);
+        console.error('Error al actualizar artículos', err);
+      }
+    });
+  } else {
+    actualizarOk = true; // Si no hay para actualizar, consideramos OK
+  }
+
+  if (articulosPrecioACrear.length > 0) {
+    this.articuloService.crearArticulosPrecios(articulosPrecioACrear).subscribe({
+      next: (res) => {
+        console.log('Artículos creados correctamente', res);
+        crearOk = true;
+        if ((articulosPrecioAActualizar.length === 0 || actualizarOk) && crearOk) {
+          this.showBackDrop = true;
+          this.cantidadArticulosCreados = articulosPrecioACrear.length
+          setTimeout(() => location.reload(), 3000);
+        }
+      },
+      error: (err) => {
+        alert('Error al crear artículos: ' + err.message || err);
+        console.error('Error al crear artículos', err);
+      }
+    });
+  } else {
+    crearOk = true; // Si no hay para crear, consideramos OK
+  }
 }
+
 
 onArchivoExcelSeleccionado(event: Event) {
   const input = event.target as HTMLInputElement;
@@ -145,28 +202,32 @@ leerArchivoExcel(archivo: File) {
 
   reader.onload = (e: any) => {
     this.progresoCarga = 100;
-  
+
     setTimeout(() => {
       this.cargandoExcel = false;
       this.cargaCompleta = true;
-  
-      /* Procesar el archivo */
+
       const data = new Uint8Array(e.target.result);
       const workbook = XLSX.read(data, { type: 'array' });
-  
-      // Obtener la primera hoja (por ejemplo)
+
       const nombreHoja = workbook.SheetNames[0];
       const hoja = workbook.Sheets[nombreHoja];
-  
-      // Convertir hoja a JSON (array de objetos)
-      const datosExcel = XLSX.utils.sheet_to_json(hoja, { defval: '' });
-  
-      console.log('Datos del Excel:', datosExcel);
-  
-      // Ahora podés usar datosExcel para lo que necesites
+
+      const datosExcel = XLSX.utils.sheet_to_json<any>(hoja, {
+        header: ['codigo', 'descripcion', 'precio1', 'precio2', 'precio3'],
+        range: 0,
+        defval: '',
+        raw: true
+      });
+      
+      this.informacionDeExcel = datosExcel; 
+      
+      console.log('Datos del Excel LIMPIOS:', this.informacionDeExcel);
+      this.separarArticulosPreciosNuevosDeModificados()
+
+      // Ahora podés usar datosLimpios para lo que necesites
     }, 1000);
   };
-  
 
   reader.onerror = () => {
     this.cargandoExcel = false;
@@ -176,6 +237,52 @@ leerArchivoExcel(archivo: File) {
   };
 
   reader.readAsArrayBuffer(archivo);
+}
+
+
+separarArticulosPreciosNuevosDeModificados() {
+  const valorErroneo = (codigo: any): boolean => {
+    if (codigo == null) return true;
+    if (typeof codigo !== 'string') return true;
+    const codigoLimpio = codigo.trim().toUpperCase();
+    if (
+      codigoLimpio === '' ||
+      codigoLimpio === 'EMPTY' ||
+      codigoLimpio === 'N/A' ||
+      codigoLimpio === 'NA' ||
+      codigoLimpio === 'NULL' ||
+      codigoLimpio === 'UNDEFINED' ||
+      codigoLimpio === '-' ||
+      codigoLimpio === '--' ||
+      codigoLimpio === '?'
+    ) return true;
+    return false;
+  }
+  
+  this.informacionDeExcel.forEach(articulo => {
+    if (valorErroneo(articulo.codigo)) {
+      return;
+    }
+  
+    // Crear un objeto ArticuloPrecio tipado y con valores limpios
+    const articuloPrecio: ArticuloPrecio = {
+      codigo: articulo.codigo,
+      descripcion: articulo.descripcion,
+      precio1: Number(articulo.precio1) || 0,
+      precio2: Number(articulo.precio2) || 0,
+      precio3: Number(articulo.precio3) || 0,
+    };
+  
+    if (this.mapaArticulosPreciosDeBD?.has(articuloPrecio.codigo!)) {
+      this.mapaArticulosPreciosAActualizar?.set(articuloPrecio.codigo!, articuloPrecio);
+    } else {
+      this.mapaArticulosPreciosACrear?.set(articuloPrecio.codigo!, articuloPrecio);
+    }
+  });
+  
+  console.log('Articulos a actualizar',this.mapaArticulosPreciosAActualizar)
+  console.log('Articulos a crear',this.mapaArticulosPreciosACrear)
+
 }
 
 

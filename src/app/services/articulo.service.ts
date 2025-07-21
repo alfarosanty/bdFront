@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from 'src/environment/environment';
 import { ArticuloPrecio } from '../models/articulo-precio.model';
+import { PresupuestoArticulo } from '../models/presupuesto-articulo.model';
 
 const baseUrl = environment.localApiUrl+'/Articulo';
 
@@ -36,6 +37,18 @@ export class ArticuloService {
 
   crearArticulos(articulos: Articulo[]): Observable<any> {
     return this.http.post(`${baseUrl}/CrearArticulos`, articulos);
+  }
+
+  consultarMedidasNecesarias(articulos: PresupuestoArticulo[]): Observable<any> {
+    return this.http.post(`${baseUrl}/ConsultarMedidasNecesarias`, articulos);
+  }
+
+  crearArticulosPrecios(articulosPrecio: ArticuloPrecio[]): Observable<any>{
+    return this.http.post(`${baseUrl}/CrearArticulosPrecios`, articulosPrecio);
+  }
+
+  actualizarArticulosPrecios(articulosPrecio: ArticuloPrecio[]): Observable<any>{
+    return this.http.post(`${baseUrl}/ActualizarArticulosPrecios`, articulosPrecio);
   }
   
 }

@@ -314,7 +314,8 @@
 
       <div class="button-container botones-separados">
         <button mat-raised-button class="boton-opcion" color="primary" (click)="presupuestoCliente = true; generarPDF()">PDF Cliente</button>
-        <button mat-raised-button class="boton-opcion" color="accent" (click)="presupuestoCliente = false; generarPDF()">PDF Interno</button>
+        <button mat-raised-button class="boton-opcion" color="accent" (click)="presupuestoCliente = false; consultaMedidasNecesariasYGenerarPDF()">PDF Interno</button>
+        <button mat-raised-button class="boton-opcion" color="accent" (click)="presupuestoCliente = false; consultaMedidasNecesariasEImprimir()">Impresión</button>
         <button mat-raised-button class="boton-opcion" color="warn" (click)="cancelarPDF()">Finalizar</button>
       </div>
     </div>

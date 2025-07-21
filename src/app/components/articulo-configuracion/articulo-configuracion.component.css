@@ -19,6 +19,12 @@
     gap: 20px;
     width: 100%;
 }
+/* Asegurar que todos los h3 tengan mismo margen y padding */
+.seleccion-y-colores-container h3 {
+  margin: 0 0 8px 0;
+  padding: 0;
+  line-height: 1.2;
+}
 
 .color-circle {
     display: inline-block;
@@ -39,6 +45,7 @@
 .color-select {
     flex: 1;
 }
+ 
   
 button[mat-icon-button] {
     margin: 0;
@@ -125,4 +132,33 @@ tr.example-element-row:not(.example-expanded-row):active {
 tr.example-detail-row {
     height: 0;
 }
+  
+  /* Mat-form-field dentro de color-select para que tenga la misma altura que los otros */
+  .colores-container .mat-form-field {
+    height: 40px; /* o el mismo valor que usás en otros inputs */
+    min-height: 40px;
+    box-sizing: border-box;
+  }
+  
+  /* Que el contenedor flex de select + botón esté alineado en centro vertical */
+  .color-select-con-boton {
+    display: flex;
+    align-items: center; /* cambiar a center para alinear verticalmente */
+    gap: 0.5rem;
+    height: 100%;
+  }
+  
+  /* Asegurar que el mat-select crezca y ocupe altura completa */
+  .color-select {
+    flex-grow: 1;
+    height: 100%;
+  }
+  
+  /* Botón con altura igual */
+  .color-select-con-boton button {
+    height: 50px; /* para que coincida con el mat-form-field */
+    min-height: 40px;
+    padding: 0;
+  }
+
   

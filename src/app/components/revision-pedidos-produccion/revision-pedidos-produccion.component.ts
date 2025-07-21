@@ -80,7 +80,7 @@ export class RevisionPedidosProduccionComponent {
 
   toggleDetalles: { [idPedido: number]: boolean } = {};
   columnsToDisplay = ['Pedido', 'Cantidad Total', 'Cantidad Pendiente', 'Generar PDF Original', 'Generar PDF Pendientes', 'Seleccionar'];
-  articuloColumnsToDisplay = ['Articulo', 'Cantidad', 'Cantidad Pendiente'];
+  articuloColumnsToDisplay = ['Articulo', 'Descripcion' ,  'Cantidad', 'Cantidad Pendiente'];
   expandedElement: PresupuestoArticulo | undefined;
 
   mostrarConfirmacionPDF = false;
@@ -166,6 +166,7 @@ listarTalleres(): void {
         this.pedidosProduccionXTaller = data;
         this.pedidosProdXTallerFiltrados= data.sort((a, b) => new Date(a.fecha!).getTime() - new Date(b.fecha!).getTime());
         this.dataSource.data = this.pedidosProdXTallerFiltrados;
+        this.pedidosProdXTallerFiltrados.forEach(pedidoProduccion=>this.agregarClienteAMapa(pedidoProduccion))
       },
       error: (e) => console.error(e)
   
@@ -173,16 +174,18 @@ listarTalleres(): void {
     }
   }
 
-  filtroPedidosProduccion() {
-    if (this.estadoPedido) {
-      this.pedidosProdXTallerFiltrados = this.pedidosProduccionXTaller
-        .filter(pedido => pedido.idEstadoPedidoProduccion == this.estadoPedido)
-        .sort((a, b) => new Date(a.fecha!).getTime() - new Date(b.fecha!).getTime());
-        this.dataSource.data = this.pedidosProdXTallerFiltrados;
-
-
-    }
+filtroPedidosProduccion() {
+  if (this.estadoPedido) {
+    this.pedidosProdXTallerFiltrados = this.pedidosProduccionXTaller
+      .filter(pedido => pedido.idEstadoPedidoProduccion == this.estadoPedido)
+      .sort((a, b) => new Date(a.fecha!).getTime() - new Date(b.fecha!).getTime());
+  } else {
+    this.pedidosProdXTallerFiltrados = [...this.pedidosProduccionXTaller]; // sin filtrar
   }
+
+  this.dataSource.data = this.pedidosProdXTallerFiltrados;
+}
+
   
   sumatoriaCantidadTotal(pedido: PedidoProduccion): number|undefined {
     return pedido.articulos?.reduce((total, articulo) => total + articulo.cantidad!, 0);
@@ -421,14 +424,17 @@ listarTalleres(): void {
       const tablaBody = [
         [
           { text: 'Código', style: 'tableHeader' },
+          { text: 'Original', style: 'tableHeader' },
           { text: 'Pendiente', style: 'tableHeader' },
           { text: 'Descripción', style: 'tableHeader' }
         ]
       ];
   
       mapaPresuArt.forEach((presupuestosArticulos, clave) => {
-        const cantidades = presupuestosArticulos.map(pa => pa.cantidadPendiente || 0);
-        const totalCantidad = cantidades.reduce((acc, c) => acc + c, 0);
+        const cantidadesOriginales = presupuestosArticulos.map(pa => pa.cantidad || 0);
+        const cantidadesPendientes = presupuestosArticulos.map(pa => pa.cantidadPendiente || 0);
+        const totalCantidadPendiente = cantidadesPendientes.reduce((acc, c) => acc + c, 0);
+        const totalCantidadOriginal = cantidadesOriginales.reduce((acc, c) => acc + c, 0);
         const descripcion = presupuestosArticulos[0].articulo?.descripcion || '';
         const descripcionCompleta = presupuestosArticulos.map(pa =>
           `${pa.cantidadPendiente || 0}${pa.articulo?.color?.codigo ? ' ' + pa.articulo.color.codigo : ''}`
@@ -436,7 +442,8 @@ listarTalleres(): void {
   
         tablaBody.push([
           { text: clave, style: 'tableCell' },
-          { text: String(totalCantidad), style: 'tableCell' },
+          { text: String(totalCantidadOriginal), style: 'tableCell' },
+          { text: String(totalCantidadPendiente), style: 'tableCell' },
           { text: descripcion + ' ' + descripcionCompleta, style: 'tableCell' }
         ]);
       });
@@ -451,7 +458,7 @@ listarTalleres(): void {
       contenidoPDF.push({
         table: {
           headerRows: 1,
-          widths: [70, 50, '*'],
+          widths: [70, 50, 50, '*'],
           body: tablaBody
         },
         layout: 'lightHorizontalLines',
@@ -636,21 +643,25 @@ generarPDFPendientes() {
   const tablaBody = [
     [
       { text: 'Código', style: 'tableHeader' },
+      { text: 'Cantidad Original', style: 'tableHeader' },
       { text: 'Cantidad Pendiente', style: 'tableHeader' },
       { text: 'Descripción', style: 'tableHeader' }
     ]
   ];
 
   this.mapaPresupuestoArticulos?.forEach((presupuestosArticulos, clave) => {
-    const cantidades = presupuestosArticulos.map(pa => pa.cantidadPendiente);
-    const totalCantidad = cantidades.reduce((acc, c) => (acc || 0) + (c || 0), 0);
+    const cantidadesOriginales = presupuestosArticulos.map(pa => pa.cantidad);
+    const totalCantidadOriginales = cantidadesOriginales.reduce((acc, c) => (acc || 0) + (c || 0), 0);
+    const cantidadesPendientes = presupuestosArticulos.map(pa => pa.cantidadPendiente);
+    const totalCantidadPendientes = cantidadesPendientes.reduce((acc, c) => (acc || 0) + (c || 0), 0);
     const descripcion = presupuestosArticulos[0].articulo?.descripcion || '';
     const descripcionCompleta = presupuestosArticulos.map(pa =>
       `${pa.cantidadPendiente || 0}${pa.articulo?.color?.codigo ? ' ' + pa.articulo.color.codigo : ''}`
     ).join(' ');
     tablaBody.push([
       { text: clave, style: 'tableCell' },
-      { text: String(totalCantidad), style: 'tableCell' },
+      { text: String(totalCantidadOriginales), style: 'tableCell' },
+      { text: String(totalCantidadPendientes), style: 'tableCell' },
       { text: descripcion + ' ' + descripcionCompleta, style: 'tableCell' }
     ]);
   });
@@ -690,7 +701,7 @@ generarPDFPendientes() {
       {
         table: {
           headerRows: 1,
-          widths: [70, 50, '*'],
+          widths: [70, 50, 50, '*'],
           body: tablaBody
         },
         layout: 'lightHorizontalLines',
@@ -809,7 +820,7 @@ procesarMapaDeArticulos() {
   if(this.pedidoProduccionAAcceder)
   this.mapaPresuXArtParaAcceder = new Map()
   this.pedidoProduccionAAcceder?.articulos?.forEach(pedidoArt => {
-    const key = pedidoArt.articulo?.familia?.codigo + "/" + pedidoArt.articulo?.medida?.codigo;
+    const key = pedidoArt.codigo!;
 
     pedidoArt.cantidadOriginal = pedidoArt.cantidad
     pedidoArt.cantidad = pedidoArt.cantidad
@@ -852,21 +863,7 @@ actualizarMapaPresupuestoArticulo(nuevoMap: Map<string, PresupuestoArticulo[]>){
 }
 
 
-cantidadActualDepoducto():string {
-  if (this.currentArticulo) {
-    const claveMapa: string = this.currentArticulo?.familia?.codigo + "/" + this.currentArticulo.medida?.codigo;
-    
-    if (this.mapaPresupuestoArticulos?.has(claveMapa)) {
-      const pa = this.mapaPresupuestoArticulos.get(claveMapa) as PresupuestoArticulo[];
-      const articuloExistente = pa.find(a => a.articulo?.id == this.currentArticulo?.id);
-      
-      if (articuloExistente) {
-        return articuloExistente!.cantidad!.toString(); // Devuelve la cantidad actual como string para mostrarla
-      }
-    }
-  }
-  return '0'; // Devuelve '0' si no existe el artículo
-} 
+
 
 actualizarArticuloSeleccionado(){
   if (this.articulos && this.articulos.length > 0) {
@@ -875,13 +872,14 @@ actualizarArticuloSeleccionado(){
 }
 
 filtrarPedidosProduccionXRangoFechas(){
-
+console.log("DEBERÍA ESTAR FILTRANDO POR FECHAS")
 if(this.fechaInicio){
   if (this.fechaFin){
-    this.filtroPedidosProduccion()
     console.log("Fecha inicio", this.formatearFecha(this.fechaInicio), "Fecha fin", this.formatearFecha(this.fechaFin))
     const pedidosFiltradorEntreFechas = this.pedidosProdXTallerFiltrados.filter(pedidoProduccion=> this.estaEntreFechas(this.fechaInicio,this.fechaFin, pedidoProduccion.fecha )) 
-    this.dataSource.data = pedidosFiltradorEntreFechas;
+    this.dataSource = new MatTableDataSource(pedidosFiltradorEntreFechas);
+    console.log()
+    console.log(this.dataSource.data)
 
   }
 }
@@ -891,8 +889,6 @@ estaEntreFechas(fechaInicio: any, fechaFin: any, fechaEvaluar: any): boolean {
   const inicio = new Date(fechaInicio);
   const fin = new Date(fechaFin);
   const evaluar = new Date(fechaEvaluar);
-  console.log(inicio);
-  console.log(fin);
   console.log(evaluar);
   // Si alguna fecha es inválida, por seguridad devuelvo false
   if (isNaN(inicio.getTime()) || isNaN(fin.getTime()) || isNaN(evaluar.getTime())) {
@@ -953,9 +949,7 @@ aplicarIngresoAPedidosProduccion(){
   agruparArticulosPorFamiliaYMedida(mapa: Map<string, PresupuestoArticulo[]>,pedidoProduccion:PedidoProduccion): void {
     const articulos = pedidoProduccion.articulos
     for (const articulo of articulos!) {
-      const familia = articulo.articulo?.familia?.codigo || 'SIN_FAMILIA';
-      const medida = articulo.articulo?.medida?.codigo || 'SIN_MEDIDA';
-      const clave = `${familia}/${medida}`;
+      const clave = `${articulo.codigo}`;
   
       if (mapa.has(clave)) {
         const listaExistente = mapa.get(clave)!;

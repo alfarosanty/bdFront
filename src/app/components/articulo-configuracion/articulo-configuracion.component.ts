@@ -6,8 +6,12 @@ import { map, Observable, startWith } from 'rxjs';
 import { ArticuloPrecio } from 'src/app/models/articulo-precio.model';
 import { Articulo } from 'src/app/models/articulo.model';
 import { Color } from 'src/app/models/color.model';
+import { Familia } from 'src/app/models/familia.model';
+import { Medida } from 'src/app/models/medida.model';
 import { ArticuloService } from 'src/app/services/articulo.service';
 import { ColorService } from 'src/app/services/color.service';
+import { FamiliaService } from 'src/app/services/familia.service';
+import { MedidaService } from 'src/app/services/medida.service';
 
 
 @Component({
@@ -32,16 +36,24 @@ export class ArticuloConfiguracionComponent {
 //NG MODELS
 articuloSeleccionado ='';
 codigoArticulo = '';
+medidaSeleccionada =''
+familiaSeleccionada =''
 
 
+// FLAGS-NGMODELS
 articuloColorIndex: number | null = null;
 mostrarColores = false;
+mostrarMedidas = false;
+mostrarFamilias = false;
 
 //LISTAS
 articulos: Articulo[]=[];
 articulosPrecio: ArticuloPrecio[]=[];
 colores: Color[] = [];
 coloresPosibles: Color[]=[];
+familias: Familia[] = []
+medidas: Medida[] = []
+
 
 //MAPAS
 mapaArticulosACrear ?: Map<string,Articulo[]> = new Map();
@@ -65,7 +77,7 @@ dataSourceCodigo: any[] = []; // debe contener objetos con: codigo, descripcion
 
 
 
-constructor(private articuloService: ArticuloService, private cdr: ChangeDetectorRef, private colorService: ColorService){}
+constructor(private articuloService: ArticuloService, private cdr: ChangeDetectorRef, private colorService: ColorService, private medidaServie: MedidaService, private familiaService: FamiliaService){}
 
 
 ngOnInit(): void {
@@ -88,6 +100,20 @@ ngOnInit(): void {
   this.colorService.getAll().subscribe({
     next: (data) => {
       this.colores = data;
+      console.log(data)
+    }
+  })
+
+  this.medidaServie.getAll().subscribe({
+    next: (data) => {
+      this.medidas = data;
+      console.log(data)
+    }
+  })  
+
+  this.familiaService.getAll().subscribe({
+    next: (data) => {
+      this.familias = data;
       console.log(data)
     }
   })
@@ -132,7 +158,10 @@ mostrarVariedadColores() {
         
 
         // Mostrar u ocultar colores según si hay artículos disponibles
-        this.mostrarColores = this.articulos.length > 0;
+        this.mostrarColores = this.articulos.length >= 0;
+        this.mostrarMedidas = this.articulos.length == 0;
+        this.mostrarFamilias = this.articulos.length == 0;
+
 
         this.cdr.detectChanges(); // fuerza a Angular a renderizar el mat-select
 
@@ -164,26 +193,35 @@ coloresDisponibles(): void {
 
 onColorAgregar(): void {
   const colorSeleccionado = this.coloresPosibles[this.articuloColorIndex!];
+  const medidaSeleccionada = this.medidas.filter(medida=>medida.codigo = this.medidaSeleccionada.split(' ')[0])[0];
+  const familiaSeleccionada = this.familias.filter(familia=>familia.descripcion = this.familiaSeleccionada)[0];
+
 
   if (colorSeleccionado) {
     console.log("este es el color seleccionado: ", colorSeleccionado.descripcion);
+    console.log("este es la medida seleccionado: ", medidaSeleccionada);
+    console.log("este es la familia seleccionado: ", familiaSeleccionada);
+
 
     this.coloresPosibles = this.coloresPosibles.filter(
       color => color.id !== colorSeleccionado.id
     );
 
-    this.agregarArticulo(colorSeleccionado);
+    this.agregarArticulo(colorSeleccionado, medidaSeleccionada, familiaSeleccionada);
     this.articuloColorIndex = null;
   }
 }
 
 
-agregarArticulo(colorSeleccionado: Color): void {
+agregarArticulo(colorSeleccionado: Color, medidaSeleccionada: Medida, familiaSeleccionada: Familia): void {
+
+  //TODO: LOGICA PARA CREAR ARTICULO EN CASO QUE ME MANDEN FAMILIA Y MEDIDA, HAYQ UE LIMPIAR LOS DATOS
   const articuloNuevo = { ...this.articulos[0] }; // copia superficial
 
   articuloNuevo.id = undefined;
   articuloNuevo.color = colorSeleccionado;
   articuloNuevo.nuevo = true;
+  articuloNuevo.habilitado = true;
 
   console.log("articulo a crear: ", articuloNuevo);
 

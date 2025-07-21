@@ -1,59 +1,83 @@
 <div class = "general-container">
 
-    <div class="seleccion-y-colores-container">
-        <div class="seleccion-container">
-            <h3>Artículo</h3>
+  <div class="seleccion-y-colores-container">
+
+    <!-- Selector de Artículo -->
+    <div class="seleccion-container">
+      <h3>Artículo</h3>
+      <mat-form-field class="input-mat" appearance="outline">
+        <mat-label>Seleccione un artículo...</mat-label>
+        <input type="text"
+               #inputArticulos
+               [(ngModel)]="articuloSeleccionado"
+               matInput
+               [formControl]="articuloControl"
+               [matAutocomplete]="auto"
+               (keydown.enter)="mostrarVariedadColores()"
+               (input)="articuloControl.setValue(articuloControl.value.toUpperCase(), { emitEvent: false })">
+        <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption>
+          <mat-option *ngFor="let option of filteredArticulos | async" [value]="option">
+            {{ option }}
+          </mat-option>
+        </mat-autocomplete>
+      </mat-form-field>
+    </div>
+  
+<!-- Familia -->
+<ng-container *ngIf="mostrarFamilias">
+  <div class="extras-container familia-container">
+    <h3>Familia</h3>
+    <mat-form-field appearance="outline" class="input-mat">
+      <mat-label>Seleccione familia...</mat-label>
+      <mat-select [(value)]="familiaSeleccionada">
+        <mat-option *ngFor="let familia of familias" [value]="familia">
+          {{ familia.codigo }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+</ng-container>
+
+<!-- Medida -->
+<ng-container *ngIf="mostrarMedidas">
+  <div class="extras-container medida-container">
+    <h3>Medida</h3>
+    <mat-form-field appearance="outline" class="input-mat">
+      <mat-label>Seleccione medida...</mat-label>
+      <mat-select [(value)]="medidaSeleccionada">
+        <mat-option *ngFor="let medida of medidas" [value]="medida">
+          {{ medida.codigo }} ( {{ medida.descripcion }} )
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+</ng-container>
+
     
-            <!--COMBO DE PRODUCTOS CON FILTRADO-->
-            <div >
-                <mat-form-field class="input-mat" appearance="outline">
-                    <mat-label>Seleccione un artículo...</mat-label>
-                    <input type="text"
-                          #inputArticulos
-                          [(ngModel)]="articuloSeleccionado"
-                          matInput
-                          [formControl]="articuloControl"
-                          [matAutocomplete]="auto"
-                          (keydown.enter)="mostrarVariedadColores()"
-                          
-                          (input)="articuloControl.setValue(articuloControl.value.toUpperCase(), { emitEvent: false })">
-                    <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption>
-                      <mat-option *ngFor="let option of filteredArticulos | async" [value]="option">
-                        {{ option }}
-                      </mat-option>
-                    </mat-autocomplete>
-                  </mat-form-field>
-                  
     
-              </div>
-    
-        </div>
-    <!-- Este DIV aparecerá a la derecha cuando presiones Enter -->
+  
+    <!-- Selector de Color -->
     <div class="colores-container" *ngIf="mostrarColores">
       <h3>Color</h3>
-    
       <div class="color-select-con-boton">
         <mat-form-field appearance="outline" class="color-select">
-          <mat-select
-            #inputColores
-            [(value)]="articuloColorIndex"
-          >
+          <mat-label>Seleccione color...</mat-label>
+          <mat-select [(value)]="articuloColorIndex">
             <mat-option *ngFor="let color of coloresPosibles; let i = index" [value]="i">
               <span class="color-circle" [ngStyle]="{ 'background-color': color?.colorHexa }"></span>
               {{ color.descripcion }}
             </mat-option>
           </mat-select>
         </mat-form-field>
-      
-        <button mat-icon-button color="primary" (click)="onColorAgregar()" [disabled]="articuloColorIndex! < 0 || articuloColorIndex! === null">
+  
+        <button mat-icon-button color="primary" (click)="onColorAgregar()" [disabled]="articuloColorIndex! < 0">
           <mat-icon>add</mat-icon>
         </button>
       </div>
-      
-      
-   </div>
-
     </div>
+  
+  </div>
+  
 
     <div class="grilla-container">
       <h3  style="text-align: center;">Grilla de Información</h3>

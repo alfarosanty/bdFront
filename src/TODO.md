@@ -11,7 +11,8 @@ Pasos para realizar el launch
 
 ANTES DE CORRER EL COMANDO CAMBIAR TODAS LAS VARIABLES DE PUERTOS, BD, URLS, ETC.
 
-2) correr el comando: dotnet publish BlumeAPI.csproj -c Release -o "G:\Desa\programa\Binarios\PublicadoBack" (PARA EL BACKEND)
+2) correr el comando: dotnet publish BlumeAPI.csproj -c Release -o "G:\Desa\programa\Binarios\PublicadoBack" 
+(PARA EL BACKEND)
 3) configurar el IIS:
 
 1. Configurar IIS para que acepte conexiones en esa IP

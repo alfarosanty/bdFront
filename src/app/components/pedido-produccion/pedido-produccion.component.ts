@@ -557,10 +557,11 @@ getStyles() {
   };
 }
 
-cancelarPDF(){
-  this.mostrarConfirmacionPDF=false;
-  return;
+
+cancelarPDF() {
+  window.location.reload();
 }
+
 
 
 generarExcel(nombreClienteAsociado:string) {

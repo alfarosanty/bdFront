@@ -61,7 +61,7 @@
           
 
 
-<button mat-raised-button color="primary" class="btn-buscar boton-busqueda-filtrado" (click)="actualizarArticulo(articuloPrecioSeleccionado)">Actualizar</button>
+<button mat-raised-button color="primary" class="btn-buscar boton-busqueda-filtrado" (click)="actualizarArticulos()">Actualizar</button>
 
 
 
@@ -124,4 +124,24 @@
 -->
 </div>
 
+</div>
+
+<!-- Backdrop con opciones -->
+<div class="backdrop" *ngIf="showBackDrop">
+  <div class="mensaje-confirmacion animado">
+    <div>
+      <span class="icono">✅</span>
+      <span>¡Se actualizaron los precios de {{ cantidadArticulosActualizados }} artículos!</span>
+    </div>
+
+    <div>
+      <span class="icono">✅</span>
+      <span *ngIf="cantidadArticulosCreados! > 0">
+        ¡Se crearon los precios de {{ cantidadArticulosCreados }} artículos!
+      </span>
+      <span *ngIf="cantidadArticulosCreados === 0">
+        No hubo precios a crear.
+      </span>
+    </div>
+  </div>
 </div>
