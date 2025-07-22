@@ -36,8 +36,8 @@ export class ArticuloConfiguracionComponent {
 //NG MODELS
 articuloSeleccionado ='';
 codigoArticulo = '';
-medidaSeleccionada =''
-familiaSeleccionada =''
+medidaSeleccionada ?: Medida|null
+familiaSeleccionada?: Familia|null
 
 
 // FLAGS-NGMODELS
@@ -193,48 +193,84 @@ coloresDisponibles(): void {
 
 onColorAgregar(): void {
   const colorSeleccionado = this.coloresPosibles[this.articuloColorIndex!];
-  const medidaSeleccionada = this.medidas.filter(medida=>medida.codigo = this.medidaSeleccionada.split(' ')[0])[0];
-  const familiaSeleccionada = this.familias.filter(familia=>familia.descripcion = this.familiaSeleccionada)[0];
 
 
   if (colorSeleccionado) {
     console.log("este es el color seleccionado: ", colorSeleccionado.descripcion);
-    console.log("este es la medida seleccionado: ", medidaSeleccionada);
-    console.log("este es la familia seleccionado: ", familiaSeleccionada);
+    console.log("este es la medida seleccionado: ", this.medidaSeleccionada);
+    console.log("este es la familia seleccionado: ", this.familiaSeleccionada);
 
 
     this.coloresPosibles = this.coloresPosibles.filter(
       color => color.id !== colorSeleccionado.id
     );
 
-    this.agregarArticulo(colorSeleccionado, medidaSeleccionada, familiaSeleccionada);
+    this.agregarArticulo(colorSeleccionado, this.medidaSeleccionada!, this.familiaSeleccionada!);
+    this.medidaSeleccionada=null
+    this.familiaSeleccionada=null
     this.articuloColorIndex = null;
   }
 }
 
 
 agregarArticulo(colorSeleccionado: Color, medidaSeleccionada: Medida, familiaSeleccionada: Familia): void {
+  let articuloNuevo: Articulo;
 
-  //TODO: LOGICA PARA CREAR ARTICULO EN CASO QUE ME MANDEN FAMILIA Y MEDIDA, HAYQ UE LIMPIAR LOS DATOS
-  const articuloNuevo = { ...this.articulos[0] }; // copia superficial
+if (medidaSeleccionada && familiaSeleccionada) {
+  const articuloPrecioDeseado = this.articulosPrecio.find(
+    articuloPrecio => articuloPrecio.codigo + " " + articuloPrecio.descripcion === this.articuloSeleccionado
+  );
+
+  if (!articuloPrecioDeseado) {
+    console.warn("No se encontró el artículoPrecio deseado");
+    return;
+  }
+
+  articuloNuevo = {
+    codigo: articuloPrecioDeseado.codigo,
+    descripcion: articuloPrecioDeseado.descripcion,
+    color: colorSeleccionado,
+    articuloPrecio: articuloPrecioDeseado,
+    subFamilia: familiaSeleccionada,
+    medida: medidaSeleccionada,
+    idFabricante: 1,
+    nuevo: true,
+    habilitado: true
+  };
+} else {
+  if (!this.articulos || this.articulos.length === 0) {
+    console.error("No hay artículos base disponibles para copiar");
+    return;
+  }
+
+  // Copiar un artículo base y ajustarlo
+  articuloNuevo = { ...this.articulos[0] };
 
   articuloNuevo.id = undefined;
   articuloNuevo.color = colorSeleccionado;
   articuloNuevo.nuevo = true;
   articuloNuevo.habilitado = true;
+}
 
-  console.log("articulo a crear: ", articuloNuevo);
+console.log("Artículo a crear: ", articuloNuevo);
 
-  const articulosExistentes = this.mapaArticulosACrear?.get(articuloNuevo.codigo!);
-  articulosExistentes?.push(articuloNuevo)
-  this.mapaArticulosACrear?.set(articuloNuevo.codigo!, articulosExistentes!)
-  console.log("articulos a crear: ", this.mapaArticulosACrear);
-  this.actualizarDataSource()
+// Lógica para agregar al mapa
+const articulosExistentes = this.mapaArticulosACrear?.get(articuloNuevo.codigo!) || [];
+articulosExistentes.push(articuloNuevo);
+this.mapaArticulosACrear?.set(articuloNuevo.codigo!, articulosExistentes);
+
+console.log("Artículos a crear: ", this.mapaArticulosACrear);
+this.actualizarDataSource();
+
 }
 
 
 crearArticulos() {
-  this.articuloService.crearArticulos(this.mapaArticulosACrear?.get(this.articulos[0].codigo!)!).subscribe({
+
+  console.log(this.mapaArticulosACrear)
+  const articulosACrear = Array.from(this.mapaArticulosACrear?.values() || []).flat();
+
+  this.articuloService.crearArticulos(articulosACrear).subscribe({
     next: (ids: number[]) => {
       console.log('IDs generados:', ids);
       this.showBackDrop = true; // Se ejecutó correctamente el back

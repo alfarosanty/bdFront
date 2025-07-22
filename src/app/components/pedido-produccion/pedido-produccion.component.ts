@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, Inject, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map, startWith } from 'rxjs/operators'
@@ -17,6 +17,7 @@ import * as FileSaver from 'file-saver';
 import { PresupuestoService } from 'src/app/services/budget.service';
 import { ArticuloPrecio } from 'src/app/models/articulo-precio.model';
 import { MatSelect } from '@angular/material/select';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 (pdfMake as any).vfs = (pdfFonts as any).vfs;
 
@@ -63,7 +64,7 @@ export class PedidoProduccionComponent {
   estadoPedido = 4;
   producto = '';
   codigoArticulo = '';
-  cantProducto = '';
+  cantProducto?: string|null=null;
   mostrarColores = false;
   mostrarBotonGuardar = true;
 
@@ -86,7 +87,7 @@ export class PedidoProduccionComponent {
   mostrarConfirmacionPDF = false;
   generacionPDF = false;
 
-  constructor(private tallerService:TallerService, private articuloService:ArticuloService, private ordenDeProduccionService:OrdenProduccionService, private presupuestoService:PresupuestoService, private cdr: ChangeDetectorRef) {}
+  constructor(public dialog: MatDialog, private tallerService:TallerService, private articuloService:ArticuloService, private ordenDeProduccionService:OrdenProduccionService, private presupuestoService:PresupuestoService, private cdr: ChangeDetectorRef) {}
 
   ngOnInit(): void {
     this.listarTalleres();
@@ -228,6 +229,10 @@ listarTalleres(): void {
   
     agregarArticulo() {
       if (!this.articulos) return;
+
+      if(this.cantProducto == '' || this.cantProducto == undefined || Number(this.cantProducto) == 0){
+        return
+      }
         
       this.articulos = this.articulos.filter(
         articulo => articulo.id !== this.currentArticulo?.id
@@ -273,7 +278,7 @@ listarTalleres(): void {
       this.actualizarDataSource();
     
       this.articuloColorIndex = null;
-      this.cantProducto = ' ';
+      this.cantProducto = null;
           
       setTimeout(() => {
         this.inputArticulos.nativeElement.focus();
@@ -766,6 +771,86 @@ actualizarDataSource() {
   });
 }
 
+agregarComentario() {
+  // Datos iniciales para el diálogo, pueden ser vacíos o con valores por defecto
+  const dataInicial = {
+    codigo: "MEN",
+    descripcion: '',
+    precioUnitario: 0,
+    cantidad: 1,
+    // podrías agregar más campos si quieres editar color, código, etc.
+  };
+  const dialogRef = this.dialog.open(EditarGenericoDialogPedidoProduccionComponent, {
+    width: '350px',
+    data: dataInicial
+  });
+
+  dialogRef.afterClosed().subscribe(result => {
+    if(this.mapaPresupuestoArticulos?.has(dataInicial.codigo)){
+      const cantDeMensajes = Array.from(this.mapaPresupuestoArticulos.entries())
+      .filter(([codigo, lista]) => codigo.startsWith('MEN')) // Filtra las entradas cuyas claves empiezan con 'MEN'
+      .map(([codigo, lista]) => lista).length; // Mapea para quedarte solo con el array de artículos/mensajes
+
+      dataInicial.codigo = dataInicial.codigo + String((cantDeMensajes ?? 0) + 1);
+    }
+    if (result) {
+      // Construimos el Articulo
+      const nuevoArticulo = new Articulo();
+      nuevoArticulo.id = 0;
+      nuevoArticulo.codigo="GEN"
+      nuevoArticulo.descripcion="GENERICO"
+      nuevoArticulo.color = {id:37, codigo:"GN", descripcion:"GENERICO"}
+      nuevoArticulo.medida = {id:0, codigo:"GEN", descripcion:"GENERICO"}
+      nuevoArticulo.articuloPrecio={id:0, codigo:"GEN", descripcion:"GENERICO", precio1:0}
+      
+
+      // Construimos el PresupuestoArticulo que incluye el Articulo y otros campos
+      const nuevoPresupuestoArticulo = new PresupuestoArticulo();
+      nuevoPresupuestoArticulo.articulo = nuevoArticulo;
+      nuevoPresupuestoArticulo.cantidad = result.cantidad;
+      nuevoPresupuestoArticulo.cantidadActual = 0;
+      nuevoPresupuestoArticulo.precioUnitario = result.precioUnitario;
+      nuevoPresupuestoArticulo.descripcion = result.descripcion;
+      nuevoPresupuestoArticulo.codigo = dataInicial.codigo;
+      console.log(nuevoPresupuestoArticulo)
+      // agregar descuento, stock, presupuesto si hace falta
+
+      dataInicial.codigo = "MEN"
+
+      console.log(this.mapaPresupuestoArticulos)
+
+      this.guardarPresupuestoArticulo(nuevoPresupuestoArticulo);
+    }
+  });
+
+}
+
+guardarPresupuestoArticulo(pa: PresupuestoArticulo) {
+
+  this.mapaPresupuestoArticulos?.set(pa.codigo!, [pa]);
+  this.actualizarDataSource()
+
+}
 
 
+
+}
+
+@Component({
+  selector: 'app-editar-generico-dialog',
+  templateUrl: './editar-generico-dialog.component.html',
+})
+export class EditarGenericoDialogPedidoProduccionComponent {
+  constructor(
+    public dialogRef: MatDialogRef<EditarGenericoDialogPedidoProduccionComponent>,
+    @Inject(MAT_DIALOG_DATA) public data: { descripcion: string; precio: number }
+  ) {}
+
+  onNoClick(): void {
+    this.dialogRef.close();
+  }
+
+  guardar(): void {
+    this.dialogRef.close(this.data);
+  }
 }

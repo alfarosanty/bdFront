@@ -49,7 +49,7 @@ filtroSeleccionado = 'None';
 currentCliente = ''
 
 // MAT TABLE INFO
-displayedFacturacionXClienteColumns: string[] = ['Cliente', 'Monto', 'Cantidad'];
+displayedFacturacionXClienteColumns: string[] = ['Cliente', 'Monto Bruto', 'Cantidad'];
 dataSourceCodigo = new MatTableDataSource<RespuestaEstadistica>([]);
 
 
@@ -72,7 +72,7 @@ ngAfterViewInit() {
     switch (property) {
       case 'Cliente':
         return item.cliente?.razonSocial?.toLowerCase() || '';
-      case 'Monto':
+      case 'Monto Bruto':
         return item.dinero || 0;
       case 'Cantidad':
         return item.cantidadArticulos || 0;
@@ -210,6 +210,14 @@ actualizarDataSource(nuevaData: RespuestaEstadistica[]) {
   } else {
     console.warn('Sort aún no está disponible al actualizar dataSource');
   }
+}
+
+totalDinero(): number {
+  return this.dataSourceCodigo?.data.reduce((acc, el) => acc + (el.dinero || 0), 0);
+}
+
+totalCantidad(): number {
+  return this.dataSourceCodigo?.data.reduce((acc, el) => acc + (el.cantidadArticulos || 0), 0);
 }
 
 generarPDF() {

@@ -68,7 +68,7 @@ export class FacturacionComponent {
   producto = '';
   numCliente = '';
   codigoArticulo = '';
-  cantProducto = '';
+  cantProducto?: string | null = null;
   idPresupuestoACargar?: number | null
   idFacturaActual?: number | null
   descuentos: { [codigo: string]: number } = {};
@@ -311,10 +311,14 @@ puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
   
   
     agregarArticulo() {
+      if(this.cantProducto == '' || this.cantProducto == null || Number(this.cantProducto) == 0){
+        return
+      }
       if (this.articulos) {
         this.currentArticulo = this.articulos[this.articuloColorIndex!];
         this.articulos = this.articulos.filter(articulo => articulo.id !== this.currentArticulo?.id);
       }
+
       
       if (this.currentArticulo) {
         const claveMapa: string = this.currentArticulo.codigo!;
@@ -359,7 +363,7 @@ puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
         this.actualizarDataSource()
   
         this.articuloColorIndex = null;
-        this.cantProducto = ' '
+        this.cantProducto = null
         
         setTimeout(() => {
           this.inputArticulos.nativeElement.focus();
@@ -822,10 +826,10 @@ puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
     }
     
 
-cancelarPDF(){
-  this.showBackDrop=false;
-  return;
+cancelarPDF() {
+  window.location.reload();
 }
+    
 
 
 

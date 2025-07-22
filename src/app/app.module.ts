@@ -38,7 +38,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
 import { ReactiveFormsModule } from '@angular/forms';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ClientesComponent } from './components/clientes/clientes.component';
-import { PedidoProduccionComponent } from './components/pedido-produccion/pedido-produccion.component';
+import { EditarGenericoDialogPedidoProduccionComponent, PedidoProduccionComponent } from './components/pedido-produccion/pedido-produccion.component';
 import { EditarGenericoDialogIngresoComponent, IngresoComponent } from './components/ingreso/ingreso.component';
 import { RevisionPedidosProduccionComponent } from './components/revision-pedidos-produccion/revision-pedidos-produccion.component';
 import { SeparacionProductosComponent } from './components/separacion-productos/separacion-productos.component';
@@ -71,6 +71,7 @@ import { ActualizacionPreciosComponent } from './components/actualizacion-precio
     EditarGenericoDialogComponent,
     EditarGenericoDialogFacturacionComponent,
     EditarGenericoDialogIngresoComponent,
+    EditarGenericoDialogPedidoProduccionComponent,
     PresentacionComponent,
     ArticuloConfiguracionComponent,
     RevisionFacturaComponent,

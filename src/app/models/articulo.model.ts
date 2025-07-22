@@ -10,6 +10,7 @@ export class Articulo {
     color?: Color;
     articuloPrecio?:ArticuloPrecio;
     familia?:Familia;
+    subFamilia?:Familia;
     medida?:Medida;
     idFabricante?: number;
     nuevo?: Boolean;

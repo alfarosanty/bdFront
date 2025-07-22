@@ -70,7 +70,7 @@ export class IngresoComponent {
   fechaIngresoMercaderia?: Date;
   producto = '';
   codigoArticulo = '';
-  cantProducto = '';
+  cantProducto?:  string|null=null;
   mostrarColores = false;
 
 
@@ -253,6 +253,9 @@ mostrarColoresDisponibles(articulo : Articulo) : string {
   agregarArticulo() {
     if (!this.articulos) return;
   
+    if(this.cantProducto == '' || this.cantProducto == undefined || Number(this.cantProducto) == 0){
+      return
+    }
     this.currentArticulo = this.articulos[this.articuloColorIndex!];
   
     this.articulos = this.articulos.filter(
@@ -260,6 +263,7 @@ mostrarColoresDisponibles(articulo : Articulo) : string {
     );
   
     if (!this.currentArticulo) return;
+
   
     // Validar y convertir la cantidad ingresada
     const cantidadNum = Number(this.cantProducto);
@@ -300,7 +304,7 @@ mostrarColoresDisponibles(articulo : Articulo) : string {
     this.actualizarDataSource();
   
     this.articuloColorIndex = null;
-    this.cantProducto = ' ';
+    this.cantProducto = null      
   
     setTimeout(() => {
       this.inputArticulos.nativeElement.focus();

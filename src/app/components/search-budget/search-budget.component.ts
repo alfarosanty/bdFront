@@ -69,7 +69,7 @@ export class SearchBudgetComponent {
   producto = '';
   numCliente = '';
   codigoArticulo = '';
-  cantProducto = '';
+  cantProducto?: string|null = null
   descuentos: { [codigo: string]: number } = {};
   descTotal = '';
   mostrarColores = false;
@@ -295,7 +295,7 @@ listarClientes(): void {
   
   agregarArticulo() {
 
-    if(this.cantProducto == '' || this.cantProducto == undefined){
+    if(this.cantProducto == '' || this.cantProducto == undefined || Number(this.cantProducto) == 0){
       return
     }
     if (this.articulos) {
@@ -346,8 +346,7 @@ listarClientes(): void {
       this.actualizarDataSource()
 
       this.articuloColorIndex = null;
-      this.cantProducto = ' '
-      
+      this.cantProducto = null      
       setTimeout(() => {
         this.inputArticulos.nativeElement.focus();
         this.inputArticulos.nativeElement.select();
