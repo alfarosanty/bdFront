@@ -16,5 +16,7 @@ export class Articulo {
     nuevo?: Boolean;
     habilitado?: Boolean;
     stock?: number
+    cantidadEnCorte?: number;
+    cantidadEnTaller?: number;
 
 }

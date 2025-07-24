@@ -25,6 +25,7 @@ displayedArticuloPrecioColumns: string[] = ['Código', 'Descripción',  'Precio 
 
 // FLAGS
 showBackDrop=false;
+yaProcesado = false;
 
 
 // LISTAS
@@ -47,7 +48,7 @@ articuloControl = new FormControl();
 options: string[] = [];
 filteredArticulos: Observable<string[]>= new Observable<string[]>();
 articuloSeleccionado = ''
-articuloPrecioSeleccionado: ArticuloPrecio = {codigo: '',descripcion: '',precio1: 0,precio2: 0,precio3: 0};
+articuloPrecioSeleccionado: ArticuloPrecio|null = {codigo: '',descripcion: '',precio1: 0,precio2: 0,precio3: 0};
 filterValue = ''
 
 // EXCEL
@@ -108,12 +109,54 @@ actualizarMapa(mapaArticulosPrecio: Map<string, ArticuloPrecio>, articulosPrecio
   });
 }
 
-onArticuloSeleccionado(articulo: string) {
-  this.articuloSeleccionado = articulo;
-  this.articuloPrecioSeleccionado = this.articulosPrecio.filter(a => a.codigo + " " + a.descripcion === this.articuloSeleccionado)[0]!;
-  console.log('las opciones de articulos son:', this.articulosPrecio)
-  console.log("Articulos de combo", this.filteredArticulos)
 
+procesarArticuloSeleccionado(texto: string) {
+  if (this.yaProcesado) return;
+
+  this.mapaArticulosPreciosAActualizar?.clear()
+  this.mapaArticulosPreciosACrear?.clear()
+
+  this.yaProcesado = true;
+
+  if (!texto) {
+    this.articuloPrecioSeleccionado = null;
+    this.articuloSeleccionado = '';
+    this.yaProcesado = false;
+    return;
+  }
+
+  const articuloExistente = this.articulosPrecio.find(
+    a => `${a.codigo} ${a.descripcion}` === texto
+  );
+
+  if (articuloExistente) {
+    this.articuloPrecioSeleccionado = articuloExistente;
+    this.articuloSeleccionado = `${articuloExistente.codigo} ${articuloExistente.descripcion}`;
+  } else {
+    this.articuloPrecioSeleccionado = {
+      codigo: texto,
+      descripcion: 'DESCRIBA EL ARTÍCULO',
+      precio1: 0,
+      precio2: 0,
+      precio3: 0
+    };
+    this.articuloSeleccionado = texto;
+  }
+
+  if(articuloExistente){
+    this.mapaArticulosPreciosAActualizar?.set(this.articuloPrecioSeleccionado.codigo!, this.articuloPrecioSeleccionado)
+  }else{
+    this.mapaArticulosPreciosACrear?.set(this.articuloPrecioSeleccionado.codigo!,  this.articuloPrecioSeleccionado)
+  }
+
+  setTimeout(() => {
+    this.yaProcesado = false;
+  }, 10);
+}
+
+mostrarMapas(){
+  console.log("mapa de actualización", this.mapaArticulosPreciosAActualizar)
+  console.log("mapa de creación", this.mapaArticulosPreciosACrear)
 }
 
 actualizarArticulos() {

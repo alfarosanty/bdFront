@@ -50,5 +50,11 @@ export class ArticuloService {
   actualizarArticulosPrecios(articulosPrecio: ArticuloPrecio[]): Observable<any>{
     return this.http.post(`${baseUrl}/ActualizarArticulosPrecios`, articulosPrecio);
   }
+
+  getCantidadesTallerCorte(id: number): Observable<any> {
+    return this.http.get<any>(`${baseUrl}/${id}/cantidades-taller-corte`);
+  }
+  
+  
   
 }

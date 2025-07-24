@@ -5,7 +5,9 @@ import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators'
 import { ArticuloPrecio } from 'src/app/models/articulo-precio.model';
 import { Articulo } from 'src/app/models/articulo.model';
+import { PedidoProduccion } from 'src/app/models/pedido-produccion.model';
 import { ArticuloService } from 'src/app/services/articulo.service';
+import { OrdenProduccionService } from 'src/app/services/orden-produccion.service';
 
 @Component({
   selector: 'app-stock-list',
@@ -22,10 +24,14 @@ import { ArticuloService } from 'src/app/services/articulo.service';
 export class StockListComponent {
 
 articuloSeleccionado ='';
+cantidadTotalEnCorteArticulo: number = 0;
+cantidadTotalEnTallerArticulo: number = 0;
 
 //LISTAS
 articulosPrecio: ArticuloPrecio[]=[];
 articulos: Articulo[]=[];
+pedidosProduccion: PedidoProduccion[]=[]
+cantidadesCorteTallerArticulo: {articulo:Articulo, cantidadEnCorte:number, cantidadEnTaller:number}[]=[]
 
 //MAPAS
 mapaArticulos ?: Map<string,Articulo[]> = new Map();
@@ -42,8 +48,8 @@ filterValue ='';
 
 
 //MAT COMPONENTS
-columnsToDisplay = ['Artículo', 'Descripcion', 'Stock'];
-articuloColumnsToDisplay = ['Artículo', 'Stock'];
+columnsToDisplay = ['Artículo', 'Descripcion', 'En corte', 'En taller', 'Stock'];
+articuloColumnsToDisplay = ['Artículo', 'En corte', 'En taller', 'Stock'];
 expandedElement: any | null;
 dataSourceCodigo: any[] = []; // debe contener objetos con: codigo, descripcion
 
@@ -66,6 +72,8 @@ ngOnInit(): void {
     },
     error: (e) => console.error(e)
   });
+
+
 
 
   this.filteredArticulos = this.articuloControl.valueChanges.pipe(startWith(''),map(value => this._filterArticulos(String(value))));
@@ -100,6 +108,7 @@ mostrarVariedadColores() {
             return a.codigo.localeCompare(b.codigo);
           });
           this.cargarMapa(this.articulos, this.mapaArticulos!);
+          this.cargarCantidadesEnTallerYCorte(articuloPrecioDeseado?.id!)
           this.cdr.detectChanges();
         },
         error: (e) => console.error('Error al obtener artículos:', e)
@@ -118,13 +127,55 @@ mostrarVariedadColores() {
           console.log("los articulos son:", this.articulos);
           this.articulos.sort((a, b) => (b.id || 0) - (a.id || 0));
           this.cargarMapa(this.articulos, this.mapaArticulos!);
+          this.cargarCantidadesEnTallerYCorte(idArticuloPrecioDeseado!)
           this.cdr.detectChanges();
         },
         error: (e) => console.error('Error al obtener artículos:', e)
       });
+
       break;
   }
-  
+
+
+}
+
+cargarCantidadesEnTallerYCorte(idArticuloPrecioDeseado: number){
+
+  this.articuloService.getCantidadesTallerCorte(idArticuloPrecioDeseado!).subscribe({
+    next: (data) => {
+      this.cantidadesCorteTallerArticulo = data
+      this.cantidadesCorteTallerArticulo.forEach(cantidadCorteTallerArticulo => {
+        
+        let key = cantidadCorteTallerArticulo.articulo.codigo
+        if(this.mapaArticulos?.has(key!)){
+          let articulos = this.mapaArticulos.get(key!);
+          if (articulos) {
+            let articulo = articulos.find(art => art.id === cantidadCorteTallerArticulo.articulo.id);
+            console.log("Articulo a agregar cantidad", articulo)
+            if (articulo) {
+
+              articulo.cantidadEnCorte = cantidadCorteTallerArticulo.cantidadEnCorte;
+              articulo.cantidadEnTaller = cantidadCorteTallerArticulo.cantidadEnTaller;
+            }
+          }
+          
+          }
+
+      });
+
+      this.cantidadTotalEnCorteArticulo = this.cantidadesCorteTallerArticulo
+      .map(c => c.cantidadEnCorte)
+      .reduce((acc, val) => acc + val, 0);
+    
+    this.cantidadTotalEnTallerArticulo = this.cantidadesCorteTallerArticulo
+      .map(c => c.cantidadEnTaller)
+      .reduce((acc, val) => acc + val, 0);
+      console.log(data)
+      this.actualizarDataSource()
+
+    },
+    error: (e) => console.error(e)
+  });
 }
 
 
@@ -164,12 +215,16 @@ actualizarDataSource() {
     return {
       codigo,
       descripcion: articulos[0]?.descripcion,
+      enCorte: this.cantidadTotalEnCorteArticulo,
+      enTaller: this.cantidadTotalEnTallerArticulo,
       stock: this.calcularStock(codigo,this.mapaArticulos!)
     };
   });
 }
 
+
 getArticulosParaArticulo(codigo: string) {
+  console.log("los articulos a desplegar son:",this.mapaArticulos?.get(codigo) || [])
   return this.mapaArticulos?.get(codigo) || [];
 }
 

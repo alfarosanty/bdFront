@@ -654,6 +654,7 @@ cargarDetallesPedidoProduccion(id: Number) {
       console.log("El pedido produccion cargado es: ", this.pedidoProduccionAAcceder);
       this.fechaPedidoProduccion=this.pedidoProduccionAAcceder.fecha
       this.currentTaller = this.pedidoProduccionAAcceder?.taller;
+      this.estadoPedido = this.pedidoProduccionAAcceder.idEstadoPedidoProduccion!
       console.log("Se cargó al taller que se buscó acceder ", this.currentTaller);
 
       // Llamar a procesarMapaDeArticulos cuando los datos se hayan cargado

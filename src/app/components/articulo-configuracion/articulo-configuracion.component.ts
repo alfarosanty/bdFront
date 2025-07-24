@@ -107,13 +107,13 @@ ngOnInit(): void {
   this.medidaServie.getAll().subscribe({
     next: (data) => {
       this.medidas = data;
-      console.log(data)
+      console.log(this.medidas);
     }
-  })  
+  })
 
   this.familiaService.getAll().subscribe({
     next: (data) => {
-      this.familias = data;
+      this.familias = data.sort((a, b) => a.codigo?.localeCompare(b.codigo!) || 0);
       console.log(data)
     }
   })

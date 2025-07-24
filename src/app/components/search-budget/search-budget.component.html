@@ -53,11 +53,15 @@
     <h3>Datos del Comprobante</h3>
 
     <div class="datos-comprobante">
-        <div class="lista-group">
-            <label>Precio Lista:</label>
-            <input type="radio" name="lista" id="lista1"> <label for="lista1">Lista1</label>
-            <input type="radio" name="lista" id="lista2"> <label for="lista2">Lista2</label>
-        </div>
+      <div class="lista-group">
+        <label>Precio Lista:</label>
+        <input type="radio" name="lista" id="lista1" [(ngModel)]="listaSeleccionada" [value]="'lista1'">
+        <label for="lista1">Lista1</label>
+      
+        <input type="radio" name="lista" id="lista2" [(ngModel)]="listaSeleccionada" [value]="'lista2'">
+        <label for="lista2">Lista2</label>
+      </div>
+      
 
         <div>
           <mat-form-field class="margen-horizontal">

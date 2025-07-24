@@ -53,6 +53,16 @@
             <td mat-cell *matCellDef="let element">{{ element.descripcion }}</td>
             </ng-container>
 
+        <ng-container matColumnDef="En corte">
+           <th mat-header-cell *matHeaderCellDef>En corte</th>
+           <td mat-cell *matCellDef="let element"> {{ element.enCorte }} </td>
+          </ng-container>
+
+          <ng-container matColumnDef="En taller">
+            <th mat-header-cell *matHeaderCellDef>En taller</th>
+            <td mat-cell *matCellDef="let element"> {{ element.enTaller }} </td>
+            </ng-container>
+
           <ng-container matColumnDef="Stock">
             <th mat-header-cell *matHeaderCellDef>Stock</th>
             <td mat-cell *matCellDef="let element">{{ element.stock }}</td>
@@ -78,13 +88,29 @@
                     </td>
                   </ng-container>
 
+                  <!-- EN CORTE -->
+                  <ng-container matColumnDef="En corte">
+                    <th mat-header-cell *matHeaderCellDef>En corte</th>
+                    <td mat-cell *matCellDef="let articulo">
+                      {{ articulo?.cantidadEnCorte}}
+                    </td>
+                  </ng-container>
+                  
+                  <!-- EN TALLER -->
+                  <ng-container matColumnDef="En taller">
+                    <th mat-header-cell *matHeaderCellDef>En taller</th>
+                    <td mat-cell *matCellDef="let articulo">
+                      {{ articulo?.cantidadEnTaller}}
+                    </td>
+                  </ng-container> 
+
                   <!-- STOCK -->
                   <ng-container matColumnDef="Stock">
                     <th mat-header-cell *matHeaderCellDef>Stock</th>
                     <td mat-cell *matCellDef="let articulo">
                       {{ articulo?.stock}}
                     </td>
-                  </ng-container>                    
+                  </ng-container> 
         
                   <tr mat-header-row *matHeaderRowDef="articuloColumnsToDisplay"></tr>
                   <tr mat-row *matRowDef="let row; columns: articuloColumnsToDisplay"></tr>

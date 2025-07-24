@@ -87,6 +87,9 @@ export class SearchBudgetComponent {
   precioSubtotal?: number;
   filterValue ='';
 
+  // NG MODEL
+  listaSeleccionada = 'lista1'
+
 
   //INPUT BUSQUEDA
   articuloControl = new FormControl();
@@ -237,6 +240,10 @@ listarClientes(): void {
   }
 
   mostrarVariedadColores() {
+    if(!this.listaSeleccionada){
+      alert("Debe seleccionar una lista de precios")
+      return
+    }
     this.articulos = [];
     const articuloPrecioDeseado = this.articulosPrecio.filter(articuloPrecio=>articuloPrecio.codigo + " " + articuloPrecio.descripcion ===this.articuloSeleccionado)[0]
 
@@ -309,22 +316,32 @@ listarClientes(): void {
     
       let pa: PresupuestoArticulo[] = [];
       
+      let precioUnitarioAAsignar = 0;
+      if (this.listaSeleccionada === 'lista1') {
+        precioUnitarioAAsignar = this.currentArticulo.articuloPrecio?.precio1 ?? 0;
+      } else if (this.listaSeleccionada === 'lista2') {
+        precioUnitarioAAsignar = this.currentArticulo.articuloPrecio?.precio2 ?? 0;
+      }
+      console.log("el precio asignar de la lista seleccionada es:", precioUnitarioAAsignar, this.listaSeleccionada)
+
       if (this.mapaPresupuestoArticulos?.has(claveMapa)) {
       pa = this.mapaPresupuestoArticulos.get(claveMapa) as PresupuestoArticulo[];
           
       // Buscar si el artículo ya existe en el array
       const articuloExistente = pa.find(a => a.articulo?.id === this.currentArticulo?.id);
+
+
           
       if (articuloExistente) {
       // Sobreescribir la cantidad en lugar de sumarla
         articuloExistente.cantidad = Number(this.cantProducto);
-        articuloExistente.precioUnitario = this.currentArticulo.articuloPrecio?.precio1;
+        articuloExistente.precioUnitario = precioUnitarioAAsignar;
           } else {
             // Si no existe, agregarlo como un nuevo artículo
             pa.push({
               articulo: this.currentArticulo,
               cantidad: Number(this.cantProducto),
-              precioUnitario: this.currentArticulo.articuloPrecio?.precio1,
+              precioUnitario: precioUnitarioAAsignar,
               descripcion : this.currentArticulo.descripcion,
               hayStock: false
             });
@@ -334,7 +351,7 @@ listarClientes(): void {
           pa.push({
             articulo: this.currentArticulo,
             cantidad: Number(this.cantProducto),
-            precioUnitario: this.currentArticulo.articuloPrecio?.precio1,
+            precioUnitario: precioUnitarioAAsignar,
             descripcion : this.currentArticulo.descripcion,
             hayStock: false
           });
@@ -1135,7 +1152,29 @@ cargarDetallesPresupuesto(id: Number) {
 procesarMapaDeArticulos() {
   if(this.presupuestoAAcceder)
   this.mapaPresuXArtParaAcceder = new Map()
-console.log(this.presupuestoAAcceder?.articulos)
+  console.log(this.presupuestoAAcceder?.articulos)
+
+  /* verificar que lista de precio es */
+
+const articulosAChequear = this.presupuestoAAcceder?.articulos;
+const articulosPrecios = this.articulosPrecio;
+
+if (articulosAChequear?.every(articulo => {
+  const articuloPrecioCorrespondiente = articulosPrecios.find(ap => ap.codigo === articulo.codigo);
+  return articuloPrecioCorrespondiente?.precio1 === articulo.precioUnitario;
+})) {
+  this.listaSeleccionada = 'lista1';
+} else if (articulosAChequear?.every(articulo => {
+  const articuloPrecioCorrespondiente = articulosPrecios.find(ap => ap.codigo === articulo.codigo);
+  return articuloPrecioCorrespondiente?.precio2 === articulo.precioUnitario;
+})) {
+  this.listaSeleccionada = 'lista2';
+} else {
+  this.listaSeleccionada = '';
+}
+
+
+
   this.presupuestoAAcceder?.articulos?.forEach(presuArt => {
     console.log("PRESUART CARGANDO",presuArt)
     console.log("EL CODIGO ARTICULO ES:", presuArt.articulo?.codigo)

@@ -3,43 +3,46 @@
     <!-- Autocompletado -->
     <mat-form-field class="input-mat" appearance="outline">
       <mat-label>Seleccione un artículo...</mat-label>
-      <input type="text"
-            #inputArticulos
-            [(ngModel)]="articuloSeleccionado"
-            matInput
-            [formControl]="articuloControl"
-            [matAutocomplete]="auto"
-
-            (input)="articuloControl.setValue(articuloControl.value?.toUpperCase(), { emitEvent: false })">
-        <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption (optionSelected)="onArticuloSeleccionado($event.option.value)">
-        <mat-option *ngFor="let option of filteredArticulos | async" [value]="option">
-          {{ option }}
-        </mat-option>
-      </mat-autocomplete>
+      <input
+      [(ngModel)]="articuloSeleccionado"
+      matInput
+      [formControl]="articuloControl"
+      [matAutocomplete]="auto"
+      (keydown.enter)="procesarArticuloSeleccionado(articuloSeleccionado); mostrarMapas()"
+      (input)="articuloControl.setValue(articuloControl.value?.toUpperCase(), { emitEvent: false })">
+    
+    <mat-autocomplete #auto="matAutocomplete"
+                      autoActiveFirstOption
+                      (optionSelected)="procesarArticuloSeleccionado($event.option.value)">
+      <mat-option *ngFor="let option of filteredArticulos | async" [value]="option">
+        {{ option }}
+      </mat-option>
+    </mat-autocomplete>
+    
     </mat-form-field>
   
     <!-- Descripción -->
     <mat-form-field class="input-mat" appearance="outline">
       <mat-label>Descripción</mat-label>
-      <input matInput [(ngModel)]="articuloPrecioSeleccionado.descripcion">
+      <input matInput [(ngModel)]="articuloPrecioSeleccionado!.descripcion" (keydown.enter)="mostrarMapas()">
     </mat-form-field>
   
     <!-- Precio 1 -->
     <mat-form-field class="input-mat" appearance="outline">
       <mat-label>Precio 1</mat-label>
-      <input matInput type="number" [(ngModel)]="articuloPrecioSeleccionado.precio1">
+      <input matInput type="number" [(ngModel)]="articuloPrecioSeleccionado!.precio1" (keydown.enter)="mostrarMapas()">
     </mat-form-field>
   
     <!-- Precio 2 -->
     <mat-form-field class="input-mat" appearance="outline">
       <mat-label>Precio 2</mat-label>
-      <input matInput type="number" [(ngModel)]="articuloPrecioSeleccionado.precio2">
+      <input matInput type="number" [(ngModel)]="articuloPrecioSeleccionado!.precio2" (keydown.enter)="mostrarMapas()">
     </mat-form-field>
   
     <!-- Precio 3 -->
     <mat-form-field class="input-mat" appearance="outline">
       <mat-label>Precio 3</mat-label>
-      <input matInput type="number" [(ngModel)]="articuloPrecioSeleccionado.precio3">
+      <input matInput type="number" [(ngModel)]="articuloPrecioSeleccionado!.precio3" (keydown.enter)="mostrarMapas()">
     </mat-form-field>
   </div>
   
@@ -130,13 +133,14 @@
 <div class="backdrop" *ngIf="showBackDrop">
   <div class="mensaje-confirmacion animado">
     <div>
+      <span *ngIf="cantidadArticulosActualizados! > 0">
       <span class="icono">✅</span>
-      <span>¡Se actualizaron los precios de {{ cantidadArticulosActualizados }} artículos!</span>
+      ¡Se actualizaron los precios de {{ cantidadArticulosActualizados }} artículos!</span>
     </div>
 
     <div>
-      <span class="icono">✅</span>
       <span *ngIf="cantidadArticulosCreados! > 0">
+        <span class="icono">✅</span>
         ¡Se crearon los precios de {{ cantidadArticulosCreados }} artículos!
       </span>
       <span *ngIf="cantidadArticulosCreados === 0">
