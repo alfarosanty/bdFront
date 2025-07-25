@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { map, startWith } from 'rxjs/operators'
 import { ArticuloPrecio } from 'src/app/models/articulo-precio.model';
 import { Articulo } from 'src/app/models/articulo.model';
+import { ConsultaTallerCortePorCodigo } from 'src/app/models/consulta-medida.model';
 import { PedidoProduccion } from 'src/app/models/pedido-produccion.model';
 import { ArticuloService } from 'src/app/services/articulo.service';
 import { OrdenProduccionService } from 'src/app/services/orden-produccion.service';
@@ -24,17 +25,18 @@ import { OrdenProduccionService } from 'src/app/services/orden-produccion.servic
 export class StockListComponent {
 
 articuloSeleccionado ='';
-cantidadTotalEnCorteArticulo: number = 0;
-cantidadTotalEnTallerArticulo: number = 0;
+cantidadTotalEnCorteArticulo?: {codigo: string, cantidadEnCorte:number}[];
+cantidadTotalEnTallerArticulo?: {codigo: string, cantidadEnCorte:number}[];
 
 //LISTAS
 articulosPrecio: ArticuloPrecio[]=[];
 articulos: Articulo[]=[];
 pedidosProduccion: PedidoProduccion[]=[]
-cantidadesCorteTallerArticulo: {articulo:Articulo, cantidadEnCorte:number, cantidadEnTaller:number}[]=[]
+cantidadesCorteTallerArticulo: ConsultaTallerCortePorCodigo[]=[]
 
 //MAPAS
-mapaArticulos ?: Map<string,Articulo[]> = new Map();
+mapaArticulos ?: Map<string, Articulo[]> = new Map();
+mapaArticulosXInformacion?: Map<string, ConsultaTallerCortePorCodigo>
 
 
 
@@ -89,7 +91,6 @@ private _filterArticulos(value: string): string[] {
 }
 
 mostrarVariedadColores() {
-  console.log(this.articuloSeleccionado);
   this.articulos = [];
 
   const articuloPrecioDeseado = this.articulosPrecio.find(
@@ -101,7 +102,6 @@ mostrarVariedadColores() {
       this.articuloService.getAll().subscribe({
         next: (data) => {
           this.articulos = data;
-          console.log("los articulos son:", this.articulos);
           this.articulos.sort((a, b) => {
             if (!a.codigo) return 1;
             if (!b.codigo) return -1;
@@ -124,7 +124,6 @@ mostrarVariedadColores() {
       this.articuloService.getByArticuloPrecio(idArticuloPrecioDeseado, false).subscribe({
         next: (data) => {
           this.articulos = data;
-          console.log("los articulos son:", this.articulos);
           this.articulos.sort((a, b) => (b.id || 0) - (a.id || 0));
           this.cargarMapa(this.articulos, this.mapaArticulos!);
           this.cargarCantidadesEnTallerYCorte(idArticuloPrecioDeseado!)
@@ -141,43 +140,30 @@ mostrarVariedadColores() {
 
 cargarCantidadesEnTallerYCorte(idArticuloPrecioDeseado: number){
 
-  this.articuloService.getCantidadesTallerCorte(idArticuloPrecioDeseado!).subscribe({
+  if(idArticuloPrecioDeseado){
+    
+  }
+
+  this.articuloService.getCantidadesTallerCortePorArticulo(idArticuloPrecioDeseado!).subscribe({
     next: (data) => {
       this.cantidadesCorteTallerArticulo = data
-      this.cantidadesCorteTallerArticulo.forEach(cantidadCorteTallerArticulo => {
-        
-        let key = cantidadCorteTallerArticulo.articulo.codigo
-        if(this.mapaArticulos?.has(key!)){
-          let articulos = this.mapaArticulos.get(key!);
-          if (articulos) {
-            let articulo = articulos.find(art => art.id === cantidadCorteTallerArticulo.articulo.id);
-            console.log("Articulo a agregar cantidad", articulo)
-            if (articulo) {
-
-              articulo.cantidadEnCorte = cantidadCorteTallerArticulo.cantidadEnCorte;
-              articulo.cantidadEnTaller = cantidadCorteTallerArticulo.cantidadEnTaller;
-            }
-          }
-          
-          }
-
-      });
-
-      this.cantidadTotalEnCorteArticulo = this.cantidadesCorteTallerArticulo
-      .map(c => c.cantidadEnCorte)
-      .reduce((acc, val) => acc + val, 0);
-    
-    this.cantidadTotalEnTallerArticulo = this.cantidadesCorteTallerArticulo
-      .map(c => c.cantidadEnTaller)
-      .reduce((acc, val) => acc + val, 0);
-      console.log(data)
-      this.actualizarDataSource()
-
+      console.log("articulosDeLaBD:", this.cantidadesCorteTallerArticulo)
+      this.cantidadesCorteTallerArticulo.forEach(objetoConInfo=>{
+        this.mapaArticulosXInformacion?.clear()
+        this.mapaArticulosXInformacion?.set(objetoConInfo.codigo!, objetoConInfo)
+      })
     },
     error: (e) => console.error(e)
   });
 }
 
+calcularTotalEnCorteArticulo(){
+
+}
+
+calcularTotalEnTallerArticulo(){
+  
+}
 
 cargarMapa(articulos: Articulo[], mapaACargar: Map<string, Articulo[]>) {
   if (!articulos || articulos.length === 0) {
@@ -204,13 +190,11 @@ cargarMapa(articulos: Articulo[], mapaACargar: Map<string, Articulo[]>) {
     }
   }
 
-  console.log("este es el mapa a cargar", mapaACargar);
   this.actualizarDataSource();
 }
 
 
 actualizarDataSource() {
-  console.log("entra a actualiar", this.mapaArticulos)
   this.dataSourceCodigo = Array.from(this.mapaArticulos!.entries()).map(([codigo, articulos]) => {
     return {
       codigo,
@@ -224,7 +208,6 @@ actualizarDataSource() {
 
 
 getArticulosParaArticulo(codigo: string) {
-  console.log("los articulos a desplegar son:",this.mapaArticulos?.get(codigo) || [])
   return this.mapaArticulos?.get(codigo) || [];
 }
 

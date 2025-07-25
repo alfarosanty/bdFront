@@ -483,7 +483,7 @@ actualizarTallerIndividual(presuArt: PresupuestoArticulo, nuevoTallerId: number)
       if (articulosXTaller.length === 0) continue;
       articulosXTaller.forEach(presuArt=> {presuArt.cantidadPendiente = presuArt.cantidad; presuArt.presupuesto = this.currentPresupuesto; presuArt.codigo = presuArt.articulo?.codigo; presuArt.descripcion = presuArt.articulo?.descripcion})
   
-      const pedidoProduccion = new PedidoProduccion(this.fechaPedidoProduccion!, taller, 3, articulosXTaller, this.currentCliente!.id, this.presupuestoAAcceder?.id);
+      const pedidoProduccion = new PedidoProduccion(this.fechaPedidoProduccion!, taller, 4, articulosXTaller, this.currentCliente!.id, this.presupuestoAAcceder?.id);
   
       this.pedidosProduccionesGenerados.push(pedidoProduccion);
       // Crear un nuevo orden de pedido
@@ -520,8 +520,13 @@ actualizarTallerIndividual(presuArt: PresupuestoArticulo, nuevoTallerId: number)
   });
 
   const listaDeArticulos: PresupuestoArticulo[] = Array.from(this.mapaArticulosModificados.values()).flat();
+  console.log("ArticulosModificados:", listaDeArticulos)
+  console.log("Articulos de presupuesto a actualizar", this.presupuestoAAcceder?.articulos)
 
   const hayAlgunoConStock = listaDeArticulos.some(p => p?.hayStock === true);
+
+  console.log(hayAlgunoConStock)
+  console.log(this.presupuestoAAcceder)
 
   if (hayAlgunoConStock && this.presupuestoAAcceder) {
     this.presupuestoAAcceder.articulos = listaDeArticulos;
@@ -536,14 +541,22 @@ actualizarTallerIndividual(presuArt: PresupuestoArticulo, nuevoTallerId: number)
         this.presupuestoAAcceder.estadoPresupuesto.id = 4;
       }
     } else {
-      // Si no todos tienen stock y no hay estado seleccionado, mostrar alerta
       if (!this.estadoPedido) {
-        this.presupuestoAAcceder.estadoPresupuesto = { id: 1, descripcion: 'Creado', codigo: "CRE" }
-      } else this.presupuestoAAcceder.estadoPresupuesto!.id= this.estadoPedido
+        this.presupuestoAAcceder.estadoPresupuesto = { id: 1, descripcion: 'Creado', codigo: "CRE" };
+      } else {
+        if (!this.presupuestoAAcceder.estadoPresupuesto) {
+          this.presupuestoAAcceder.estadoPresupuesto = { id: this.estadoPedido, descripcion: '', codigo: '' };
+        } else {
+          this.presupuestoAAcceder.estadoPresupuesto.id = this.estadoPedido;
+        }
+      }
+      
     }
 
-    console.log(this.presupuestoAAcceder);
-    this.presupuestoService.actualizar(this.presupuestoAAcceder);
+    console.log("Este es el presupuesto a actualizar",this.presupuestoAAcceder);
+    this.presupuestoService.actualizar(this.presupuestoAAcceder).subscribe((id: object)=>{
+
+    });
   }
 }
 

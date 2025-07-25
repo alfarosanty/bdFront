@@ -51,8 +51,12 @@ export class ArticuloService {
     return this.http.post(`${baseUrl}/ActualizarArticulosPrecios`, articulosPrecio);
   }
 
-  getCantidadesTallerCorte(id: number): Observable<any> {
+  getCantidadesTallerCortePorArticulo(id: number): Observable<any> {
     return this.http.get<any>(`${baseUrl}/${id}/cantidades-taller-corte`);
+  }
+
+  getCantidadesTallerCorte(): Observable<any> {
+    return this.http.get<any>(`${baseUrl}/cantidades-taller-corte`);
   }
   
   
