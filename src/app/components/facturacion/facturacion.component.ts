@@ -88,7 +88,7 @@ fechaFactura?: Date;
 descTotal = '';
 tipoFactura = '';
 eximirIVA = false;
-puntoDeVenta = '';
+puntoDeVenta?: number = 0;
 puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
   
   //INPUT BUSQUEDA
@@ -836,7 +836,7 @@ cancelarPDF() {
 
 validarDatosRequeridos() : Boolean{
 
-  return Object.keys((this.currentCliente || "")).length === 0 || this.currentCliente == undefined || this.mapaPresupuestoArticulos?.size == 0 || this.tipoFactura === '' || this.puntoDeVenta === ''
+  return Object.keys((this.currentCliente || "")).length === 0 || this.currentCliente == undefined || this.mapaPresupuestoArticulos?.size == 0 || this.tipoFactura === '' || this.puntoDeVenta === undefined
 
 }
 

@@ -8,7 +8,6 @@ import { Articulo } from 'src/app/models/articulo.model';
 import { ConsultaTallerCortePorCodigo } from 'src/app/models/consulta-medida.model';
 import { PedidoProduccion } from 'src/app/models/pedido-produccion.model';
 import { ArticuloService } from 'src/app/services/articulo.service';
-import { OrdenProduccionService } from 'src/app/services/orden-produccion.service';
 
 @Component({
   selector: 'app-stock-list',
@@ -30,13 +29,12 @@ cantidadTotalEnTallerArticulo?: {codigo: string, cantidadEnCorte:number}[];
 
 //LISTAS
 articulosPrecio: ArticuloPrecio[]=[];
-articulos: Articulo[]=[];
+articulos: ConsultaTallerCortePorCodigo[]=[];
 pedidosProduccion: PedidoProduccion[]=[]
 cantidadesCorteTallerArticulo: ConsultaTallerCortePorCodigo[]=[]
 
 //MAPAS
-mapaArticulos ?: Map<string, Articulo[]> = new Map();
-mapaArticulosXInformacion?: Map<string, ConsultaTallerCortePorCodigo>
+mapaArticulosXInformacion?: Map<string, ConsultaTallerCortePorCodigo> = new Map()
 
 
 
@@ -99,7 +97,7 @@ mostrarVariedadColores() {
 
   switch (true) {
     case (this.articuloSeleccionado?.toUpperCase() === 'TODOS'):
-      this.articuloService.getAll().subscribe({
+      this.articuloService.getCantidadesTallerCorte().subscribe({
         next: (data) => {
           this.articulos = data;
           this.articulos.sort((a, b) => {
@@ -107,7 +105,7 @@ mostrarVariedadColores() {
             if (!b.codigo) return -1;
             return a.codigo.localeCompare(b.codigo);
           });
-          this.cargarMapa(this.articulos, this.mapaArticulos!);
+          this.cargarMapa(this.articulos, this.mapaArticulosXInformacion!);
           this.cargarCantidadesEnTallerYCorte(articuloPrecioDeseado?.id!)
           this.cdr.detectChanges();
         },
@@ -121,11 +119,10 @@ mostrarVariedadColores() {
   
     default:
       const idArticuloPrecioDeseado = articuloPrecioDeseado?.id;
-      this.articuloService.getByArticuloPrecio(idArticuloPrecioDeseado, false).subscribe({
+      this.articuloService.getCantidadesTallerCortePorArticuloPrecio(idArticuloPrecioDeseado!).subscribe({
         next: (data) => {
           this.articulos = data;
-          this.articulos.sort((a, b) => (b.id || 0) - (a.id || 0));
-          this.cargarMapa(this.articulos, this.mapaArticulos!);
+          this.cargarMapa(this.articulos, this.mapaArticulosXInformacion!);
           this.cargarCantidadesEnTallerYCorte(idArticuloPrecioDeseado!)
           this.cdr.detectChanges();
         },
@@ -144,28 +141,27 @@ cargarCantidadesEnTallerYCorte(idArticuloPrecioDeseado: number){
     
   }
 
-  this.articuloService.getCantidadesTallerCortePorArticulo(idArticuloPrecioDeseado!).subscribe({
+  this.articuloService.getCantidadesTallerCortePorArticuloPrecio(idArticuloPrecioDeseado!).subscribe({
     next: (data) => {
       this.cantidadesCorteTallerArticulo = data
       console.log("articulosDeLaBD:", this.cantidadesCorteTallerArticulo)
-      this.cantidadesCorteTallerArticulo.forEach(objetoConInfo=>{
-        this.mapaArticulosXInformacion?.clear()
-        this.mapaArticulosXInformacion?.set(objetoConInfo.codigo!, objetoConInfo)
-      })
+      this.cantidadesCorteTallerArticulo.forEach(objetoConInfo => {
+        const informacionExistente = this.mapaArticulosXInformacion?.get(objetoConInfo.codigo!);
+        if (informacionExistente) {
+          informacionExistente.cantidadEnCorteTotal = objetoConInfo.cantidadEnCorteTotal;
+          informacionExistente.cantidadEnTallerTotal = objetoConInfo.cantidadEnTallerTotal;
+          informacionExistente.stockTotal = objetoConInfo.stockTotal;
+          informacionExistente.consultas = objetoConInfo.consultas
+        }
+      });
+      
     },
     error: (e) => console.error(e)
   });
 }
 
-calcularTotalEnCorteArticulo(){
 
-}
-
-calcularTotalEnTallerArticulo(){
-  
-}
-
-cargarMapa(articulos: Articulo[], mapaACargar: Map<string, Articulo[]>) {
+cargarMapa(articulos: ConsultaTallerCortePorCodigo[], mapaACargar: Map<string, ConsultaTallerCortePorCodigo>) {
   if (!articulos || articulos.length === 0) {
     return;
   }
@@ -176,39 +172,37 @@ cargarMapa(articulos: Articulo[], mapaACargar: Map<string, Articulo[]>) {
     const clave = articulo.codigo;
 
     if (!clave) {
-      // Si un artículo no tiene código, podés decidir si lo ignorás o lo manejás aparte
+      // Si un artículo no tiene código, lo ignoramos
       continue;
     }
 
-    if (mapaACargar.has(clave)) {
-      const existentes = mapaACargar.get(clave);
-      if (existentes) {
-        existentes.push(articulo);
-      }
-    } else {
-      mapaACargar.set(clave, [articulo]);
-    }
+    mapaACargar.set(clave, articulo); // Reemplaza cualquier valor anterior
   }
+
+  console.log("Mapa cargado", this.mapaArticulosXInformacion);
+  console.log("Estos son los articulos precios", this.articulosPrecio);
 
   this.actualizarDataSource();
 }
 
 
+
 actualizarDataSource() {
-  this.dataSourceCodigo = Array.from(this.mapaArticulos!.entries()).map(([codigo, articulos]) => {
+  this.dataSourceCodigo = Array.from(this.mapaArticulosXInformacion!.entries()).map(([codigo, informacion]) => {
     return {
       codigo,
-      descripcion: articulos[0]?.descripcion,
-      enCorte: this.cantidadTotalEnCorteArticulo,
-      enTaller: this.cantidadTotalEnTallerArticulo,
-      stock: this.calcularStock(codigo,this.mapaArticulos!)
+      descripcion: informacion.consultas?.[0]?.articulo?.descripcion || '',
+      enCorte: informacion.cantidadEnCorteTotal,
+      enTaller: informacion.cantidadEnTallerTotal,
+      stock: informacion.stockTotal
     };
   });
 }
 
 
-getArticulosParaArticulo(codigo: string) {
-  return this.mapaArticulos?.get(codigo) || [];
+getInfoParaArticulo(codigo: string) {
+  console.log("consultas x codigo",this.mapaArticulosXInformacion?.get(codigo)?.consultas)
+  return this.mapaArticulosXInformacion?.get(codigo)?.consultas || [];
 }
 
 calcularStock(codigo: string, mapaArticulos: Map<string, Articulo[]>): number {

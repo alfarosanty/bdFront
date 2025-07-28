@@ -1,6 +1,6 @@
 import { Component, NgModule } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import jsPDF from 'jspdf';
 import { Articulo } from 'src/app/models/articulo.model';
 import { IngresoMercaderia } from 'src/app/models/ingreso-mercaderia.model';
@@ -94,7 +94,7 @@ logoBase64: String = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAADMCAYA
   articuloSeleccionado ='';
  //END INPUT
 
-  constructor(private tallerService:TallerService, private articuloService:ArticuloService, private presupuestoService:PresupuestoService, private ordenProduccionService: OrdenProduccionService , private route : ActivatedRoute) { 
+  constructor(private tallerService:TallerService, private articuloService:ArticuloService, private presupuestoService:PresupuestoService, private ordenProduccionService: OrdenProduccionService , private route : ActivatedRoute, private router: Router) { 
   }
 
   ngOnInit(): void {
@@ -116,7 +116,7 @@ logoBase64: String = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAADMCAYA
       error: (e) => console.error(e)
     });
 
-    this.fechaPedidoProduccion = new Date(new Date().toISOString().split('T')[0]);
+    this.fechaPedidoProduccion = new Date();
     this.filteredOptions = this.myControl.valueChanges.pipe(startWith(''),map(value => this._filter(String(value))));
 
     const presupuestoId = Number(this.route.snapshot.paramMap.get('id'));
@@ -306,9 +306,9 @@ logoBase64: String = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAADMCAYA
     };
   }
   
-  cancelarPDF(){
-    this.mostrarConfirmacionPDF=false;
-    return;
+  cancelarPDF() {
+    this.mostrarConfirmacionPDF = false;
+    this.router.navigate(['/selectBudget']);
   }
   
 
@@ -377,7 +377,7 @@ actualizarMapaPresupuestoArticulo(nuevoMap: Map<string, PresupuestoArticulo[]>){
       ([codigo, presupuestosArticulos]) => ({
         codigo,
         cantidadTotal : this.cantidadTotalXCodigo(codigo),
-        descripcion : presupuestosArticulos[0].articulo?.descripcion!,
+        descripcion : presupuestosArticulos[0].descripcion!,
         taller : this.talleres?.filter(taller=>taller.id == presupuestosArticulos[0].articulo?.idFabricante)[0]!
       })
     );

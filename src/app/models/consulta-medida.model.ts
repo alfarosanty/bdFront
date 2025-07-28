@@ -9,8 +9,10 @@ export class ConsultaMedida {
 export class ConsultaTallerCorte{
     
 articulo?: Articulo;
-cantidadEnCorte?: number;
-cantidadEnTaller?: number;
+cantidadEnCorteUnitario?: number;
+cantidadEnTallerUnitario?: number;
+stockUnitario?: number;
+
 
 }
 
@@ -19,6 +21,7 @@ export class ConsultaTallerCortePorCodigo{
 codigo?: string;
 cantidadEnCorteTotal?: number;
 cantidadEnTallerTotal?: number;
+stockTotal?: number
 consultas?: ConsultaTallerCorte[]
 
 }
