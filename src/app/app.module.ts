@@ -26,6 +26,7 @@ import { MAT_DATE_LOCALE } from '@angular/material/core';
 import {MatDialogModule} from '@angular/material/dialog';
 import {MatMenuModule} from '@angular/material/menu';
 import {MatProgressBarModule} from '@angular/material/progress-bar';
+import {MatSnackBarModule} from '@angular/material/snack-bar';
 
 
 
@@ -104,6 +105,7 @@ import { ActualizacionPreciosComponent } from './components/actualizacion-precio
     MatMenuModule,
     MatSortModule,
     MatProgressBarModule,
+    MatSnackBarModule,
   ],
   
   providers: [

@@ -6,7 +6,7 @@ import { environment } from 'src/environment/environment';
 import { ArticuloPrecio } from '../models/articulo-precio.model';
 import { PresupuestoArticulo } from '../models/presupuesto-articulo.model';
 
-const baseUrl = environment.localApiUrl+'/Articulo';
+const baseUrl = environment.apiUrl+'/Articulo';
 
 @Injectable({
   providedIn: 'root'

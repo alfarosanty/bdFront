@@ -2,6 +2,7 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
 import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatSelect } from '@angular/material/select';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { map, Observable, startWith } from 'rxjs';
 import { ArticuloPrecio } from 'src/app/models/articulo-precio.model';
 import { Articulo } from 'src/app/models/articulo.model';
@@ -38,6 +39,7 @@ articuloSeleccionado ='';
 codigoArticulo = '';
 medidaSeleccionada ?: Medida|null
 familiaSeleccionada?: Familia|null
+rellenoSeleccionado?: number|null
 
 
 // FLAGS-NGMODELS
@@ -45,6 +47,8 @@ articuloColorIndex: number | null = null;
 mostrarColores = false;
 mostrarMedidas = false;
 mostrarFamilias = false;
+mostrarRelleno = false;
+
 
 //LISTAS
 articulos: Articulo[]=[];
@@ -77,7 +81,7 @@ dataSourceCodigo: any[] = []; // debe contener objetos con: codigo, descripcion
 
 
 
-constructor(private articuloService: ArticuloService, private cdr: ChangeDetectorRef, private colorService: ColorService, private medidaServie: MedidaService, private familiaService: FamiliaService){}
+constructor(private articuloService: ArticuloService, private cdr: ChangeDetectorRef, private colorService: ColorService, private medidaServie: MedidaService, private familiaService: FamiliaService,   private snackBar: MatSnackBar){}
 
 
 ngOnInit(): void {
@@ -161,6 +165,8 @@ mostrarVariedadColores() {
         this.mostrarColores = this.articulos.length >= 0;
         this.mostrarMedidas = this.articulos.length == 0;
         this.mostrarFamilias = this.articulos.length == 0;
+        this.mostrarRelleno = this.articulos.length == 0;
+
 
 
         this.cdr.detectChanges(); // fuerza a Angular a renderizar el mat-select
@@ -285,6 +291,39 @@ crearArticulos() {
     }
   });
 
+}
+
+actualizarArticuloPrecio() {
+  if (!this.rellenoSeleccionado) {
+    return;
+  }
+
+  const articuloPrecioAActualizar = this.articulosPrecio.find(
+    articuloPrecio => articuloPrecio.codigo + " " + articuloPrecio.descripcion === this.articuloSeleccionado
+  );
+
+  if (!articuloPrecioAActualizar) {
+    this.snackBar.open("Artículo no encontrado", "Cerrar", { duration: 3000 });
+    return;
+  }
+
+  articuloPrecioAActualizar.relleno = this.rellenoSeleccionado;
+
+  this.articuloService.actualizarArticulosPrecios([articuloPrecioAActualizar])
+    .subscribe({
+      next: (response) => {
+        this.snackBar.open("Artículo actualizado con éxito", "Cerrar", {
+          duration: 3000,
+        });
+        console.log("Actualización exitosa", response);
+      },
+      error: (error) => {
+        this.snackBar.open("Error al actualizar el artículo", "Cerrar", {
+          duration: 3000,
+        });
+        console.error("Error al actualizar", error);
+      }
+    });
 }
 
 cargarMapa(articulos: Articulo[], mapaACargar: Map<string, Articulo[]>) {

@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from 'src/environment/environment';
 import { Medida } from '../models/medida.model';
 
-const baseUrl = environment.localApiUrl+'/Medida';
+const baseUrl = environment.apiUrl+'/Medida';
 
 
 @Injectable({

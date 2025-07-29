@@ -5,4 +5,5 @@ export class ArticuloPrecio {
     precio1?: number;
     precio2?: number;
     precio3?: number;
+    relleno?: number;
 }

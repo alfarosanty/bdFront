@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { Stock } from '../models/stock.model';
 import { environment } from 'src/environment/environment';
 
-const baseUrl = environment.localApiUrl+'/Stock';
+const baseUrl = environment.apiUrl+'/Stock';
 
 @Injectable({
   providedIn: 'root',

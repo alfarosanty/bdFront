@@ -194,7 +194,7 @@
     <ng-container matColumnDef="Precio Unitario">
       <th mat-header-cell *matHeaderCellDef>Precio Unitario</th>
       <td mat-cell *matCellDef="let element">
-        {{ calcularPrecioConDescuento(getArticulosParaArticulo(element.codigo)[0]) | number:'1.2-2' }}
+        {{ getArticulosParaArticulo(element.codigo)[0].precioUnitario| number:'1.2-2' }}
       </td>
     </ng-container>
   

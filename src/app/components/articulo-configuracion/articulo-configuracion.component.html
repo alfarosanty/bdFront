@@ -53,7 +53,21 @@
   </div>
 </ng-container>
 
-    
+<!-- Relleno -->
+<ng-container *ngIf="mostrarRelleno">
+  <div class="extras-container medida-container">
+    <h3>Relleno</h3>
+    <mat-form-field appearance="outline" class="input-mat">
+      <mat-label>Seleccione relleno...</mat-label>
+      <mat-select [(value)]="rellenoSeleccionado">
+        <mat-option [value]="0">0</mat-option>
+        <mat-option [value]="1">1</mat-option>
+        <mat-option [value]="2">2</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+</ng-container>
+
     
   
     <!-- Selector de Color -->
@@ -151,7 +165,7 @@
 
 
         <div>
-        <button mat-raised-button color="primary" (click)="crearArticulos()" >
+        <button mat-raised-button color="primary" (click)="actualizarArticuloPrecio()" >
           Confirmar
         </button>
       </div>

@@ -414,6 +414,7 @@ puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
     const articuloBorrado = this.mapaPresupuestoArticulos?.get(key);
     this.mapaPresupuestoArticulos?.delete(key);
     this.actualizarDataSource();
+    this.actualizarTotales()
   
     this.agregarAMapaEliminados(key,articuloBorrado!)
   }

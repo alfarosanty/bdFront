@@ -11,7 +11,7 @@ Pasos para realizar el launch
 
 ANTES DE CORRER EL COMANDO CAMBIAR TODAS LAS VARIABLES DE PUERTOS, BD, URLS, ETC.
 
-2) correr el comando: dotnet publish BlumeAPI.csproj -c Release -o "G:\Desa\programa\Binarios\PublicadoBack" 
+2) correr el comando: dotnet publish BlumeAPI.csproj -c Release -o "G:\Desa\programa\Binarios\PublicadoBack"
 (PARA EL BACKEND)
 3) configurar el IIS:
 
@@ -65,4 +65,3 @@ Poné un nombre, ejemplo: IIS puerto 8080 → Finalizar.
     </rewrite>
   </system.webServer>
 </configuration>
-

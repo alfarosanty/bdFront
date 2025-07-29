@@ -413,6 +413,7 @@ listarClientes(): void {
     
     this.mapaPresupuestoArticulos?.delete(key);
     this.actualizarDataSource()
+    this.actualizarTotales()
   
     }
 

@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { Familia } from '../models/familia.model';
 import { environment } from 'src/environment/environment';
 
-const baseUrl = environment.localApiUrl+'/SubFamilia';
+const baseUrl = environment.apiUrl+'/SubFamilia';
 
 @Injectable({
   providedIn: 'root'

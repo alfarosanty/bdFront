@@ -5,7 +5,7 @@ import { environment } from 'src/environment/environment';
 import { Observable } from 'rxjs';
 import { RespuestaEstadistica } from '../models/respuesta-estadistica.model';
 
-const baseUrl = environment.localApiUrl+'/Factura';
+const baseUrl = environment.apiUrl+'/Factura';
 
 
 @Injectable({
