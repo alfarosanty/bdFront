@@ -61,12 +61,13 @@ export class FacturacionComponent {
 
   currentCliente?: Cliente;
   currentArticulo ?: Articulo;
-  currentPresupuesto?: Presupuesto;
+  currentPresupuesto?: Presupuesto|null;
   currentFactura?: Factura = new Factura();
 
-  presupuestoAAcceder ?: Presupuesto
+  presupuestoAAcceder ?: Presupuesto|null
   producto = '';
-  numCliente = '';
+  numCliente?: number|null = null;
+  numPresupuesto?: number|null = null
   codigoArticulo = '';
   cantProducto?: string | null = null;
   idPresupuestoACargar?: number | null
@@ -86,7 +87,7 @@ export class FacturacionComponent {
 // DATOS DE FACTURA
 fechaFactura?: Date;
 descTotal = '';
-tipoFactura = '';
+tipoFactura?: string|null = '';
 eximirIVA = false;
 puntoDeVenta?: number = 0;
 puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
@@ -200,12 +201,43 @@ puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
      this.clienteService.get(this.numCliente).subscribe({
       next: (data) => {
         this.currentCliente = data;
+        this.clienteControl.setValue(data.razonSocial); // <-- Esto lo muestra en el input
         this.traerPresupuestosDe(this.currentCliente!)
+        this.borrarPresupuesto()
+        this.asignarTipoFactura(data.condicionFiscal?.codigo!)
+
       },
       error: (e) => console.error(e)
 
     });
   }
+
+  seleccionarXnumeroPresupuesto() {
+  
+    this.presupuestoService.get(this.numPresupuesto).subscribe({
+      next: (presupuesto) => {
+        console.log('Presupuesto encontrado:', presupuesto);
+        // Acá podés asignarlo a una variable o hacer lo que necesites
+        this.presupuestoAAcceder = presupuesto;
+        this.currentPresupuesto = presupuesto;
+        this.currentCliente = presupuesto.cliente
+        this.numCliente = presupuesto.cliente?.id
+        this.clienteControl.setValue(presupuesto.cliente?.razonSocial); // <-- Esto lo muestra en el input
+        this.traerPresupuestosDe(presupuesto.cliente!)
+        this.descTotal = String(this.currentPresupuesto.descuentoGeneral)
+        this.mapaPresupuestoArticulos = new Map()
+        this.cargarMapa(this.mapaPresupuestoArticulos, this.currentPresupuesto.articulos)
+        this.asignarTipoFactura(presupuesto.cliente?.condicionFiscal?.codigo!)
+
+      },
+      error: (err) => {
+        console.error('Error al buscar presupuesto:', err);
+        // Mostrar mensaje si querés
+      }
+    });
+
+  }
+  
   
 
   seleccionarCliente() {
@@ -213,9 +245,40 @@ puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
     console.log('Cliente seleccionado:', valor);
     // Acá podés buscar el objeto completo si necesitás más datos
     this.currentCliente = this.clientes?.find(c => c.razonSocial === valor);
+    this.numPresupuesto = null
+    this.numCliente = this.currentCliente?.id
     console.log('Objeto cliente:', this.currentCliente);
+    this.borrarPresupuesto()
     
     this.traerPresupuestosDe(this.currentCliente!)
+
+    this.asignarTipoFactura(this.currentCliente?.condicionFiscal?.codigo!)
+
+  }
+  
+  borrarPresupuesto(){
+    
+    this.presupuestoAAcceder = null
+    this.currentPresupuesto = null
+    this.mapaPresupuestoArticulos?.clear()
+    this.descTotal = ''
+    this.actualizarDataSource() 
+    this.actualizarTotales()
+    this.numPresupuesto = null
+  }
+
+  asignarTipoFactura(codigo: string) {
+    switch (codigo) {
+      case 'RI':
+        this.tipoFactura = 'A';
+        break;
+      case 'MO':
+      case 'CI':
+        this.tipoFactura = 'B';
+        break;
+      default:
+        this.tipoFactura = null;
+    }
   }
   
 
@@ -593,7 +656,7 @@ puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
         this.currentFactura!.eximirIVA = this.eximirIVA;
         this.currentFactura!.articulos = [];
         this.currentFactura!.descuentoGeneral = Number(this.descTotal)
-        this.currentFactura!.tipoFactura! = this.tipoFactura
+        this.currentFactura!.tipoFactura! = this.tipoFactura!
         if(this.fechaFactura != undefined){this.currentFactura!.fechaFactura = this.fechaFactura}
         this.currentFactura!.presupuesto = this.currentPresupuesto
      
@@ -854,6 +917,7 @@ cargarDetallesPresupuesto(id: Number) {
       this.descTotal = String(this.currentPresupuesto.descuentoGeneral)
       this.mapaPresupuestoArticulos = new Map()
       this.cargarMapa(this.mapaPresupuestoArticulos, this.currentPresupuesto.articulos)
+      this.numPresupuesto = data.id
     },
     error: (e) => {
       console.error("Error al cargar el presupuesto:", e);

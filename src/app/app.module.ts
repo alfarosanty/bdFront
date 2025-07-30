@@ -52,6 +52,8 @@ import { RevisionFacturaComponent } from './components/revision-factura/revision
 import { EstadisticasComponent } from './components/estadisticas/estadisticas.component';
 import { MatSortModule } from '@angular/material/sort';
 import { ActualizacionPreciosComponent } from './components/actualizacion-precios/actualizacion-precios.component';
+import { VistaGeneralComponent } from './components/vista-general/vista-general.component';
+import { ConsultasGeneralComponent } from './components/consultas-general/consultas-general.component';
 
 
 
@@ -78,6 +80,8 @@ import { ActualizacionPreciosComponent } from './components/actualizacion-precio
     RevisionFacturaComponent,
     EstadisticasComponent,
     ActualizacionPreciosComponent,
+    VistaGeneralComponent,
+    ConsultasGeneralComponent,
   ],
   imports: [
     MatSelectModule,

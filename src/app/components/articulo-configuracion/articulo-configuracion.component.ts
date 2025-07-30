@@ -104,21 +104,21 @@ ngOnInit(): void {
   this.colorService.getAll().subscribe({
     next: (data) => {
       this.colores = data;
-      console.log(data)
+      console.log("Colores: ",data)
     }
   })
 
   this.medidaServie.getAll().subscribe({
     next: (data) => {
       this.medidas = data;
-      console.log(this.medidas);
+      console.log("Medidas: ",this.medidas);
     }
   })
 
   this.familiaService.getAll().subscribe({
     next: (data) => {
       this.familias = data.sort((a, b) => a.codigo?.localeCompare(b.codigo!) || 0);
-      console.log(data)
+      console.log("SubFamilias: ",data)
     }
   })
 
@@ -164,9 +164,11 @@ mostrarVariedadColores() {
         // Mostrar u ocultar colores según si hay artículos disponibles
         this.mostrarColores = this.articulos.length >= 0;
         this.mostrarMedidas = this.articulos.length == 0;
+        this.medidaSeleccionada = null
         this.mostrarFamilias = this.articulos.length == 0;
+        this.familiaSeleccionada = null
         this.mostrarRelleno = this.articulos.length == 0;
-
+        this.rellenoSeleccionado = null
 
 
         this.cdr.detectChanges(); // fuerza a Angular a renderizar el mat-select
@@ -212,8 +214,6 @@ onColorAgregar(): void {
     );
 
     this.agregarArticulo(colorSeleccionado, this.medidaSeleccionada!, this.familiaSeleccionada!);
-    this.medidaSeleccionada=null
-    this.familiaSeleccionada=null
     this.articuloColorIndex = null;
   }
 }
@@ -226,6 +226,8 @@ if (medidaSeleccionada && familiaSeleccionada) {
   const articuloPrecioDeseado = this.articulosPrecio.find(
     articuloPrecio => articuloPrecio.codigo + " " + articuloPrecio.descripcion === this.articuloSeleccionado
   );
+  articuloPrecioDeseado!.relleno = this.rellenoSeleccionado!;
+
 
   if (!articuloPrecioDeseado) {
     console.warn("No se encontró el artículoPrecio deseado");
@@ -276,6 +278,7 @@ crearArticulos() {
   console.log(this.mapaArticulosACrear)
   const articulosACrear = Array.from(this.mapaArticulosACrear?.values() || []).flat();
 
+  console.log("Articulos a crear:", articulosACrear)
   this.articuloService.crearArticulos(articulosACrear).subscribe({
     next: (ids: number[]) => {
       console.log('IDs generados:', ids);
@@ -294,7 +297,8 @@ crearArticulos() {
 }
 
 actualizarArticuloPrecio() {
-  if (!this.rellenoSeleccionado) {
+  if (this.rellenoSeleccionado==null) {
+    console.log("Relleno elegido: ", this.rellenoSeleccionado)
     return;
   }
 
@@ -307,20 +311,12 @@ actualizarArticuloPrecio() {
     return;
   }
 
-  articuloPrecioAActualizar.relleno = this.rellenoSeleccionado;
-
   this.articuloService.actualizarArticulosPrecios([articuloPrecioAActualizar])
     .subscribe({
       next: (response) => {
-        this.snackBar.open("Artículo actualizado con éxito", "Cerrar", {
-          duration: 3000,
-        });
         console.log("Actualización exitosa", response);
       },
       error: (error) => {
-        this.snackBar.open("Error al actualizar el artículo", "Cerrar", {
-          duration: 3000,
-        });
         console.error("Error al actualizar", error);
       }
     });

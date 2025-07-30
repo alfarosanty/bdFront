@@ -15,6 +15,8 @@ import { PresentacionComponent } from './components/presentacion/presentacion.co
 import { ArticuloConfiguracionComponent } from './components/articulo-configuracion/articulo-configuracion.component';
 import { EstadisticasComponent } from './components/estadisticas/estadisticas.component';
 import { ActualizacionPreciosComponent } from './components/actualizacion-precios/actualizacion-precios.component';
+import { VistaGeneralComponent } from './components/vista-general/vista-general.component';
+import { ConsultasGeneralComponent } from './components/consultas-general/consultas-general.component';
 
 
 
@@ -36,14 +38,9 @@ const routes: Routes = [
   { path:  'configuracionArticulo', component: ArticuloConfiguracionComponent},
   { path:  'estadisticas', component: EstadisticasComponent},
   { path:  'actualizacionPrecios', component: ActualizacionPreciosComponent},
-
-
-
-
-
-
-
-
+  { path:  'vista', component: VistaGeneralComponent},
+  { path:  'vista/:id', component: VistaGeneralComponent},
+  { path:  'consultasGeneral', component: ConsultasGeneralComponent},
 
 ];
 

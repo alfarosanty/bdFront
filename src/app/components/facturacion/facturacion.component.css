@@ -297,3 +297,8 @@
 .combo-datos-fecha-emision{
   width: 100%;
 }
+
+.input-chico {
+  width: 10%; /* o cualquier valor que quieras */
+}
+

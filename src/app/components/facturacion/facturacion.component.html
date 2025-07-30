@@ -10,9 +10,18 @@
     <!-- Menú desplegable de clientes -->
     <div class="dropdown">
         <div>
-            <label for="descuento">Numero de Cliente</label>
-            <input type="text" id="numCliente" [(ngModel)]="numCliente" (keydown.enter)="seleccionarXnumeroCliente()">
-        </div>
+            <label for="descuento">Número de Cliente</label>
+            <input type="text" id="numCliente" [(ngModel)]="numCliente" 
+            (keydown.enter)="seleccionarXnumeroCliente()" 
+            class="input-chico">
+             </div>
+
+             <div>
+              <label for="descuento">Número de Presupuesto</label>
+              <input type="text" id="numPresupuesto" [(ngModel)]="numPresupuesto" 
+              (keydown.enter)="seleccionarXnumeroPresupuesto()" 
+              class="input-chico">
+               </div>
 
 
         <label for="clientes">Seleccionar Cliente</label>
