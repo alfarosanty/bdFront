@@ -16,7 +16,7 @@ import { IngresoService } from 'src/app/services/ingreso.service';
 import { IngresoMercaderia } from 'src/app/models/ingreso-mercaderia.model';
 import { RegistroDescuento } from 'src/app/models/registro-descuento.model';
 import { firstValueFrom } from 'rxjs';
-import { EstadoPresupuesto } from 'src/app/models/estado-presupuesto.model';
+import { EstadoPedidoProduccion, EstadoPresupuesto } from 'src/app/models/estado-presupuesto.model';
 import * as pdfMake from 'pdfmake/build/pdfmake';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 import { animate, state, style, transition, trigger } from '@angular/animations';
@@ -56,6 +56,7 @@ export class IngresoComponent {
   ingresosMercaderiaXTallerFiltrados: IngresoMercaderia[] =[];
   pedidosProduccionXTaller: PedidoProduccion[] = [];
   presupuestosAModificar : Presupuesto[] = [];
+  estadosPedidoProduccion?: EstadoPedidoProduccion[] 
   mapaPresupuestoArticulos ?: Map<string,PresupuestoArticulo[]>;
   mapaPresuXArtParaAcceder ?: Map<string,PresupuestoArticulo[]>;
   mapaArticulosModificados ?: Map<string,RegistroDescuento[]> = new Map();
@@ -92,7 +93,7 @@ export class IngresoComponent {
   mostrarConfirmacionPDF = false;
 
 
-  constructor(private tallerService:TallerService, private articuloService:ArticuloService, private ingresoService:IngresoService, private ordenProduccionService: OrdenProduccionService, private presupuestoService: PresupuestoService , private route : ActivatedRoute, private cdr: ChangeDetectorRef, public dialog: MatDialog) {}
+  constructor(private ordenDeProduccionService: OrdenProduccionService ,private tallerService:TallerService, private articuloService:ArticuloService, private ingresoService:IngresoService, private ordenProduccionService: OrdenProduccionService, private presupuestoService: PresupuestoService , private route : ActivatedRoute, private cdr: ChangeDetectorRef, public dialog: MatDialog) {}
 
   ngOnInit(): void {
     this.listarTalleres();
@@ -120,6 +121,16 @@ export class IngresoComponent {
     this.filteredArticulos = this.articuloControl.valueChanges.pipe(startWith(''),map(value => this._filter(String(value))));
 
     this.actualizarDataSource();
+
+    this.ordenDeProduccionService.getEstadosPedidoProduccion().subscribe({
+      next: (estados) => {
+        console.log(estados)
+        this.estadosPedidoProduccion = estados;
+      },
+      error: (err) => {
+        console.error('Error al obtener estados:', err);
+      }
+    });
 
   }
 
@@ -395,7 +406,7 @@ borrarArticulo(key: any, color: string) {
     }
       
   
-    generarOrdenDePedido() {
+    generarIngreso() {
 
       if (!this.currentIngresoMercaderia) {
         this.currentIngresoMercaderia = {
@@ -803,7 +814,7 @@ aclararProductoPendentesDisminuidos() {
 
   // Ordenar pedidos por fecha (de más antiguo a más reciente)
   this.pedidosProduccionXTaller.sort((a, b) => (new Date(a.fecha!).getTime()) - (new Date(b.fecha!).getTime()));
-  const pedidosAAgregarIngresos = this.pedidosProduccionXTaller.filter(pedido=>pedido.idEstadoPedidoProduccion == 2)
+  const pedidosAAgregarIngresos = this.pedidosProduccionXTaller.filter(pedido=>pedido.idEstadoPedidoProduccion == this.estadosPedidoProduccion?.find(estado=>estado.codigo =="TA")?.id)
 
 
   for (let articuloIngreso of this.currentIngresoMercaderia.articulos ?? []) {
@@ -869,7 +880,7 @@ aclararProductoPendentesDisminuidos() {
   }
 
   noTienePendientes(unaCantidadPendiente : number): boolean{
-    if(unaCantidadPendiente ===0) {return true}
+    if(unaCantidadPendiente === 0) {return true}
     else return false
   }
 
@@ -922,7 +933,7 @@ async actualizarPedidosProduccion() {
 
     const cantPendientesPP = ppSeleccionado.articulos?.map(a => a.cantidadPendiente);
     if (cantPendientesPP?.every(p => p === 0)) {
-      ppSeleccionado.idEstadoPedidoProduccion = 1;
+      ppSeleccionado.idEstadoPedidoProduccion = this.estadosPedidoProduccion?.find(estado=>estado.codigo=="COMP")?.id;
     }
 
     console.log("Pedido producción actualizado:", ppSeleccionado);
@@ -951,17 +962,15 @@ actualizarPresupuestos(){
     if (!presuSeleccionado) continue;
     console.log(" ENTRÓ AL IF ")
     for(let registro of valor){
-      presuSeleccionado.articulos = presuSeleccionado!.articulos?.filter(
-        presuArt => presuArt.articulo?.id !== registro.articuloAfectado?.id
+      const articuloOriginal = presuSeleccionado.articulos?.find(
+        a => a.articulo?.id === registro.articuloAfectado?.id
       );
-
-      const articuloActualizado = {
-        articulo: registro.articuloAfectado,
-        cantidad: registro.cantidadPedidaOriginal,
-        cantidadPendiente: registro.pendienteDespues,
-        hayStock: this.noTienePendientes(registro.pendienteDespues!)
+      
+      if (articuloOriginal) {
+        articuloOriginal.cantidad = registro.cantidadPedidaOriginal;
+        articuloOriginal.cantidadPendiente = registro.pendienteDespues;
+        articuloOriginal.hayStock = this.noTienePendientes(registro.pendienteDespues!);
       }
-      presuSeleccionado?.articulos?.push(articuloActualizado)  
     }
     console.log("YA PUSHEO EL NUEVO ARTICULO ACTUALIZADO")
     const stockDeArticulos = presuSeleccionado?.articulos?.map(articulo => articulo.hayStock);
@@ -970,8 +979,11 @@ actualizarPresupuestos(){
       } else presuSeleccionado!.estadoPresupuesto = new EstadoPresupuesto(3);
     console.log("ACTUALIZANDO EL PRESU")
     console.log("EL PRESUPUESTO SE A ACTUALIZADO", presuSeleccionado)
-    this.presupuestoService.actualizar(presuSeleccionado!)
-
+    this.presupuestoService.actualizar(presuSeleccionado!).subscribe({
+      next: () => console.log("✅ Presupuesto actualizado:", presuSeleccionado!.id),
+      error: (err) => console.error("❌ Error al actualizar el presupuesto:", err)
+    });
+    
   }
 
 }

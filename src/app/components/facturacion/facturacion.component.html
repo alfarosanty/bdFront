@@ -32,6 +32,7 @@
                  matInput
                  [formControl]="clienteControl"
                  [matAutocomplete]="autoCliente"
+                 (keydown.enter)="inputArticulos.focus()"
                  (input)="clienteControl.setValue(clienteControl.value?.toUpperCase(), { emitEvent: false })"s>
             <mat-autocomplete #autoCliente="matAutocomplete" autoActiveFirstOption (optionSelected)="seleccionarCliente();">
             <mat-option *ngFor="let c of filteredClientes | async" [value]="c.razonSocial">

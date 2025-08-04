@@ -57,11 +57,11 @@
         <div>
             <label for="estado">Estado del Pedido:</label>
             <select id="estado" [(ngModel)]="estadoPedido">
-                <option [value]="4">CREADO</option>
-                <option [value]="3">EN TALLER</option>
-                <option [value]="2">EN CORTE</option>
-
+              <option *ngFor="let estado of estadosPedidoProduccion" [value]="estado.id">
+                {{ estado.descripcion }}
+              </option>
             </select>
+            
         </div>
 
     </div>

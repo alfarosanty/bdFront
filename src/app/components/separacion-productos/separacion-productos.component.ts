@@ -21,6 +21,7 @@ import { PedidoProduccion } from 'src/app/models/pedido-produccion.model';
 import * as pdfMake from 'pdfmake/build/pdfmake';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 import { ArticuloPrecio } from 'src/app/models/articulo-precio.model';
+import { EstadoPedidoProduccion } from 'src/app/models/estado-presupuesto.model';
 
 (pdfMake as any).vfs = (pdfFonts as any).vfs;
 
@@ -53,6 +54,8 @@ logoBase64: String = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAADMCAYA
   familiaMedida: string[] = [];
   ingresosMercaderiaXTaller: IngresoMercaderia[] =[];
   pedidosProduccionesGenerados: PedidoProduccion[] = [];
+  estadosPedidoProduccion: EstadoPedidoProduccion[] = [];
+
 
   mapaPresupuestoArticulos ?: Map<string,PresupuestoArticulo[]>;
   mapaPresuXArtParaAcceder ?: Map<string,PresupuestoArticulo[]>;
@@ -94,7 +97,7 @@ logoBase64: String = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAADMCAYA
   articuloSeleccionado ='';
  //END INPUT
 
-  constructor(private tallerService:TallerService, private articuloService:ArticuloService, private presupuestoService:PresupuestoService, private ordenProduccionService: OrdenProduccionService , private route : ActivatedRoute, private router: Router) { 
+  constructor(private ordenDeProduccionService : OrdenProduccionService,  private tallerService:TallerService, private articuloService:ArticuloService, private presupuestoService:PresupuestoService, private ordenProduccionService: OrdenProduccionService , private route : ActivatedRoute, private router: Router) { 
   }
 
   ngOnInit(): void {
@@ -126,6 +129,18 @@ logoBase64: String = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAADMCAYA
       console.log('ID del presupuesto:', presupuestoId);
       this.cargarDetallesPresupuesto(presupuestoId);
     }
+
+      this.ordenDeProduccionService.getEstadosPedidoProduccion().subscribe({
+      next: (estados) => {
+        console.log(estados)
+        this.estadosPedidoProduccion = estados;
+      },
+      error: (err) => {
+        console.error('Error al obtener estados:', err);
+      }
+    });
+
+  
 
   }
 
@@ -483,7 +498,8 @@ actualizarTallerIndividual(presuArt: PresupuestoArticulo, nuevoTallerId: number)
       if (articulosXTaller.length === 0) continue;
       articulosXTaller.forEach(presuArt=> {presuArt.cantidadPendiente = presuArt.cantidad; presuArt.presupuesto = this.currentPresupuesto; presuArt.codigo = presuArt.articulo?.codigo; presuArt.descripcion = presuArt.articulo?.descripcion})
   
-      const pedidoProduccion = new PedidoProduccion(this.fechaPedidoProduccion!, taller, 4, articulosXTaller, this.currentCliente!.id, this.presupuestoAAcceder?.id);
+      const idEstadoCreado = this.estadosPedidoProduccion.find(estado=>estado.codigo=='CR')?.id
+      const pedidoProduccion = new PedidoProduccion(this.fechaPedidoProduccion!, taller, idEstadoCreado!, articulosXTaller, this.currentCliente!.id, this.presupuestoAAcceder?.id);
   
       this.pedidosProduccionesGenerados.push(pedidoProduccion);
       // Crear un nuevo orden de pedido

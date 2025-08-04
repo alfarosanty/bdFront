@@ -32,6 +32,29 @@ actualizar(factura :Factura): Observable<Object>   {
   
     return this.http.get<RespuestaEstadistica[]>(`${baseUrl}/FacturacionXCliente`, { params });
   }
+
+  getFacturaXFiltro(filtros: {idCliente: number|null, tipoFactura: string|null, puntoDeVenta: number|null, fechaInicio: string, fechaFin: string}) {
+    let params = new HttpParams();
+  
+    if (filtros.idCliente != null) {
+      params = params.set('idCliente', filtros.idCliente.toString());
+    }
+    if (filtros.tipoFactura != null) {
+      params = params.set('tipoFactura', filtros.tipoFactura);
+    }
+    if (filtros.puntoDeVenta != null) {
+      params = params.set('puntoDeVenta', filtros.puntoDeVenta.toString());
+    }
+      params = params.set('fechaInicio', filtros.fechaInicio);
+      params = params.set('fechaFin', filtros.fechaFin);
+  
+    return this.http.get<Factura[]>(`${baseUrl}/GetPorFiltros`, { params });
+  }
+  
+  getArticulos(idFactura :number): Observable<Object>   {
+    //alert('url' + baseUrl);
+    return this.http.get(`${baseUrl}/GetArticulos/${idFactura}`)
+    }
   
 
 }

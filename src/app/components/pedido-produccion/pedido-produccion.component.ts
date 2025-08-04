@@ -18,6 +18,7 @@ import { PresupuestoService } from 'src/app/services/budget.service';
 import { ArticuloPrecio } from 'src/app/models/articulo-precio.model';
 import { MatSelect } from '@angular/material/select';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { EstadoPedidoProduccion } from 'src/app/models/estado-presupuesto.model';
 
 (pdfMake as any).vfs = (pdfFonts as any).vfs;
 
@@ -50,6 +51,7 @@ export class PedidoProduccionComponent {
   articulos: Articulo[]=[];
   familiaMedida: string[] = [];
   ordenesDePedidoXTaller: PedidoProduccion[] =[];
+  estadosPedidoProduccion: EstadoPedidoProduccion[] = [];
   mapaPresupuestoArticulos ?: Map<string,PresupuestoArticulo[]>;
   mapaPresuXArtParaAcceder ?: Map<string,PresupuestoArticulo[]>;
 
@@ -61,7 +63,7 @@ export class PedidoProduccionComponent {
 
   pedidoProduccionAAcceder ?: PedidoProduccion
   fechaPedidoProduccion?: Date;
-  estadoPedido = 4;
+  estadoPedido?: number;
   producto = '';
   codigoArticulo = '';
   cantProducto?: string|null=null;
@@ -112,7 +114,16 @@ export class PedidoProduccionComponent {
     this.fechaPedidoProduccion=new Date()
     this.filteredArticulos = this.articuloControl.valueChanges.pipe(startWith(''),map(value => this._filter(String(value))));
     this.actualizarDataSource();
-
+    this.ordenDeProduccionService.getEstadosPedidoProduccion().subscribe({
+      next: (estados) => {
+        console.log(estados)
+        this.estadosPedidoProduccion = estados;
+        this.estadoPedido = estados.find(estado=>estado.descripcion == "CREADO")?.id
+      },
+      error: (err) => {
+        console.error('Error al obtener estados:', err);
+      }
+    });
 
   }
 

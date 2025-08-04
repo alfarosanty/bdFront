@@ -13,6 +13,10 @@ export class Factura {
     presupuesto?:Presupuesto | null;
     puntoDeVenta?: number;
     tipoFactura?: string;
+    importeBruto?: number;
+    iva?: number;
+    numeroFactura?: number;
+    caeNumero?: number;
 
     constructor() {
         this.fechaFactura = new Date();

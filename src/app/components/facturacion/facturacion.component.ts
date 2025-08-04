@@ -651,7 +651,6 @@ puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
 
       if (!this.validarDatosRequeridos()) {
         // Asignar cliente y otros valores
-        this.currentFactura!.id=this.presupuestoAAcceder?.id
         this.currentFactura!.cliente = this.currentCliente;
         this.currentFactura!.eximirIVA = this.eximirIVA;
         this.currentFactura!.articulos = [];
@@ -693,16 +692,7 @@ puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
             alert('Presupuesto creado exitosamente');
           }
         } else {
-          // Si el presupuesto ya existe, actualizarlo
-          this.facturaService.actualizar(this.currentPresupuesto!).subscribe((id: object)=>{
-            this.idFacturaActual = Number(id);
-            this.mostrarBotonGuardar = false;
-
-          });
-          if (this.idFacturaActual) {
-            // Aquí puedes reiniciar el formulario y mostrar el número del presupuesto
-            alert('Presupuesto actualizado exitosamente');
-          }
+          alert("HAY UN ERROR CON EL FRONT, SE LE ESTÁ ASIGNANDO ID A LA FACTURA DE MANERA ERRÓNEA")
         }
     
         // Mostrar el backdrop (pantalla de espera o de carga)

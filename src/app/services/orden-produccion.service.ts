@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { PedidoProduccion } from '../models/pedido-produccion.model';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environment/environment';
+import { EstadoPedidoProduccion } from '../models/estado-presupuesto.model';
 
 const baseUrl = environment.apiUrl+'/PedidoProduccion';
 
@@ -31,6 +32,10 @@ export class OrdenProduccionService {
   
   get(id: any): Observable<PedidoProduccion> {
     return this.http.get<PedidoProduccion>(`${baseUrl}/GetPedidoProduccionByNumero/${id}`);
+  }
+
+  getEstadosPedidoProduccion(): Observable<EstadoPedidoProduccion[]> {
+    return this.http.get<EstadoPedidoProduccion[]>(`${baseUrl}/GetEstadosPedidoProduccion`);
   }
 
 }

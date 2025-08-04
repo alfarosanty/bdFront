@@ -9,3 +9,10 @@ export class EstadoPresupuesto {
         }
     }
 }
+
+export class EstadoPedidoProduccion {
+    id?: number;
+    codigo?: string;
+    descripcion?: string;
+
+}
