@@ -40,6 +40,25 @@
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
 }
 
+/* COMBOS DE SELECT*/
+
+.form-container {
+  display: block;
+  width: 100%;
+}
+
+.form-ancho {
+  width: 150% !important; /* Ajustá a tu gusto */
+  max-width: none !important;
+}
+
+/* Hacer que el panel del dropdown también sea más ancho */
+::ng-deep .mat-select-panel {
+  min-width: 150% !important;
+}
+
+
+
 /* Estilo del menú desplegable */
 .dropdown {
     margin-bottom: 20px;

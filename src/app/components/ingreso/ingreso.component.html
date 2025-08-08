@@ -10,12 +10,13 @@
     <!-- Menú desplegable de clientes -->
     <div class="dropdown">
 
-        <select id="clientes" (change)="seleccionarTaller(); buscarIngresosXTaller(); inputArticulos.focus()" [(ngModel)]="currentIndex">
-            <option >Seleccione un Taller</option>
-            <option *ngFor="let taller of talleres let i = index" [value]="i">
-              {{taller.razonSocial}} 
-            </option>
-          </select>
+      <label for="clientes">Seleccionar Taller:</label>
+      <select  (change)="buscarOrdenXTaller(); inputArticulos.focus()" [(ngModel)]="currentTaller">
+        <option [ngValue]="null">Seleccione un Taller</option>
+        <option *ngFor="let taller of talleres" [ngValue]="taller">
+            {{ taller.razonSocial }}
+        </option>
+        </select>
                     
     </div>
 
@@ -23,16 +24,21 @@
 
 
 <div class="datosCliente-container" *ngIf="currentTaller">
-    <h3>Selecciona una orden de ingreso de:</h3>
-    <h3>{{currentTaller.razonSocial}}</h3>
-
-    <select [(ngModel)]="ingresoMercaderiaSeleccionado" (change)="cargarDetallesIngresoMercaderia((ingresoMercaderiaSeleccionado?.id??0)); inputArticulos.focus()"> 
-        <option value="" disabled selected>Selecciona una orden de ingreso de:</option>
-        <option *ngFor="let ingresoMercaderia of ingresosMercaderiaXTallerFiltrados" [ngValue]="ingresoMercaderia">
-            {{ ingresoMercaderia.id }} - {{ getFecha(ingresoMercaderia.fecha!) }}
-          </option>
-
-    </select>
+  <h3>Selecciona una orden de pedido de:</h3>
+  <h3>{{ currentTaller?.razonSocial }}</h3>
+  
+  <div class="form-container">
+    <mat-form-field appearance="fill" class="form-ancho">
+      <mat-label>Selecciona una orden de pedido de: {{ currentTaller?.razonSocial }}</mat-label>
+      <mat-select [(value)]="pedidoProduccionSeleccionado"
+                  (selectionChange)="cargarDetallesPedidoProduccion((pedidoProduccionSeleccionado?.id ?? 0)); inputArticulos.focus()">
+        <mat-option *ngFor="let pedidoProduccion of pedidosProduccionXTaller" [value]="pedidoProduccion">
+          {{ pedidoProduccion.id }} - {{ getFecha(pedidoProduccion.fecha!) }} - {{ getCliente(pedidoProduccion) }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+  
 
   </div>
 

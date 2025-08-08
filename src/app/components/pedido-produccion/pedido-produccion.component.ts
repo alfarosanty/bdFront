@@ -19,6 +19,8 @@ import { ArticuloPrecio } from 'src/app/models/articulo-precio.model';
 import { MatSelect } from '@angular/material/select';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { EstadoPedidoProduccion } from 'src/app/models/estado-presupuesto.model';
+import { ClienteService } from 'src/app/services/cliente.service';
+import { Cliente } from 'src/app/models/cliente';
 
 (pdfMake as any).vfs = (pdfFonts as any).vfs;
 
@@ -54,6 +56,7 @@ export class PedidoProduccionComponent {
   estadosPedidoProduccion: EstadoPedidoProduccion[] = [];
   mapaPresupuestoArticulos ?: Map<string,PresupuestoArticulo[]>;
   mapaPresuXArtParaAcceder ?: Map<string,PresupuestoArticulo[]>;
+  mapaClienteXPedidoProduccion?: Map<number, {idPedidoProduccion:number, cliente: Cliente}>;
 
   ordenDePedidoSeleccionado?: PedidoProduccion
   currentTaller?: Taller;
@@ -71,7 +74,6 @@ export class PedidoProduccionComponent {
   mostrarBotonGuardar = true;
 
 
-  currentIndex = -1;
   articuloColorIndex: number | null = null;
 
   //INPUT BUSQUEDA
@@ -125,6 +127,7 @@ export class PedidoProduccionComponent {
       }
     });
 
+
   }
 
   private _filter(value: string): string[] {
@@ -136,7 +139,6 @@ export class PedidoProduccionComponent {
 listarTalleres(): void {
 
     this.currentTaller = {};
-    this.currentIndex = -1;
     this.tallerService.getAll().pipe(
       catchError(error => {
         // Manejo del error
@@ -153,23 +155,18 @@ listarTalleres(): void {
       
     });
   }
- 
 
- seleccionarTaller(): void {
-    if(this.talleres){
-      this.currentTaller = this.talleres[this.currentIndex];
-      console.log(this.currentTaller)
-      console.log("ESTE ES EL INDEX", this.currentIndex)
-    }
-
-      
-  }
   buscarOrdenXTaller(){
     if(this.currentTaller){
      this.ordenDeProduccionService.getByTaller(this.currentTaller?.id).subscribe({
       next: (data) => {
+
+        this.mapaPresupuestoArticulos?.clear()
+        this.mapaPresuXArtParaAcceder?.clear()
+        this.actualizarDataSource()
         this.ordenesDePedidoXTaller = data.sort((a, b) => b.id! - a.id!);
         console.log("LAS ORDENES DE PRODUCCION DE " + this.currentTaller?.razonSocial + " SON:",this.ordenesDePedidoXTaller)
+        this.obtenerClientesXPedidoProduccion(this.ordenesDePedidoXTaller)
       },
       error: (e) => console.error(e)
   
@@ -321,6 +318,28 @@ getCantidadTotal(presupuestoArticulos: PresupuestoArticulo[]): number {
     }
   }
 
+
+  obtenerClientesXPedidoProduccion(pedidosProduccion: PedidoProduccion[]) {
+  
+    this.mapaClienteXPedidoProduccion = new Map<number, {idPedidoProduccion: number, cliente: Cliente}>();
+  
+    this.ordenDeProduccionService.obtenerClientes(pedidosProduccion).subscribe((respuesta: {idPedidoProduccion: number, cliente: Cliente}[]) => {
+      respuesta.forEach(entry => {
+        this.mapaClienteXPedidoProduccion!.set(entry.idPedidoProduccion, {
+          idPedidoProduccion: entry.idPedidoProduccion,
+          cliente: entry.cliente
+        });
+      });
+    });
+  }
+
+
+  getCliente(pedidoProduccion: PedidoProduccion): string {
+    const clienteXPedidoProduccion = this.mapaClienteXPedidoProduccion?.get(pedidoProduccion.id!);
+    return clienteXPedidoProduccion?.cliente.razonSocial!;
+  }
+  
+
   borrarFila(key : any){
     
     this.mapaPresupuestoArticulos?.delete(key);
@@ -384,17 +403,21 @@ getCantidadTotal(presupuestoArticulos: PresupuestoArticulo[]): number {
         console.log(this.mapaPresupuestoArticulos)
         this.mapaPresupuestoArticulos?.forEach((valor, clave) => {
           valor.forEach(presuArt => {
-            console.log(presuArt)
-            presuArt.codigo = presuArt.articulo?.codigo
-            presuArt.descripcion=presuArt.articulo?.descripcion
-            console.log("LA CANTIDAD ES:", presuArt.cantidad)
-            console.log("LA CANTIDAD PENDIENTE ES:", presuArt.cantidadPendiente)
-            
-
-
+            console.log(presuArt);
+        
+            // Corregido el if
+            if (presuArt.articulo?.codigo !== "GEN") {
+              presuArt.codigo = presuArt.articulo?.codigo;
+              presuArt.descripcion = presuArt.articulo?.descripcion;
+            }
+        
+            console.log("LA CANTIDAD ES:", presuArt.cantidad);
+            console.log("LA CANTIDAD PENDIENTE ES:", presuArt.cantidadPendiente);
+        
             this.currentPedidoProduccion!.articulos?.push(presuArt);
           });
         });
+        
     
         console.log("Este es la orden de produccion generada", this.currentPedidoProduccion);
 
@@ -437,12 +460,30 @@ getCantidadTotal(presupuestoArticulos: PresupuestoArticulo[]): number {
       this.mostrarConfirmacionPDF=true
     }
 
+    obtenerCliente(): string {
+      const idPedidoProduccion = this.pedidoProduccionAAcceder?.id;
+    
+      if (!idPedidoProduccion) {
+        return "Stock";
+      }
+    
+      const clienteAsociado = this.mapaClienteXPedidoProduccion
+        ?.get(idPedidoProduccion)  // si las claves son numéricas, no conviertas a string
+        ?.cliente;
+    
+      if (!clienteAsociado) {
+        return "Cliente no encontrado";
+      }
+    
+      return `${clienteAsociado.razonSocial} (${clienteAsociado.id})`;
+    }
+    
+
 
     confirmarGenerarPDF(generar: boolean) {
       if (generar) {
         this.generarPDF();
       }
-      this.mostrarConfirmacionPDF = false;
     } 
 
     confirmarGenerarExcel(generar: boolean) {
@@ -470,8 +511,7 @@ getCantidadTotal(presupuestoArticulos: PresupuestoArticulo[]): number {
             this.generarExcel("Stock");
           }
         }
-        this.mostrarConfirmacionPDF = false;
-      }
+     }
     
     
   generarPDF() {
@@ -484,6 +524,7 @@ getCantidadTotal(presupuestoArticulos: PresupuestoArticulo[]): number {
                 stack: [
                   { text: `Pedido produccion N° ${this.idPedidoProduccionActual}`, style: 'headerBold' },
                   { text: `Taller: ${this.currentTaller?.razonSocial} (${this.currentTaller?.id})`, style: 'headerBold' },
+                  { text: `Cliente: ${this.obtenerCliente()}`, style: 'headerBold' },
                   { text: `Fecha: ${this.formatearFecha(this.fechaPedidoProduccion)}`, style: 'headerBold' },
                   ]
               },
@@ -504,7 +545,7 @@ getCantidadTotal(presupuestoArticulos: PresupuestoArticulo[]): number {
       this.mapaPresupuestoArticulos?.forEach((presupuestosArticulos, clave) => {
         const cantidades = presupuestosArticulos.map(pa => pa.cantidad || 0);
         const totalCantidad = cantidades.reduce((acc, c) => acc + c, 0);
-        const descripcion = presupuestosArticulos[0].articulo?.descripcion || '';
+        const descripcion = presupuestosArticulos[0].descripcion || '';
         const descripcionCompleta = presupuestosArticulos
           .map(pa => `${pa.cantidad || 0}${pa.articulo?.color?.codigo || ''}`)
           .join(' ');
@@ -630,7 +671,7 @@ generarExcel(nombreClienteAsociado:string) {
   this.mapaPresupuestoArticulos?.forEach((presupuestosArticulos, clave) => {
     const cantidades = presupuestosArticulos.map(pa => pa.cantidad || 0);
     const totalCantidad = cantidades.reduce((acc, c) => acc + c, 0);
-    const descripcion = presupuestosArticulos[0].articulo?.descripcion || '';
+    const descripcion = presupuestosArticulos[0].descripcion || '';
     const descripcionCompleta = presupuestosArticulos
       .map(pa => `${pa.cantidad || 0}${pa.articulo?.color?.codigo || ''}`)
       .join(' ');
@@ -664,7 +705,6 @@ cargarDetallesPedidoProduccion(id: Number) {
       this.pedidoProduccionAAcceder = data;
       console.log("El pedido produccion cargado es: ", this.pedidoProduccionAAcceder);
       this.fechaPedidoProduccion=this.pedidoProduccionAAcceder.fecha
-      this.currentTaller = this.pedidoProduccionAAcceder?.taller;
       this.estadoPedido = this.pedidoProduccionAAcceder.idEstadoPedidoProduccion!
       console.log("Se cargó al taller que se buscó acceder ", this.currentTaller);
 
@@ -685,7 +725,7 @@ procesarMapaDeArticulos() {
   if(this.pedidoProduccionAAcceder)
   this.mapaPresuXArtParaAcceder = new Map()
   this.pedidoProduccionAAcceder?.articulos?.forEach(pedidoArt => {
-    const key = pedidoArt.articulo?.codigo!;
+    const key = pedidoArt.codigo!;
 
     pedidoArt.cantidadOriginal = pedidoArt.cantidad
     pedidoArt.cantidad = pedidoArt.cantidad
@@ -821,6 +861,7 @@ agregarComentario() {
       nuevoPresupuestoArticulo.articulo = nuevoArticulo;
       nuevoPresupuestoArticulo.cantidad = result.cantidad;
       nuevoPresupuestoArticulo.cantidadActual = 0;
+      nuevoPresupuestoArticulo.cantidadPendiente = 0;
       nuevoPresupuestoArticulo.precioUnitario = result.precioUnitario;
       nuevoPresupuestoArticulo.descripcion = result.descripcion;
       nuevoPresupuestoArticulo.codigo = dataInicial.codigo;
@@ -855,7 +896,7 @@ guardarPresupuestoArticulo(pa: PresupuestoArticulo) {
 export class EditarGenericoDialogPedidoProduccionComponent {
   constructor(
     public dialogRef: MatDialogRef<EditarGenericoDialogPedidoProduccionComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { descripcion: string; precio: number }
+    @Inject(MAT_DIALOG_DATA) public data: { descripcion: string;}
   ) {}
 
   onNoClick(): void {

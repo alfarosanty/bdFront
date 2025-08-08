@@ -685,7 +685,7 @@ procesarSeleccion() {
         let descuentoGeneral
         if (this.descTotal==="0" || this.descTotal===null || this.descTotal===undefined){
           descuentoGeneral = " "
-        }else {descuentoGeneral= `Descuento : ${this.descTotal}%`}
+        }else {descuentoGeneral= `Descuento : $${formatNumberWithThousandsSeparator(Math.abs(this.calcularPrecioTotal()-this.calcularPrecioSubtotal()).toFixed(2))} (${this.descTotal}%)`}
         const precioTotal = this.calcularPrecioTotal().toFixed(2);
         let domicilio = '';
         let localidad = '';

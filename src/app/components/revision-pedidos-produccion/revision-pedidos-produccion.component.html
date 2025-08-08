@@ -10,13 +10,14 @@
     <!-- Menú desplegable de clientes -->
     <div class="dropdown">
 
-        <label for="clientes">Seleccionar Taller:</label>
-        <select  (change)="seleccionarTaller(); " [(ngModel)]="currentIndex">
-            <option >Seleccione un Taller</option>
-            <option *ngFor="let taller of talleres" [value]="taller.id" >
-                 {{taller.razonSocial}} 
-            </option>
-          </select>
+      <label for="clientes">Seleccionar Taller:</label>
+      <select (change)="seleccionarTaller()" [(ngModel)]="currentTaller">
+          <option [ngValue]="null">Seleccione un Taller</option>
+          <option *ngFor="let taller of talleres" [ngValue]="taller">
+              {{ taller.razonSocial }}
+          </option>
+      </select>
+      
                     
     </div>
 
@@ -42,20 +43,30 @@
             <mat-date-range-picker #rangePicker>
               <mat-date-range-picker-actions>
                 <button mat-button matDateRangePickerCancel>Cancel</button>
-                <button mat-raised-button (click)="filtrarPedidosProduccionXRangoFechas()" matDateRangePickerApply>Apply</button>
+                <button mat-raised-button (click)="aplicarFiltros(this.pedidosProduccionXTaller)" matDateRangePickerApply>Apply</button>
               </mat-date-range-picker-actions>
             </mat-date-range-picker>
           </mat-form-field>     
         </div>
 
             <div>
-                <label for="estado">Estado del Pedido:</label>
-                <select id="estado" [(ngModel)]="estadoPedido" (change)="filtroPedidosProduccion()">
-                    <option [value]="4" >CREADO</option>
-                    <option [value]="3" >EN TALLER</option>
-                    <option [value]="2" >EN CORTE</option>
-                    <option [value]="1" >COMPLETADO</option>
-                </select>
+              <mat-form-field appearance="fill">
+                <mat-label>Filtro estado</mat-label>
+                <mat-select [(ngModel)]="filtroEstadoPedido"
+                            name="filtroEstadoPedido"
+                            (selectionChange)="aplicarFiltros(pedidosProduccionXTaller)">
+                  
+                  <mat-option [value]="null">TODOS</mat-option>
+                  
+                  <mat-option *ngFor="let estado of estadosPedidoProduccion" [value]="estado">
+                    {{ estado.descripcion }}
+                  </mat-option>
+                  
+                </mat-select>
+              </mat-form-field>
+              
+              
+              
             </div>
         
 
@@ -90,16 +101,20 @@
           {{ sumatoriaCantidadPendienteTotal(element) }}
         </ng-container>
 
-        <!-- BOTÓN GENERAR PDF Original-->
+        <ng-container *ngSwitchCase="'Estado'">
+          {{mostrarEstado(element)}}
+        </ng-container>
+
+        <!-- BOTÓN GENERAR PDF Original
         <ng-container *ngSwitchCase="'Generar PDF Original'">
           <button mat-button (click)="generarPDFOriginalDePedido(element.id); $event.stopPropagation()">Generar PDF Original</button>
         </ng-container>
-
-        <!-- BOTÓN GENERAR PDF Pendiente-->
+-->
+        <!-- BOTÓN GENERAR PDF Pendiente
         <ng-container *ngSwitchCase="'Generar PDF Pendientes'">
           <button mat-button (click)="generarPDFPendientesDePedido(element.id); $event.stopPropagation()">Generar PDF Pendientes</button>
         </ng-container>
-
+-->
         <!-- COLUMNA Seleccionar -->
         <ng-container *ngSwitchCase="'Seleccionar'">
           <mat-checkbox [(ngModel)]="element.seleccionadoImprimir" (click)="$event.stopPropagation(); agregarClienteAMapa(element)"></mat-checkbox>
@@ -174,31 +189,44 @@
 </table>
 
 <div class="button-container botones-separados">
+  
+  
   <div class="boton-seleccionarPresupuesto">
-    <button mat-raised-button (click)="mostrarOpciones('original')" class="boton-opcion" color="primary">
-      Originales
+    <button mat-raised-button (click)="mostrarOpciones()" class="boton-opcion" color="primary">
+      Confirmar
     </button>
   </div>
 
-  <div class="boton-generarPDF">
-    <button mat-raised-button (click)="mostrarOpciones('pendiente')" class="boton-opcion" color="warn">
-      Pendientes
-    </button>
-  </div>
+  <mat-form-field appearance="fill">
+    <mat-label>Nuevo estado</mat-label>
+    <mat-select [(ngModel)]="estadoPedidoProduccionAAplicar" name="estadoPedidoProduccionAAplicar">
+      
+      <mat-option [value]="'ninguno'">NINGUNO</mat-option>
+      
+      <mat-option *ngFor="let estado of estadosPedidoProduccion" [value]="estado">
+        {{ estado.descripcion }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-radio-group [(ngModel)]="generacionPDF">
+    <mat-radio-button [value]="true">PDF</mat-radio-button>
+    <mat-radio-button [value]="false">Excel</mat-radio-button>
+  </mat-radio-group>
+
 </div>
 
 
 <div class="backdrop" *ngIf="mostrarConfirmacionPDF">
-  <div class="checklist-container">
-    <mat-radio-group [(ngModel)]="generacionPDF">
-      <mat-radio-button [value]="true">PDF</mat-radio-button>
-      <mat-radio-button [value]="false">Excel</mat-radio-button>
-    </mat-radio-group>
+  <div class="mensaje-confirmacion animado">
+    <span class="icono">✅</span>
+    <span>¡Se seleccionaron {{ cantidadPedidosAImprimir() }} para imprimir</span>
   </div>
 
-  <div class="button-container">
-    <button mat-raised-button color="primary" (click)="confirmarGeneracion()">Confirmar</button>
-    <button mat-raised-button color="warn" (click)="cancelarGeneracion()">Cancelar</button>
+  <div class="button-container botones-separados-OP">
+    <button mat-raised-button class="boton-opcion-OP" color="primary" (click)=" tipoGeneracion= 'original'; confirmarGeneracion()">Originales</button>
+    <button mat-raised-button class="boton-opcion-OP" color="accent" (click)=" tipoGeneracion= 'pendiente'; confirmarGeneracion()">Pendientes</button>
+    <button mat-raised-button class="boton-opcion-OP" color="warn" (click)="cancelarGeneracion()">Finalizar</button>
   </div>
 </div>
 

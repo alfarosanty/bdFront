@@ -7,16 +7,17 @@
 <div class="selector-container">
     <h2>TALLERES</h2>
 
-    <!-- Menú desplegable de clientes -->
+    <!-- Menú desplegable de TALLERES -->
     <div class="dropdown">
 
-        <label for="clientes">Seleccionar Taller:</label>
-        <select  (change)="seleccionarTaller(); buscarOrdenXTaller(); inputArticulos.focus()" [(ngModel)]="currentIndex">
-            <option >Seleccione un Taller</option>
-            <option *ngFor="let taller of talleres let i = index" [value]="i">
-                 {{taller.razonSocial}} 
-            </option>
-          </select>
+      <label for="clientes">Seleccionar Taller:</label>
+      <select  (change)="buscarOrdenXTaller(); inputArticulos.focus()" [(ngModel)]="currentTaller">
+        <option [ngValue]="null">Seleccione un Taller</option>
+        <option *ngFor="let taller of talleres" [ngValue]="taller">
+            {{ taller.razonSocial }}
+        </option>
+        </select>
+    
                     
     </div>
 
@@ -24,16 +25,23 @@
 
 
 <div class="datosCliente-container" *ngIf="currentTaller">
-    <h3>Selecciona una orden de pedido de:</h3>
-    <h3>{{currentTaller.razonSocial}}</h3>
-
-    <select [(ngModel)]="ordenDePedidoSeleccionado" (change)="cargarDetallesPedidoProduccion((ordenDePedidoSeleccionado?.id??0)); inputArticulos.focus()"> 
-        <option value="" disabled selected>Selecciona una orden de pedido de:</option>
-        <option *ngFor="let ordenDePedido of ordenesDePedidoXTaller" [ngValue]="ordenDePedido">
-            {{ ordenDePedido.id }} - {{ getFecha(ordenDePedido.fecha!) }}
-          </option>
-
-    </select>
+  <h3>Selecciona una orden de pedido de:</h3>
+  <h3>{{ currentTaller?.razonSocial }}</h3>
+  
+  <div class="form-container">
+    <mat-form-field appearance="fill" class="form-ancho">
+      <mat-label>Selecciona una orden de pedido de: {{ currentTaller?.razonSocial }}</mat-label>
+      <mat-select [(value)]="ordenDePedidoSeleccionado"
+                  (selectionChange)="cargarDetallesPedidoProduccion((ordenDePedidoSeleccionado?.id ?? 0)); inputArticulos.focus()">
+        <mat-option *ngFor="let ordenDePedido of ordenesDePedidoXTaller" [value]="ordenDePedido">
+          {{ ordenDePedido.id }} - {{ getFecha(ordenDePedido.fecha!) }} - {{ getCliente(ordenDePedido) }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+  
+  
+  
 
   </div>
 

@@ -258,7 +258,13 @@ select {
   
   .fecha-field {
     margin-right: 20px;
+    width: 300%;
   }
+
+.mat-date-range-input,
+.fecha-field input {
+  width: 100%;
+}
 
   .boton-borrar {
     background-color: transparent;
@@ -278,18 +284,76 @@ select {
 
 /* Capa de fondo borroso */
 .backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(5px);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+  display: flex;
+  flex-direction: column; /* Establece los elementos en columna */
+  justify-content: center; /* Centra los elementos verticalmente */
+  align-items: center; /* Centra los elementos horizontalmente */
+  z-index: 1000;
+}
+
+.mensaje-confirmacion {
+  background: white;
+  padding: 20px 30px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  font-size: 20px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 30px;
+  animation: aparecer 0.4s ease-out;
+}
+
+
+.icono {
+  font-size: 28px;
+  color: green;
+}
+
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+  .botones-separados-OP {
     display: flex;
-    flex-direction: column; /* Establece los elementos en columna */
-    justify-content: center; /* Centra los elementos verticalmente */
-    align-items: center; /* Centra los elementos horizontalmente */
-    z-index: 10;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 20px;
+    width: 100%;
+    max-width: 600px; /* opcional, para que no se estiren infinito */
+  }
+  
+  .boton-opcion-OP {
+    flex: 1;                /* ocupa el mismo espacio que los demás */
+    min-width: 120px;       /* asegura un mínimo */
+    max-width: 200px;       /* opcional, para limitar */
+    height: 48px;           /* altura uniforme */
+    font-size: 16px;
+    border-radius: 8px;
+    white-space: nowrap;    /* evita que se corte el texto */
+  }
+  
+  
+  button[mat-raised-button] {
+    padding: 8px 20px;
+    font-size: 16px;
+    border-radius: 8px;
   }
   
   /* Modal */
@@ -345,85 +409,19 @@ select {
     justify-content: center;
   }
 
-  .boton-lindo {
-    font-size: 90%;
-    padding: 18% 50%;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-  }
-  
-  .boton-lindo:hover {
-    background-color: #020749;
-    transform: scale(1.05);
-  }
-
-  .checklist-container {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    text-align: center;
-  }
-
   .button-container {
-    margin-bottom: 20px;
+    margin-top: 20px;
     text-align: center;
     display: flex;
     gap: 16px;
-    margin-bottom: 16px;
+    width: 150%;
   }
 
-  .botones-separados {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-top: 20px;
-    width: 100%;
-    max-width: 600px; /* opcional, para que no se estiren infinito */
-  }
-
-  .boton-opcion {
-    flex: 1;                /* ocupa el mismo espacio que los demás */
-    min-width: 120px;       /* asegura un mínimo */
-    max-width: 200px;       /* opcional, para limitar */
-    height: 48px;           /* altura uniforme */
-    font-size: 16px;
-    border-radius: 8px;
-    white-space: nowrap;    /* evita que se corte el texto */
-  }
-  
-  
-  button[mat-raised-button] {
-    padding: 8px 20px;
-    font-size: 16px;
-    border-radius: 8px;
-  }
-  
   
   .boton-seleccionarPresupuesto {
-    display: inline-flex; /* Asegura que los botones estén alineados horizontalmente */
+    margin-right: 40%;
   }
   
-  .boton-lindo {
-    font-size: 90%;
-    padding: 22px 22px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-    border: none;
-    width: 150px; /* Fijás un ancho común */
-    margin: 0 auto;
-  }
-  
-  
-  /* Estilo para el botón azul */
-  .azul:hover {
-    background-color: #020749; /* Azul oscuro al pasar el mouse */
-  }
-  
-  .rojo:hover {
-    background-color: #8B0000; /* Rojo oscuro al pasar el mouse */
-  }
   
   tr[cdkDrag] {
     cursor: move;

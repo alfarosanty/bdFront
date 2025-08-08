@@ -23,6 +23,7 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
 import { ArticuloPrecio } from 'src/app/models/articulo-precio.model';
 import { MatSelect, MatSelectModule } from '@angular/material/select';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import { Cliente } from 'src/app/models/cliente';
 
 (pdfMake as any).vfs = (pdfFonts as any).vfs;
 
@@ -60,13 +61,16 @@ export class IngresoComponent {
   mapaPresupuestoArticulos ?: Map<string,PresupuestoArticulo[]>;
   mapaPresuXArtParaAcceder ?: Map<string,PresupuestoArticulo[]>;
   mapaArticulosModificados ?: Map<string,RegistroDescuento[]> = new Map();
+  mapaClienteXPedidoProduccion?: Map<number, {idPedidoProduccion:number, cliente: Cliente}>= new Map();
+
 
   ingresoMercaderiaSeleccionado?: PedidoProduccion
   currentTaller?: Taller;
   currentArticulo ?: Articulo;
   currentIngresoMercaderia?: IngresoMercaderia;
-  curentPedidoProduccion ?: PedidoProduccion
+  pedidoProduccionSeleccionado ?: PedidoProduccion
 
+  pedidoProduccionAAcceder ?: PedidoProduccion
   ingresoMercaderiaAAcceder ?: IngresoMercaderia
   fechaIngresoMercaderia?: Date;
   producto = '';
@@ -160,15 +164,7 @@ listarTalleres(): void {
       
     });
   }
- 
 
-  seleccionarTaller(): void {
-    if(this.talleres){
-      this.currentTaller = this.talleres[this.currentIndex];
-      console.log(this.currentTaller)
-      console.log("ESTE ES EL INDEX", this.currentIndex)
-    }
-  }
 
   buscarIngresosXTaller(){
     if(this.currentTaller){
@@ -186,15 +182,36 @@ listarTalleres(): void {
 
   buscarOrdenXTaller(){
     if(this.currentTaller){
-     this.ordenProduccionService.getByTaller(this.currentTaller?.id).subscribe({
+     this.ordenDeProduccionService.getByTaller(this.currentTaller?.id).subscribe({
       next: (data) => {
-        this.pedidosProduccionXTaller = data;
+
+        this.mapaPresupuestoArticulos?.clear()
+        this.mapaPresuXArtParaAcceder?.clear()
+        this.mapaArticulosModificados?.clear()
+        this.actualizarDataSource()
+        
+        this.pedidosProduccionXTaller = data.sort((a, b) => b.id! - a.id!);
         console.log("LAS ORDENES DE PRODUCCION DE " + this.currentTaller?.razonSocial + " SON:",this.pedidosProduccionXTaller)
+        this.obtenerClientesXPedidoProduccion(this.pedidosProduccionXTaller)
       },
       error: (e) => console.error(e)
   
     });
     }
+  }
+
+  obtenerClientesXPedidoProduccion(pedidosProduccion: PedidoProduccion[]) {
+  
+    this.mapaClienteXPedidoProduccion = new Map<number, {idPedidoProduccion: number, cliente: Cliente}>();
+  
+    this.ordenDeProduccionService.obtenerClientes(pedidosProduccion).subscribe((respuesta: {idPedidoProduccion: number, cliente: Cliente}[]) => {
+      respuesta.forEach(entry => {
+        this.mapaClienteXPedidoProduccion!.set(entry.idPedidoProduccion, {
+          idPedidoProduccion: entry.idPedidoProduccion,
+          cliente: entry.cliente
+        });
+      });
+    });
   }
 
   convertirAMayuscula(){
@@ -347,6 +364,11 @@ mostrarColoresDisponibles(articulo : Articulo) : string {
     }
   }
 
+  getCliente(pedidoProduccion: PedidoProduccion): string {
+    const clienteXPedidoProduccion = this.mapaClienteXPedidoProduccion?.get(pedidoProduccion.id!);
+    return clienteXPedidoProduccion?.cliente.razonSocial!;
+  }
+
 borrarFila(key : any){
     
   this.mapaPresupuestoArticulos?.delete(key);
@@ -495,7 +517,7 @@ borrarArticulo(key: any, color: string) {
       this.mapaPresupuestoArticulos?.forEach((presupuestosArticulos, clave) => {
         const cantidades = presupuestosArticulos.map(pa => pa.cantidadActual || 0);
         const totalCantidad = cantidades.reduce((acc, c) => acc + c, 0);
-        const descripcion = presupuestosArticulos[0].articulo?.descripcion || '';
+        const descripcion = presupuestosArticulos[0].descripcion || '';
         const descripcionCompleta = presupuestosArticulos
           .map(pa => `${pa.cantidadActual || 0}${pa.articulo?.color?.codigo || ''}`)
           .join(' ');
@@ -685,19 +707,16 @@ validarDatosRequeridos(): boolean {
 }
 
 
-cargarDetallesIngresoMercaderia(id: Number) {
-  this.ingresoService.get(id).subscribe({
+cargarDetallesPedidoProduccion(id: Number) {
+  this.ordenDeProduccionService.get(id).subscribe({
     next: (data) => {
       console.log(data);
-      this.ingresoMercaderiaAAcceder = data;
-      console.log("El presupuesto cargado es: ", this.ingresoMercaderiaAAcceder);
-      this.currentTaller = this.ingresoMercaderiaAAcceder?.taller;
-      this.fechaIngresoMercaderia = this.ingresoMercaderiaAAcceder.fecha
+      this.pedidoProduccionAAcceder = data;
+      console.log("El pedido produccion cargado es: ", this.pedidoProduccionAAcceder);
       console.log("Se cargó al taller que se buscó acceder ", this.currentTaller);
 
       // Llamar a procesarMapaDeArticulos cuando los datos se hayan cargado
       this.procesarMapaDeArticulos();
-      this.actualizarDataSource()
     },
     error: (e) => console.error(e)
   });
@@ -705,10 +724,10 @@ cargarDetallesIngresoMercaderia(id: Number) {
 
 
 procesarMapaDeArticulos() {
-  if(this.ingresoMercaderiaAAcceder)
+  if(this.pedidoProduccionAAcceder)
   this.mapaPresuXArtParaAcceder = new Map()
-  console.log(this.ingresoMercaderiaAAcceder?.articulos)
-  this.ingresoMercaderiaAAcceder?.articulos?.forEach(presuArt => {
+  console.log(this.pedidoProduccionAAcceder?.articulos)
+  this.pedidoProduccionAAcceder?.articulos?.forEach(presuArt => {
   console.log("PRESUART CARGANDO",presuArt)
   console.log("EL CODIGO ARTICULO ES:", presuArt.articulo?.codigo)
 
@@ -1090,7 +1109,7 @@ guardarPresupuestoArticulo(pa: PresupuestoArticulo) {
 export class EditarGenericoDialogIngresoComponent {
   constructor(
     public dialogRef: MatDialogRef<EditarGenericoDialogIngresoComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { descripcion: string; precio: number }
+    @Inject(MAT_DIALOG_DATA) public data: { descripcion: string;}
   ) {}
 
   onNoClick(): void {

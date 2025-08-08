@@ -4,11 +4,6 @@
     <mat-label>Descripción</mat-label>
     <input matInput [(ngModel)]="data.descripcion" (ngModelChange)="data.descripcion = $event.toUpperCase()"/>
   </mat-form-field>
-
-  <mat-form-field appearance="fill" class="w-100">
-    <mat-label>Precio unitario</mat-label>
-    <input matInput type="number" [(ngModel)]="data.precio" />
-  </mat-form-field>
 </mat-dialog-content>
 
 <mat-dialog-actions align="end">

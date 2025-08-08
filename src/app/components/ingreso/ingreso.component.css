@@ -45,6 +45,26 @@
     margin-bottom: 20px;
 }
 
+
+/* COMBOS DE SELECT*/
+
+.form-container {
+  display: block;
+  width: 100%;
+}
+
+.form-ancho {
+  width: 150% !important; /* Ajustá a tu gusto */
+  max-width: none !important;
+}
+
+/* Hacer que el panel del dropdown también sea más ancho */
+::ng-deep .mat-select-panel {
+  min-width: 150% !important;
+}
+
+
+
 select {
     width: 100%;
     padding: 10px;

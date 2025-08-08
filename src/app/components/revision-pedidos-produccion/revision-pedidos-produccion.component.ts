@@ -20,6 +20,7 @@ import { PresupuestoService } from 'src/app/services/budget.service';
 import * as ExcelJS from 'exceljs';
 import * as FileSaver from 'file-saver';
 import { ArticuloPrecio } from 'src/app/models/articulo-precio.model';
+import { EstadoPedidoProduccion } from 'src/app/models/estado-presupuesto.model';
 
 
 (pdfMake as any).vfs = (pdfFonts as any).vfs;
@@ -49,6 +50,7 @@ export class RevisionPedidosProduccionComponent {
   articulosPrecio: ArticuloPrecio[]=[];
   articulos: Articulo[]=[];
   familiaMedida: string[] = [];
+  estadosPedidoProduccion: EstadoPedidoProduccion[] = [];
   pedidosProduccionXTaller: PedidoProduccion[] = [];
   pedidosProdXTallerFiltrados: PedidoProduccion[] = [];
   mapaPresupuestoArticulos ?: Map<string,PresupuestoArticulo[]>;
@@ -71,7 +73,9 @@ export class RevisionPedidosProduccionComponent {
   cantProducto = '';
   mostrarColores = false;
   mostrarBotonGuardar = true;
-  estadoPedido?:number
+  filtroEstadoPedido?:EstadoPedidoProduccion|null
+  estadoPedidoProduccionAAplicar?:EstadoPedidoProduccion| 'ninguno' |null = null
+
 
 
   currentIndex = -1;
@@ -79,12 +83,12 @@ export class RevisionPedidosProduccionComponent {
 
 
   toggleDetalles: { [idPedido: number]: boolean } = {};
-  columnsToDisplay = ['Pedido', 'Cantidad Total', 'Cantidad Pendiente', 'Generar PDF Original', 'Generar PDF Pendientes', 'Seleccionar'];
+  columnsToDisplay = ['Pedido', 'Cantidad Total', 'Cantidad Pendiente','Estado', 'Seleccionar'];
   articuloColumnsToDisplay = ['Articulo', 'Descripcion' ,  'Cantidad', 'Cantidad Pendiente'];
   expandedElement: PresupuestoArticulo | undefined;
 
   mostrarConfirmacionPDF = false;
-  generacionPDF: boolean = true;
+  generacionPDF?: boolean;
   tipoGeneracion: 'original' | 'pendiente' | null = null;
 
   //INPUT BUSQUEDA
@@ -100,20 +104,37 @@ export class RevisionPedidosProduccionComponent {
     this.listarTalleres();
     this.mapaPresupuestoArticulos=new Map();
 
-    this.articuloService.getAllArticuloPrecio().subscribe({
-      next: (data) => {
-        this.articulosPrecio = data; 
-        for (let i = 0; i < this.articulosPrecio?.length; i++) {
-          let item = this.articulosPrecio[i];
-          if(item.codigo && item.descripcion)
-            this.options.push(item.codigo + ' ' + item.descripcion);
-          console.log(item);
-          }
-          console.log('items options ' +  this.options.length);       
-        console.log(data);
-      },
-      error: (e) => console.error(e)
-    });
+  this.articuloService.getAllArticuloPrecio().subscribe({
+    next: (data) => {
+      this.articulosPrecio = data; 
+      for (let i = 0; i < this.articulosPrecio?.length; i++) {
+        let item = this.articulosPrecio[i];
+        if(item.codigo && item.descripcion)
+          this.options.push(item.codigo + ' ' + item.descripcion);
+        console.log(item);
+        }
+        console.log('items options ' +  this.options.length);       
+      console.log(data);
+    },
+    error: (e) => console.error(e)
+  });
+
+  this.ordenDeProduccionService.getEstadosPedidoProduccion().subscribe({
+    next: (estados) => {
+      console.log(estados)
+       this.estadosPedidoProduccion = estados;
+    },
+    error: (err) => {
+      console.error('Error al obtener estados:', err);
+    }
+  });
+
+  this.fechaFin = new Date();
+  this.fechaInicio = new Date();
+  this.fechaInicio.setDate(this.fechaFin.getDate() - 7);
+  this.generacionPDF=true;
+  console.log('Valor inicial de generacionPDF:', this.generacionPDF);
+    
 
 
     this.filteredOptions = this.myControl.valueChanges.pipe(startWith(''),map(value => this._filter(String(value))));
@@ -148,15 +169,13 @@ listarTalleres(): void {
   }
  
 
- seleccionarTaller(): void {
-    if(this.talleres){
-      this.currentTaller = this.talleres[this.currentIndex-1];
-      console.log(this.currentTaller)
-      this.buscarOrdenXTaller()
+  seleccionarTaller(): void {
+    if (this.currentTaller) {
+      console.log(this.currentTaller);
+      this.buscarOrdenXTaller();
     }
-
-      
   }
+  
 
 
   buscarOrdenXTaller(){
@@ -167,6 +186,7 @@ listarTalleres(): void {
         this.pedidosProdXTallerFiltrados= data.sort((a, b) => new Date(a.fecha!).getTime() - new Date(b.fecha!).getTime());
         this.dataSource.data = this.pedidosProdXTallerFiltrados;
         this.pedidosProdXTallerFiltrados.forEach(pedidoProduccion=>this.agregarClienteAMapa(pedidoProduccion))
+        this.aplicarFiltros(data)
       },
       error: (e) => console.error(e)
   
@@ -174,17 +194,56 @@ listarTalleres(): void {
     }
   }
 
-filtroPedidosProduccion() {
-  if (this.estadoPedido) {
-    this.pedidosProdXTallerFiltrados = this.pedidosProduccionXTaller
-      .filter(pedido => pedido.idEstadoPedidoProduccion == this.estadoPedido)
+  filtrarPedidosProduccionXEstado(listaAFiltrar:PedidoProduccion[]):PedidoProduccion[] {
+  let listaFiltrada
+  if (this.filtroEstadoPedido) {
+    listaFiltrada = listaAFiltrar
+      .filter(pedido => pedido.idEstadoPedidoProduccion == this.filtroEstadoPedido?.id)
       .sort((a, b) => new Date(a.fecha!).getTime() - new Date(b.fecha!).getTime());
   } else {
-    this.pedidosProdXTallerFiltrados = [...this.pedidosProduccionXTaller]; // sin filtrar
+    listaFiltrada = [...this.pedidosProduccionXTaller]; // sin filtrar
   }
 
-  this.dataSource.data = this.pedidosProdXTallerFiltrados;
+  return listaFiltrada;
 }
+
+
+filtrarPedidosProduccionXRangoFechas(listaPedidosProduccion: PedidoProduccion[]): PedidoProduccion[] {
+  console.log("DEBERÍA ESTAR FILTRANDO POR FECHAS");
+
+  if (this.fechaInicio && this.fechaFin) {
+    console.log("Fecha inicio", this.formatearFecha(this.fechaInicio), "Fecha fin", this.formatearFecha(this.fechaFin));
+    const pedidosFiltradosEntreFechas = listaPedidosProduccion.filter(pedidoProduccion =>
+      this.estaEntreFechas(this.fechaInicio, this.fechaFin, pedidoProduccion.fecha)
+    );
+    return pedidosFiltradosEntreFechas;
+  }
+
+  // Si no hay fechas para filtrar, devolvemos la lista sin modificar
+  return listaPedidosProduccion;
+}
+
+  
+  estaEntreFechas(fechaInicio: any, fechaFin: any, fechaEvaluar: any): boolean {
+    const inicio = new Date(fechaInicio);
+    const fin = new Date(fechaFin);
+    const evaluar = new Date(fechaEvaluar);
+    console.log(evaluar);
+    // Si alguna fecha es inválida, por seguridad devuelvo false
+    if (isNaN(inicio.getTime()) || isNaN(fin.getTime()) || isNaN(evaluar.getTime())) {
+      return false;
+    }
+  
+    return evaluar >= inicio && evaluar <= fin;
+  }
+
+  aplicarFiltros(listaAFiltrar: PedidoProduccion[]) {
+    const primerFiltroAplicado = this.filtrarPedidosProduccionXEstado(listaAFiltrar);
+    const segundoFiltroAplicado = this.filtrarPedidosProduccionXRangoFechas(primerFiltroAplicado);
+    this.dataSource.data = segundoFiltroAplicado;
+    
+  }
+  
 
   
   sumatoriaCantidadTotal(pedido: PedidoProduccion): number|undefined {
@@ -220,6 +279,13 @@ filtroPedidosProduccion() {
     } else {
       return '';
     }
+  }
+
+  mostrarEstado(pedidoProduccion: PedidoProduccion): string{
+    const idEstadoPedidoProduccion = pedidoProduccion.idEstadoPedidoProduccion
+    const estadoPedidoProduccion = this.estadosPedidoProduccion.find(estado=>estado.id===idEstadoPedidoProduccion)
+
+    return (estadoPedidoProduccion?.descripcion || 'no hay estado')
   }
  
   generarPDFOriginal() {
@@ -488,12 +554,14 @@ filtroPedidosProduccion() {
     const primerPedido = listaPedidosProduccion[0];
     const razonSocial = primerPedido.taller?.razonSocial || 'Sin taller';
     const telefonoTaller = primerPedido.taller?.telefono || '';
-    
+  
     // 👉 Título general
     const titulo1 = worksheet.addRow([`Taller: ${razonSocial}`]);
+    worksheet.mergeCells(`A${titulo1.number}:C${titulo1.number}`);
     titulo1.font = { size: 16, bold: true };
   
     const titulo2 = worksheet.addRow([`Teléfono: ${telefonoTaller}`]);
+    worksheet.mergeCells(`A${titulo2.number}:B${titulo2.number}`);
     titulo2.font = { size: 14 };
   
     worksheet.addRow([]); // Espacio
@@ -503,29 +571,31 @@ filtroPedidosProduccion() {
       const fechaPedido = this.formatearFecha(pedido.fecha);
       const cliente = this.presupuestosMap.get(pedido.idPresupuesto ?? 0)?.cliente?.razonSocial ?? 'Stock';
   
-      // 👉 Encabezado del pedido
-      const separador = worksheet.addRow([`Pedido N° ${idPedido} - ${fechaPedido} - Cliente: ${cliente}`]);
-      separador.font = { bold: true, italic: true, size: 14 };
-      worksheet.addRow([]); // Espacio
+      const textoCabecera = `Pedido N° ${idPedido} - ${fechaPedido} - Cliente: ${cliente}`;
   
-      // 👉 Encabezado de tabla
-      const header = worksheet.addRow(['Código', 'Cantidad', 'Descripción']);
-      header.eachCell((cell) => {
-        cell.font = {
-          bold: true,
-          size: 13,
-          color: { argb: 'FFFFFFFF' }
+      // 👉 Fila de cabecera combinada y sombreada gris oscuro + cursiva
+      const filaCabecera = worksheet.addRow([textoCabecera]);
+      worksheet.mergeCells(`A${filaCabecera.number}:C${filaCabecera.number}`);
+      filaCabecera.font = { bold: true, italic: true, size: 14 };
+      filaCabecera.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFA6A6A6' } // gris oscuro
+      };
+      filaCabecera.alignment = { horizontal: 'center', vertical: 'middle' };
+  
+      // 👉 Agregar bordes a celdas A–C del encabezado
+      ['A', 'B', 'C'].forEach(col => {
+        const cell = worksheet.getCell(`${col}${filaCabecera.number}`);
+        cell.border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' }
         };
-        cell.fill = {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: 'FF4A4A4A' }
-        };
-        cell.alignment = { vertical: 'middle', horizontal: 'center' };
-        cell.border = { bottom: { style: 'thin' } };
       });
   
-      // 👉 Datos
+      // 👉 Datos directamente
       const mapaPresuArt: Map<string, PresupuestoArticulo[]> = new Map();
       this.agruparArticulosPorFamiliaYMedida(mapaPresuArt, pedido);
   
@@ -538,23 +608,37 @@ filtroPedidosProduccion() {
           .join(' ');
   
         const row = worksheet.addRow([clave, totalCantidad, `${descripcion} ${descripcionCompleta}`]);
-        row.font = { size: 13 };
+  
+        // 👉 Alineación izquierda y bordes finos para cada celda
+        row.eachCell(cell => {
+          cell.alignment = { horizontal: 'left' };
+          cell.font = { size: 13 };
+          cell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' }
+          };
+        });
       });
   
-      worksheet.addRow([]); // Espacio entre pedidos
     });
   
-    // Ajustar ancho de columnas
-    worksheet.columns.forEach(column => {
-      column.width = 25;
-    });
+    // 👉 Ajustar ancho de columnas
+    worksheet.columns = [
+      { width: 20 }, // Código
+      { width: 8 }, // Cantidad
+      { width: 72 }  // Descripción
+    ];
   
     // 👉 Descargar archivo
     workbook.xlsx.writeBuffer().then((buffer) => {
       const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      FileSaver.saveAs(blob, `Pedidos-Produccion-Todos-${this.formatearFecha(new Date())}.xlsx`);
+      FileSaver.saveAs(blob, `Pedidos-Produccion-Originales-Todos-${this.formatearFecha(new Date())}.xlsx`);
     });
   }
+  
+  
 
 
   generarExcelPendienteMultiplePedidos(listaPedidosProduccion: PedidoProduccion[]) {
@@ -566,12 +650,14 @@ filtroPedidosProduccion() {
     const primerPedido = listaPedidosProduccion[0];
     const razonSocial = primerPedido.taller?.razonSocial || 'Sin taller';
     const telefonoTaller = primerPedido.taller?.telefono || '';
-    
+  
     // 👉 Título general
     const titulo1 = worksheet.addRow([`Taller: ${razonSocial}`]);
+    worksheet.mergeCells(`A${titulo1.number}:D${titulo1.number}`);
     titulo1.font = { size: 16, bold: true };
   
     const titulo2 = worksheet.addRow([`Teléfono: ${telefonoTaller}`]);
+    worksheet.mergeCells(`A${titulo2.number}:C${titulo2.number}`);
     titulo2.font = { size: 14 };
   
     worksheet.addRow([]); // Espacio
@@ -581,56 +667,73 @@ filtroPedidosProduccion() {
       const fechaPedido = this.formatearFecha(pedido.fecha);
       const cliente = this.presupuestosMap.get(pedido.idPresupuesto ?? 0)?.cliente?.razonSocial ?? 'Stock';
   
-      // 👉 Encabezado del pedido
-      const separador = worksheet.addRow([`Pedido N° ${idPedido} - ${fechaPedido} - Cliente: ${cliente}`]);
-      separador.font = { bold: true, italic: true, size: 14 };
-      worksheet.addRow([]); // Espacio
+      const textoCabecera = `Pedido N° ${idPedido} - ${fechaPedido} - Cliente: ${cliente}`;
   
-      // 👉 Encabezado de tabla
-      const header = worksheet.addRow(['Código', 'Pendiente', 'Descripción']);
-      header.eachCell((cell) => {
-        cell.font = {
-          bold: true,
-          size: 13,
-          color: { argb: 'FFFFFFFF' }
+      // 👉 Fila de cabecera combinada y sombreada gris oscuro + cursiva
+      const filaCabecera = worksheet.addRow([textoCabecera]);
+      worksheet.mergeCells(`A${filaCabecera.number}:D${filaCabecera.number}`);
+      filaCabecera.font = { bold: true, italic: true, size: 14 };
+      filaCabecera.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FFA6A6A6' } // gris oscuro
+      };
+      filaCabecera.alignment = { horizontal: 'center', vertical: 'middle' };
+  
+      // 👉 Agregar bordes a celdas A–C del encabezado
+      ['A', 'B', 'C'].forEach(col => {
+        const cell = worksheet.getCell(`${col}${filaCabecera.number}`);
+        cell.border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' }
         };
-        cell.fill = {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: 'FF4A4A4A' }
-        };
-        cell.alignment = { vertical: 'middle', horizontal: 'center' };
-        cell.border = { bottom: { style: 'thin' } };
       });
   
-      // 👉 Datos
+      // 👉 Datos directamente
       const mapaPresuArt: Map<string, PresupuestoArticulo[]> = new Map();
       this.agruparArticulosPorFamiliaYMedida(mapaPresuArt, pedido);
   
       mapaPresuArt.forEach((presupuestosArticulos, clave) => {
-        const pendientes = presupuestosArticulos.map(pa => pa.cantidadPendiente || 0);
-        const totalCantidad = pendientes.reduce((acc, c) => acc + c, 0);
+        const cantidades = presupuestosArticulos.map(pa => pa.cantidad || 0);
+        const cantidadesPendientes = presupuestosArticulos.map(pa => pa.cantidadPendiente || 0);
+        const totalCantidad = cantidades.reduce((acc, c) => acc + c, 0);
+        const totalCantidadPendiente = cantidadesPendientes.reduce((acc, c) => acc + c, 0);
         const descripcion = presupuestosArticulos[0].articulo?.descripcion || '';
         const descripcionCompleta = presupuestosArticulos
-          .map(pa => `${pa.cantidadPendiente || 0}${pa.articulo?.color?.codigo ? ' ' + pa.articulo.color.codigo : ''}`)
+          .map(pa => `${pa.cantidad || 0}${pa.articulo?.color?.codigo ? ' ' + pa.articulo.color.codigo : ''}`)
           .join(' ');
   
-        const row = worksheet.addRow([clave, totalCantidad, `${descripcion} ${descripcionCompleta}`]);
-        row.font = { size: 13 };
+        const row = worksheet.addRow([clave, totalCantidad, totalCantidadPendiente, `${descripcion} ${descripcionCompleta}`]);
+  
+        // 👉 Alineación izquierda y bordes finos para cada celda
+        row.eachCell(cell => {
+          cell.alignment = { horizontal: 'left' };
+          cell.font = { size: 13 };
+          cell.border = {
+            top: { style: 'thin' },
+            left: { style: 'thin' },
+            bottom: { style: 'thin' },
+            right: { style: 'thin' }
+          };
+        });
       });
   
-      worksheet.addRow([]); // Espacio entre pedidos
     });
   
-    // Ajustar ancho de columnas
-    worksheet.columns.forEach(column => {
-      column.width = 25;
-    });
+    // 👉 Ajustar ancho de columnas
+    worksheet.columns = [
+      { width: 20 }, // Código
+      { width: 5 }, // Cantidad
+      { width: 5 }, // Cantidad pendiente
+      { width: 60 }  // Descripción
+    ];
   
     // 👉 Descargar archivo
     workbook.xlsx.writeBuffer().then((buffer) => {
       const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      FileSaver.saveAs(blob, `Pedidos-Produccion-Todos-${this.formatearFecha(new Date())}.xlsx`);
+      FileSaver.saveAs(blob, `Pedidos-Produccion-Pendientes-Todos-${this.formatearFecha(new Date())}.xlsx`);
     });
   }
   
@@ -766,10 +869,22 @@ getStyles() {
   };
 }
 
-mostrarOpciones(tipo: 'original' | 'pendiente') {
-  this.tipoGeneracion = tipo;
+mostrarOpciones() {
+  if (this.estadoPedidoProduccionAAplicar === null) {
+    alert("No seleccionó un nuevo estado para los pedidos producción");
+    return;
+  }
+
+  if (this.cantidadPedidosAImprimir() < 1) {
+    alert("Debe seleccionar un pedido producción para continuar");
+    return;
+  }
+
+  // Si pasa ambas validaciones:
+  this.modificarEstadoAPedidosSeleccionados(this.estadoPedidoProduccionAAplicar!);
   this.mostrarConfirmacionPDF = true;
 }
+
 
 
 
@@ -869,39 +984,6 @@ actualizarArticuloSeleccionado(){
   if (this.articulos && this.articulos.length > 0) {
     this.currentArticulo = this.articulos[this.articuloColorIndex]; // Actualiza el artículo seleccionado
   }
-}
-
-filtrarPedidosProduccionXRangoFechas(){
-console.log("DEBERÍA ESTAR FILTRANDO POR FECHAS")
-if(this.fechaInicio){
-  if (this.fechaFin){
-    console.log("Fecha inicio", this.formatearFecha(this.fechaInicio), "Fecha fin", this.formatearFecha(this.fechaFin))
-    const pedidosFiltradorEntreFechas = this.pedidosProdXTallerFiltrados.filter(pedidoProduccion=> this.estaEntreFechas(this.fechaInicio,this.fechaFin, pedidoProduccion.fecha )) 
-    this.dataSource = new MatTableDataSource(pedidosFiltradorEntreFechas);
-    console.log()
-    console.log(this.dataSource.data)
-
-  }
-}
-}
-
-estaEntreFechas(fechaInicio: any, fechaFin: any, fechaEvaluar: any): boolean {
-  const inicio = new Date(fechaInicio);
-  const fin = new Date(fechaFin);
-  const evaluar = new Date(fechaEvaluar);
-  console.log(evaluar);
-  // Si alguna fecha es inválida, por seguridad devuelvo false
-  if (isNaN(inicio.getTime()) || isNaN(fin.getTime()) || isNaN(evaluar.getTime())) {
-    return false;
-  }
-
-  return evaluar >= inicio && evaluar <= fin;
-}
-
-filtrarGeneral(){
-  this.filtrarPedidosProduccionXRangoFechas();
-  this.filtroPedidosProduccion();
-
 }
 
 formatearFecha(fecha: any): string {
@@ -1010,12 +1092,55 @@ aplicarIngresoAPedidosProduccion(){
       }
     }
   
-    this.mostrarConfirmacionPDF = false;
     this.tipoGeneracion = null;
   }
   
-  cancelarGeneracion(){
-    this.mostrarConfirmacionPDF = false
+  cancelarGeneracion() {
+    window.location.reload();
+  }
+
+  cantidadPedidosAImprimir(): number {
+    return this.pedidosProduccionXTaller.filter(pedido => pedido.seleccionadoImprimir).length;
+  }
+
+  actualizarEstadosPedidosProduccion(){
+    const pedidosProduccionAActualizar = this.pedidosProduccionXTaller.filter(pedido => pedido.seleccionadoImprimir)
+  }
+  
+
+  modificarEstadoAPedidosSeleccionados(unEstado: EstadoPedidoProduccion | 'ninguno' | null) {
+    // Si no se seleccionó un estado válido, salir
+    if (unEstado === 'ninguno') {
+      return;
+    }
+  
+    // Filtrar los pedidos seleccionados
+    const listaPedidosAModificar = this.pedidosProdXTallerFiltrados.filter(pedido => pedido.seleccionadoImprimir);
+  
+    // Actualizar el estado en cada pedido
+    listaPedidosAModificar.forEach(pedido => {
+      pedido.idEstadoPedidoProduccion = unEstado?.id;
+    });
+  
+    // Mapear a formato que espera el backend
+    const pedidosOutputDTO = listaPedidosAModificar.map(pedido => ({
+      idPedidoProduccion: pedido.id!,
+      idEstadoPedidoProduccion: pedido.idEstadoPedidoProduccion!
+    }));
+  
+    // Llamar al servicio y suscribirse
+    this.ordenDeProduccionService.actualizarEstadosPedidoProduccion(pedidosOutputDTO).subscribe({
+      next: (idsActualizados: number[]) => {
+        console.log("IDs de estados actualizados correctamente: ", idsActualizados);
+        // Podés recargar o actualizar la vista si querés
+      },
+      error: (err) => {
+        console.error("Error al actualizar estados", err);
+        this.mostrarConfirmacionPDF = false;
+        alert("Ocurrió un error al actualizar los estados.");
+      }
+    });
+    
   }
   
   
