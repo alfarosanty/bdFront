@@ -16,80 +16,74 @@
   </div>
 
 </div>
-<div class="inferior-container">
-  <div class="inferior-izquierda-container">
-    <div *ngIf="mostrarPanelBusqueda" class="search-panel">
-      <div class="search-by-client">
-        <label for="clienteBuscado">Buscar por Cliente:</label>
+<div class="inferior-container" *ngIf="mostrarPanelBusqueda" @fadeInOut>
+
+    <div class="selector-container">
+      <h2>Clientes</h2>
+
+      <!-- Menú desplegable de clientes -->
+      <div class="dropdown">
         <div>
-          <mat-form-field>
-            <mat-label>Selecciona una opción</mat-label>
-            <input type="text"
-              [(ngModel)]="clienteSeleccionado"
-              matInput
-              [formControl]="myControl"
-              [matAutocomplete]="auto"
-              (keydown.enter)="buscarPresupuestosXCliente()"
-              (input)="myControl.setValue(myControl.value.toUpperCase(), { emitEvent: false })">
-            <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption>
-              <mat-option *ngFor="let option of filteredOptions | async" [value]="option">
-                {{ option }}
-              </mat-option>
-            </mat-autocomplete>
-          </mat-form-field>
+          <label for="numCliente">Número de Cliente</label>
+          <input type="number" id="numCliente" [(ngModel)]="numCliente" style="width: 15%;"
+                 (keydown.enter)="seleccionarXnumeroCliente()">
         </div>
 
-        <!-- Barra de presupuestos a la derecha -->
-        <div class="presupuestos-bar">
-          <h3>Presupuestos</h3>
-          <select [(ngModel)]="presupuestoSeleccionado" (change)="mostrarPresupuestoSeleccionado()"  >
-            <option value="" disabled selected>Selecciona un presupuesto</option>
-            <option *ngFor="let presupuesto of presupuestosXCliente" [ngValue]="presupuesto">
-              {{ presupuesto.id }} - {{ getFecha(presupuesto.fecha!) }}
-            </option>
-          </select>
-
-          <!-- Mostrar el presupuesto seleccionado (opcional) -->
-          <div class="presupuesto-seleccionado">
-            <div>ID: {{ presupuestoSeleccionado?.id }}</div>
-            <div>Cliente: {{ presupuestoSeleccionado?.cliente?.razonSocial }}</div>
-            <div>Fecha: {{ getFecha(presupuestoSeleccionado?.fecha!) }}</div>
-          </div>
-
-          <!-- NUEVOS BOTONES: Modificar + Separar productos -->
-          <div style="display: flex; gap: 10px;">
-            <button (click)="accederAPresupuesto()">Modificar</button>
-            <button (click)="seleccionarPresupuesto()">Seleccionar</button>
-          </div>
-
+        <div>
+          <label for="numPresupuesto">Número de Presupuesto</label>
+          <input type="number" id="numPresupuesto" [(ngModel)]="numPresupuesto" style="width: 15%;"
+                 (keydown.enter)="seleccionarXnumeroPresupuesto(numPresupuesto!)">
         </div>
+
+        <!-- Selector de cliente -->
+        <mat-form-field class="input-mat-cliente" appearance="outline" style="width: 100%;">
+          <mat-label>Seleccione un cliente...</mat-label>
+          <input type="text"
+                 matInput
+                 [formControl]="clienteControl"
+                 [matAutocomplete]="autoCliente"
+                 (input)="clienteControl.setValue(clienteControl.value?.toUpperCase(), { emitEvent: false })">
+          <mat-autocomplete #autoCliente="matAutocomplete" autoActiveFirstOption (optionSelected)="seleccionarCliente();">
+            <mat-option *ngFor="let c of filteredClientes | async" [value]="c.razonSocial">
+              {{ c.razonSocial }}
+            </mat-option>
+          </mat-autocomplete>
+        </mat-form-field>
       </div>
     </div>
-  </div>
 
-  <div class="inferior-derecha-container">
-    <div *ngIf="mostrarPanelBusqueda" class="search-panel">
-      <div class="search-by-client">
-        <label for="clienteBuscado">Buscar por número de presupuesto:</label>
+    <!-- Datos cliente y selector horizontal -->
+    <div class="datosCliente-container" *ngIf="currentCliente">
+      <h3>Selecciona un presupuesto de</h3>
+      <h3>{{currentCliente.razonSocial}}</h3>
 
-        <!-- Barra de presupuestos a la derecha -->
-        <div class="presupuestos-bar">
-          <input type="number" id="numPresupuesto" [(ngModel)]="idPresupuesto"
-            placeholder="ID del presupuesto" (keydown.enter)="buscarPresupuestoXNumero()" />
+      <mat-form-field appearance="outline">
+        <mat-label>Presupuesto</mat-label>
+        <mat-select [(value)]="presupuestoSeleccionado" (selectionChange)="asignarNumeroDePresupuesto($event.value)">
+          <mat-option *ngFor="let presupuesto of presupuestosXCliente" [value]="presupuesto">
+            {{ presupuesto ? (presupuesto.id + ' -- ' + formatearFecha(presupuesto.fecha)) : 'None' }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      
+      
 
-          <div class="presupuesto-seleccionado">
-            <div>ID: {{ presupuestoSeleccionado?.id }}</div>
-            <div>Cliente: {{ presupuestoSeleccionado?.cliente?.razonSocial }}</div>
-            <div>Fecha: {{ getFecha(presupuestoSeleccionado?.fecha!) }}</div>
-          </div>
-
-          <!-- Mismos nuevos botones a la derecha -->
-          <div style="display: flex; gap: 10px;">
-            <button (click)="accederAPresupuesto()">Modificar</button>
-            <button (click)="seleccionarPresupuesto()">Seleccionar</button>
+      <div *ngIf="presupuestoSeleccionado">
+        <p><strong>Id:</strong> {{ presupuestoSeleccionado.id }}</p>
+        <p><strong>Fecha:</strong> {{ formatearFecha(presupuestoSeleccionado.fecha) }}</p>
+        <p><strong>Cliente:</strong> {{ currentCliente.razonSocial }}</p>
+        <p><strong>Teléfono:</strong> {{ currentCliente.telefono }}</p>
+        <p><strong>I.V.A:</strong> {{ currentCliente.condicionFiscal?.descripcion }}</p>
+        <p><strong>CUIT:</strong> {{ currentCliente.cuit }}</p>
           </div>
         </div>
       </div>
+
+
+    <div *ngIf="presupuestoSeleccionado" style="display: flex; gap: 16px; align-items: center;">
+    
+      <button class="btn-azul" (click)="accederAPresupuesto()">Modificar</button>
+      <button class="btn-azul" (click)="seleccionarPresupuesto()">Separar</button>
     </div>
-  </div>
-</div>
+    
+

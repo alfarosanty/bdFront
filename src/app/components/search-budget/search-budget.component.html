@@ -89,27 +89,26 @@
         </div>
 
         <!--COMBO DE PRODUCTOS CON FILTRADO-->
-        <div >
-            <mat-form-field class="input-mat" appearance="outline">
-                <mat-label>Seleccione un artículo...</mat-label>
-                <input type="text"
-                      #inputArticulos
-                      [(ngModel)]="articuloSeleccionado"
-                      matInput
-                      [formControl]="articuloControl"
-                      [matAutocomplete]="auto"
-                      (keydown.enter)="mostrarVariedadColores()"
-                      
-                      (input)="articuloControl.setValue(articuloControl.value.toUpperCase(), { emitEvent: false })">
-                <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption>
-                  <mat-option *ngFor="let option of filteredArticulos | async" [value]="option">
-                    {{ option }}
-                  </mat-option>
-                </mat-autocomplete>
-              </mat-form-field>
-              
-
-          </div>
+        <div>
+          <mat-form-field class="input-mat" appearance="outline">
+            <mat-label>Seleccione un artículo...</mat-label>
+            <input type="text"
+                   #inputArticulos
+                   [(ngModel)]="articuloSeleccionado"
+                   matInput
+                   [formControl]="articuloControl"
+                   [matAutocomplete]="auto"
+                   (input)="articuloControl.setValue(articuloControl.value.toUpperCase(), { emitEvent: false })">
+                   
+            <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption
+                              (optionSelected)="mostrarVariedadColores()">
+              <mat-option *ngFor="let option of filteredArticulos | async" [value]="option">
+                {{ option }}
+              </mat-option>
+            </mat-autocomplete>
+          </mat-form-field>
+        </div>
+        
 
     </div>
 <!-- Este DIV aparecerá a la derecha cuando presiones Enter -->
@@ -127,7 +126,7 @@
   </mat-form-field>
 
   <label for="cantidades">Cantidad</label>
-  <input #inputCantidad type="text" id="Cantidad" size="2" [(ngModel)]="cantProducto"
+  <input #inputCantidad type="number" id="Cantidad" size="2" [(ngModel)]="cantProducto" style="width: 10%;"
          [placeholder]="cantidadActualDepoducto()"
          (keydown.enter)="agregarArticulo(); actualizarTotales()">
 </div>

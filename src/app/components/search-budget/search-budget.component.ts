@@ -69,7 +69,7 @@ export class SearchBudgetComponent {
   producto = '';
   numCliente = '';
   codigoArticulo = '';
-  cantProducto?: string|null = null
+  cantProducto?: number|null = null
   descuentos: { [codigo: string]: number } = {};
   descTotal = '';
   mostrarColores = false;
@@ -302,7 +302,7 @@ listarClientes(): void {
   
   agregarArticulo() {
 
-    if(this.cantProducto == '' || this.cantProducto == undefined || Number(this.cantProducto) == 0){
+    if(this.cantProducto == 0 || this.cantProducto == undefined || this.cantProducto == null){
       return
     }
     if (this.articulos) {

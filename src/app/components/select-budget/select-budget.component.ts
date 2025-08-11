@@ -1,3 +1,4 @@
+import { animate, style, transition, trigger } from '@angular/animations';
 import { Component } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -10,23 +11,44 @@ import { ClienteService } from 'src/app/services/cliente.service';
 @Component({
   selector: 'app-select-budget',
   templateUrl: './select-budget.component.html',
-  styleUrls: ['./select-budget.component.css']
+  styleUrls: ['./select-budget.component.css'],
+  animations: [
+    trigger('fadeInOut', [
+      transition(':enter', [
+        style({ opacity: 0, transform: 'translateY(-10px)' }),
+        animate('200ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
+      ]),
+      transition(':leave', [
+        animate('200ms ease-in', style({ opacity: 0, transform: 'translateY(-10px)' }))
+      ])
+    ])
+  ]
 })
 export class SelectBudgetComponent {
 
+// LISTAS
   clientes?: Cliente[];
   presupuestosXCliente?: Presupuesto[];
-  presupuestoSeleccionado ?: Presupuesto;
+  presupuestoSeleccionado ?: Presupuesto|null;
+
+// OBJETOS ÚNICOS
+currentCliente?: Cliente
+
 
   fechaPresupuesto ?:string;
-  numCliente = '';
-  idPresupuesto = '';
+  numCliente?: number|null=null;
+  numPresupuesto?: number|null=null;
   currentIndex = -1;
   mostrarPanelBusqueda = false
   myControl = new FormControl();
   options: string[] = [];
   filteredOptions: Observable<string[]>= new Observable<string[]>();
-  clienteSeleccionado = ''
+
+  // INPUT BÚSQUEDA
+  clienteControl = new FormControl();
+  filteredClientes: Observable<Cliente[]> = new Observable<Cliente[]>;
+  clienteOptions: Cliente[] =[];
+  clienteSeleccionado ='';
 
 
 
@@ -38,17 +60,13 @@ export class SelectBudgetComponent {
     this.listarClientes();
     this.fechaPresupuesto =  new Date().toISOString().split('T')[0];;
 
-    this.filteredOptions = this.myControl.valueChanges.pipe(
-      startWith(''),
-      map(value => this._filter(value || ''))
-    );
   }
   
-  private _filter(value: string): string[] {
+  private _filterClientes(value: string): Cliente[] {
     const filterValue = value.toLowerCase();
-    return this.options.filter(option => option.toLowerCase().includes(filterValue));
+    return this.clientes!.filter(cliente => cliente.razonSocial?.toLowerCase().includes(filterValue))
+    .sort((a,b) => a.razonSocial!.localeCompare(b.razonSocial!) );
   }
-
   listarClientes(): void {
 
     this.currentIndex = -1;
@@ -63,7 +81,10 @@ export class SelectBudgetComponent {
       next: (data) => {
         this.clientes = data;
         console.log(data);
-        this.options = this.clientes.map(cliente=>cliente.razonSocial ?? '')
+        this.filteredClientes = this.clienteControl.valueChanges.pipe(
+          startWith(''),
+          map(value => this._filterClientes(value || ''))
+        );        
         console.log(this.options)
       },
       error: (e) => console.error(e)
@@ -78,45 +99,6 @@ export class SelectBudgetComponent {
 
   }
 
-  buscarPresupuestosXCliente() {
-    console.log("se ejecutó el método");
-    console.log(this.clienteSeleccionado);
-  
-    if (this.clienteSeleccionado) {
-      const clienteBuscado = this.clientes?.find(cliente => cliente.razonSocial == this.clienteSeleccionado);
-      console.log(clienteBuscado);
-  
-      this.presupuestoService.getByCliente(clienteBuscado?.id).subscribe({
-        next: (data) => {
-          const opcionNinguno = new Presupuesto({
-            id: 0,
-            cliente: clienteBuscado,
-            fecha: null!
-          });
-  
-          this.presupuestosXCliente = [opcionNinguno, ...data];
-          this.presupuestoSeleccionado = opcionNinguno;
-  
-          console.log(this.presupuestosXCliente);
-        },
-        error: (e) => console.error(e)
-      });
-    }
-  }
-  
-
-  buscarPresupuestoXNumero(){
-
-    this.presupuestoService.get(this.idPresupuesto).subscribe({
-      next: (data) => {
-        this.presupuestoSeleccionado = data;
-        console.log(this.presupuestoSeleccionado);
-      },
-      error: (e) => console.error(e)
-
-    });
-
-  }
 
   accederAPresupuesto() {
     if (this.presupuestoSeleccionado) {
@@ -136,11 +118,13 @@ export class SelectBudgetComponent {
     }
   }
 
+  
+  
   getFecha(fecha: Date): string {
     if (typeof fecha === 'string') {
       fecha = new Date(fecha);  // Convertimos la cadena a un objeto Date
     }
-  
+    
     if (fecha instanceof Date && !isNaN(fecha.getTime())) {
       const dia = fecha.getDate().toString().padStart(2, '0');
       const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
@@ -152,10 +136,74 @@ export class SelectBudgetComponent {
       return '';
     }
   }
-
+  
+  
+  formatearFecha(fecha: any): string {
+    const fechaObj = new Date(fecha);
+    return isNaN(fechaObj.getTime()) ? 'Fecha inválida' : `${fechaObj.getDate()}/${fechaObj.getMonth() + 1}/${fechaObj.getFullYear()}`;
+  }
+  
   mostrarPresupuestoSeleccionado(){
     console.log(this.presupuestoSeleccionado)
   }
   
+  
+  seleccionarCliente() {
+    const valor = this.clienteControl.value;
+    console.log('Cliente seleccionado:', valor);
+    // Acá podés buscar el objeto completo si necesitás más datos
+    this.currentCliente = this.clientes?.find(c => c.razonSocial === valor);
+    this.numPresupuesto = null
+    this.numCliente = this.currentCliente?.id
+    this.seleccionarXnumeroCliente()
+    console.log('Objeto cliente:', this.currentCliente);
+
+  }
+
+  seleccionarXnumeroCliente() {
+    this.presupuestosXCliente=[]
+    this.presupuestoSeleccionado=null
+    this.numPresupuesto=null
+
+    console.log(this.numCliente)
+    this.currentCliente = this.clientes?.find(c => c.id === this.numCliente);
+    this.presupuestoService.getByCliente(this.numCliente).subscribe({
+     next: (data) => {
+      console.log("Presupuestos de ", this.currentCliente?.razonSocial, ": ", data)
+       this.presupuestosXCliente = data;
+       this.clienteControl.setValue(this.clientes?.find(cliente=>cliente.id === this.numCliente)?.razonSocial); // <-- Esto lo muestra en el input
+     },
+     error: (e) => console.error(e)
+
+   });
+ }
+
+ seleccionarXnumeroPresupuesto(unNumero: number) {
+  
+  this.presupuestoService.get(unNumero).subscribe({
+    next: (presupuesto) => {
+      console.log('Presupuesto encontrado:', presupuesto);
+      // Acá podés asignarlo a una variable o hacer lo que necesites
+      this.currentCliente = presupuesto.cliente
+      this.numCliente = presupuesto.cliente?.id
+      this.seleccionarXnumeroCliente()
+      this.presupuestoSeleccionado = presupuesto
+      this.numPresupuesto=unNumero
+      this.clienteControl.setValue(presupuesto.cliente?.razonSocial);
+      console.log(presupuesto)
+
+    },
+    error: (err) => {
+      console.error('Error al buscar presupuesto:', err);
+      // Mostrar mensaje si querés
+    }
+  });
+
+}
+
+asignarNumeroDePresupuesto(presupuesto: Presupuesto) {
+  this.presupuestoSeleccionado = presupuesto;
+  this.numPresupuesto = presupuesto?.id ?? null;
+}
   }
 

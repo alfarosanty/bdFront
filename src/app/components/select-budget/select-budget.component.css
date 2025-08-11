@@ -1,75 +1,3 @@
-.superior-container {
-  margin-bottom: 5%;
-}
-
-.search-panel {
-    margin-top: 2%;
-    padding: 2%;
-    border: 1px solid #ccc;
-    border-radius: 2%;
-    width:120%;
-    display: flex;
-    
-  }
-  
-  .search-panel input {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 10px;
-    display: flex;
-    margin-bottom: 10%;
-  }
-  
-  .search-panel button {
-    padding: 8px 16px;
-    background-color: #007BFF;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.3s ease;
-    white-space: nowrap;
-  }
-  
-  .search-panel button:hover {
-    background-color: #0056b3;
-  }
-  
-
-  .boton-de-busqueda{
-    margin-top: 5%;
-  }
-
-  .presupuestos-bar {
-    width: 28%; /* Barra de presupuestos al 28% de la pantalla */
-    padding-left: 10px;
-  }
-
-  .inferior-container {
-    display: flex;
-    justify-content: space-between; /* Opcional: para añadir espacio entre los contenedores internos */
-  }
-
-  .contenedor-inferior-izquierdo{
-    width: 48%; /* O el tamaño que desees para cada contenedor interno */
-    padding: 10px;
-  }
-  .contenedor-inferior-derecho{
-    width: 48%; /* O el tamaño que desees para cada contenedor interno */
-    padding: 10px;
-    margin-bottom: 30%;
-  }
-
-  .presupuesto-seleccionado {
-    display: inline; /* Alinea el texto en una sola línea */
-  }
-
-  .presupuesto-seleccionado div {
-    width: 500%; /* El div ocupará el 80% del ancho del contenedor padre */
-    margin-bottom: 10px; /* Espaciado entre los divs */
-  }
-
 /* Este contenedor alinea los botones a los extremos */
 .boton-container {
   display: flex;
@@ -79,22 +7,21 @@
   margin-top: 20px;
 }
 
-/* Opcional: para que los botones tengan tamaño mínimo uniforme */
 .boton-container button {
   min-width: 180px;
 }
   
   .boton-seleccionarPresupuesto {
-    display: inline-flex; /* Asegura que los botones estén alineados horizontalmente */
+    display: inline-flex;
   }
   
   .boton-lindo {
     font-size: 90%;
-    padding: 10px 30px; /* Ajuste del tamaño de los botones */
+    padding: 10px 30px;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
-    border: none; /* Elimina el borde por defecto del botón */
+    border: none;
   }
   
   /* Estilo para el botón azul */
@@ -109,3 +36,53 @@
   .boton-lindo mat-icon {
     margin-right: 8%;
   }
+
+/* CONTENEDORES DE CONTENIDO */
+.superior-container {
+  margin-bottom: 5%;
+}
+  
+  .selector-container {
+    width: 40%;
+    height: 100%;
+    margin-left: 0%;
+    border: 1px solid #ccc;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+  .inferior-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 5%;
+   }
+
+   .selector-horizontal {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  
+  .selector-horizontal mat-form-field {
+    flex: 1;
+  }
+
+/* BOTONES DE ACCIÓN */
+
+.btn-azul {
+  margin-top: 5%;
+  background-color: #003366; /* azul oscuro */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  width: 10%; /* mismo ancho fijo para ambos */
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-azul:hover {
+  background-color: #001f4d; /* más oscuro al pasar el mouse */
+}
+

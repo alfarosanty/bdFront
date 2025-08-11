@@ -108,7 +108,7 @@
   </mat-form-field>
 
   <label for="cantidades">Cantidad</label>
-  <input #inputCantidad type="text" id="Cantidad" size="2" [(ngModel)]="cantProducto"
+  <input #inputCantidad type="number" id="Cantidad" size="2" [(ngModel)]="cantProducto" style="width: 10%;"
          [placeholder]="cantidadActualDepoducto()"
          (keydown.enter)="agregarArticulo()">
 </div>

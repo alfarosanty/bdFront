@@ -69,7 +69,7 @@ export class PedidoProduccionComponent {
   estadoPedido?: number;
   producto = '';
   codigoArticulo = '';
-  cantProducto?: string|null=null;
+  cantProducto?: number|null=null;
   mostrarColores = false;
   mostrarBotonGuardar = true;
 
@@ -238,7 +238,7 @@ listarTalleres(): void {
     agregarArticulo() {
       if (!this.articulos) return;
 
-      if(this.cantProducto == '' || this.cantProducto == undefined || Number(this.cantProducto) == 0){
+      if(this.cantProducto == 0 || this.cantProducto == undefined || this.cantProducto == null){
         return
       }
         

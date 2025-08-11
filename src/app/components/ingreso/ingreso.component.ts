@@ -75,7 +75,7 @@ export class IngresoComponent {
   fechaIngresoMercaderia?: Date;
   producto = '';
   codigoArticulo = '';
-  cantProducto?:  string|null=null;
+  cantProducto?:  number|null=null;
   mostrarColores = false;
 
 
@@ -281,7 +281,7 @@ mostrarColoresDisponibles(articulo : Articulo) : string {
   agregarArticulo() {
     if (!this.articulos) return;
   
-    if(this.cantProducto == '' || this.cantProducto == undefined || Number(this.cantProducto) == 0){
+    if(this.cantProducto == 0 || this.cantProducto == undefined || this.cantProducto == null){
       return
     }
     this.currentArticulo = this.articulos[this.articuloColorIndex!];
