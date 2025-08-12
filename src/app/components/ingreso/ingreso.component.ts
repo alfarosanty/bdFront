@@ -827,12 +827,37 @@ aplicarIngresoAPedidosProduccion(){
 
 }
 
+getArticulosPendientes(pedidoProduccion: PedidoProduccion): number{
+  const cantidadesPendientes = pedidoProduccion.articulos?.map(presuArt=>presuArt.cantidadPendiente)!;
+  const cantidadPendienteTotal = cantidadesPendientes?.reduce((acc, val) => acc! + val!, 0);
+
+  return cantidadPendienteTotal!
+}
+
 aclararProductoPendentesDisminuidos() {
 
   if (!this.currentIngresoMercaderia || !this.pedidosProduccionXTaller) return;
 
-  // Ordenar pedidos por fecha (de más antiguo a más reciente)
-  this.pedidosProduccionXTaller.sort((a, b) => (new Date(a.fecha!).getTime()) - (new Date(b.fecha!).getTime()));
+  // Ordenar pedidos por fecha (de más antiguo a más reciente) - cantidad pendiente - id 
+ 
+  this.pedidosProduccionXTaller.sort((a, b) => {
+    const fechaA = new Date(a.fecha!).getTime();
+    const fechaB = new Date(b.fecha!).getTime();
+  
+    if (fechaA !== fechaB) {
+      return fechaA - fechaB; // Más antiguo primero
+    }
+  
+    const pendientesA = this.getArticulosPendientes(a);
+    const pendientesB = this.getArticulosPendientes(b);
+    if (pendientesA !== pendientesB) {
+      return pendientesA - pendientesB; // Menos pendientes primero
+    }
+  
+    return a.id! - b.id!; // Tercer criterio, id más chico primero
+  });
+  
+
   const pedidosAAgregarIngresos = this.pedidosProduccionXTaller.filter(pedido=>pedido.idEstadoPedidoProduccion == this.estadosPedidoProduccion?.find(estado=>estado.codigo =="TA")?.id)
 
 

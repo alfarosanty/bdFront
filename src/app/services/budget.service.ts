@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Presupuesto } from '../models/presupuesto.model';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environment/environment';
+import { EstadoPresupuesto } from '../models/estado-presupuesto.model';
 
 const baseUrl = environment.apiUrl+'/Presupuesto';
 
@@ -37,6 +38,10 @@ export class PresupuestoService {
 
   get(id: any): Observable<Presupuesto> {
     return this.http.get<Presupuesto>(`${baseUrl}/GetPresupuestoByNumero/${id}`);
+  }
+
+  getEstadosPresupuesto(): Observable<EstadoPresupuesto[]> {
+    return this.http.get<EstadoPresupuesto[]>(`${baseUrl}/GetEstadosPresupuesto`);
   }
 }
 

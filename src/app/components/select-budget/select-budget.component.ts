@@ -7,6 +7,7 @@ import { Cliente } from 'src/app/models/cliente';
 import { Presupuesto } from 'src/app/models/presupuesto.model';
 import { PresupuestoService } from 'src/app/services/budget.service';
 import { ClienteService } from 'src/app/services/cliente.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-select-budget',
@@ -32,7 +33,7 @@ export class SelectBudgetComponent {
   presupuestoSeleccionado ?: Presupuesto|null;
 
 // OBJETOS ÚNICOS
-currentCliente?: Cliente
+currentCliente?: Cliente|null
 
 
   fechaPresupuesto ?:string;
@@ -52,7 +53,7 @@ currentCliente?: Cliente
 
 
 
-  constructor(private clienteService : ClienteService,private presupuestoService : PresupuestoService, private router : Router) {}
+  constructor(private snackbar : MatSnackBar, private clienteService : ClienteService,private presupuestoService : PresupuestoService, private router : Router) {}
 
 
 
@@ -61,12 +62,22 @@ currentCliente?: Cliente
     this.fechaPresupuesto =  new Date().toISOString().split('T')[0];;
 
   }
+
+  mostrarError(mensaje: string) {
+    this.snackbar.open(mensaje, 'Cerrar', {
+      duration: 5000, // ms
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom',
+      panelClass: ['error-snackbar'] // opcional para estilos
+    });
+  }
   
   private _filterClientes(value: string): Cliente[] {
     const filterValue = value.toLowerCase();
     return this.clientes!.filter(cliente => cliente.razonSocial?.toLowerCase().includes(filterValue))
     .sort((a,b) => a.razonSocial!.localeCompare(b.razonSocial!) );
   }
+
   listarClientes(): void {
 
     this.currentIndex = -1;
@@ -183,21 +194,24 @@ currentCliente?: Cliente
   this.presupuestoService.get(unNumero).subscribe({
     next: (presupuesto) => {
       console.log('Presupuesto encontrado:', presupuesto);
-      // Acá podés asignarlo a una variable o hacer lo que necesites
-      this.currentCliente = presupuesto.cliente
-      this.numCliente = presupuesto.cliente?.id
-      this.seleccionarXnumeroCliente()
-      this.presupuestoSeleccionado = presupuesto
-      this.numPresupuesto=unNumero
+      this.currentCliente = presupuesto.cliente;
+      this.numCliente = presupuesto.cliente?.id;
+      this.seleccionarXnumeroCliente();
+      this.presupuestoSeleccionado = presupuesto;
+      this.numPresupuesto = unNumero;
       this.clienteControl.setValue(presupuesto.cliente?.razonSocial);
-      console.log(presupuesto)
-
+      console.log(presupuesto);
     },
     error: (err) => {
-      console.error('Error al buscar presupuesto:', err);
-      // Mostrar mensaje si querés
+      if (err.status === 404) {
+        this.mostrarError(err.error?.mensaje || 'Presupuesto no encontrado');
+      } else {
+        this.mostrarError('Error inesperado al buscar presupuesto');
+      }
     }
+    
   });
+  
 
 }
 

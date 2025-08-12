@@ -9,7 +9,7 @@ import { Presupuesto } from 'src/app/models/presupuesto.model';
 import { ArticuloService } from 'src/app/services/articulo.service';
 import { PresupuestoService } from 'src/app/services/budget.service';
 import { ClienteService } from 'src/app/services/cliente.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute} from '@angular/router';
 import * as pdfMake from 'pdfmake/build/pdfmake';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 import { trigger, state, style, transition, animate } from '@angular/animations';
@@ -19,6 +19,8 @@ import { Factura } from 'src/app/models/factura.model';
 import { FacturaService } from 'src/app/services/factura.service';
 import { ArticuloPrecio } from 'src/app/models/articulo-precio.model';
 import { MatSelect } from '@angular/material/select';
+import { MatSnackBar } from '@angular/material/snack-bar';
+
 
 (pdfMake as any).vfs = (pdfFonts as any).vfs;
 
@@ -53,13 +55,14 @@ export class FacturacionComponent {
   articulosPrecio: ArticuloPrecio[]=[];
   articulos: Articulo[]=[];
   familiaMedida: string[] = [];
+  estadosPresupuesto?: EstadoPresupuesto[];
   presupuestosXCliente: (Presupuesto|null)[] =[];
   mapaPresupuestoArticulos ?: Map<string,PresupuestoArticulo[]>;
   mapaPresuXArtParaAcceder ?: Map<string,PresupuestoArticulo[]>;
   mapaPresuXArtEliminados?: Map<string,PresupuestoArticulo[]> = new Map();
 
 
-  currentCliente?: Cliente;
+  currentCliente?: Cliente|null;
   currentArticulo ?: Articulo;
   currentPresupuesto?: Presupuesto|null;
   currentFactura?: Factura = new Factura();
@@ -75,6 +78,7 @@ export class FacturacionComponent {
   descuentos: { [codigo: string]: number } = {};
   mostrarColores = false;
   generaPresuBorrados = false;
+  idPresupuestoCreado?: number|null
   presupuestoCliente = true;
   showBackDrop=false;
   currentIndex = -1;
@@ -120,7 +124,7 @@ puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
   { descripcion: 'Total', monto: this.calcularPrecioTotal() },
 ];
 
-  constructor(private clienteService: ClienteService, private articuloService:ArticuloService, private presupuestoService:PresupuestoService, private facturaService:FacturaService, private route : ActivatedRoute, public dialog: MatDialog, private cdr: ChangeDetectorRef) {}
+  constructor(private clienteService: ClienteService, private articuloService:ArticuloService, private presupuestoService:PresupuestoService, private facturaService:FacturaService, private route : ActivatedRoute, public dialog: MatDialog, private cdr: ChangeDetectorRef, private snackBar: MatSnackBar) {}
 
   ngOnInit(): void {
     this.listarClientes();
@@ -139,6 +143,16 @@ puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
         console.log(data);
       },
       error: (e) => console.error(e)
+    });
+
+    this.presupuestoService.getEstadosPresupuesto().subscribe({
+      next: (data) => {
+        this.estadosPresupuesto = data;
+      },
+      error: (error) => {
+        console.error('Error al cargar estados de presupuesto:', error);
+        this.mostrarError('No se pudieron cargar los estados de presupuesto');
+      }
     });
 
 
@@ -163,6 +177,25 @@ puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
     return this.options.filter(option => option.toLowerCase().includes(filterValue));
   }
 
+  mostrarError(mensaje: string) {
+    this.snackBar.open(mensaje, 'Cerrar', {
+      duration: 5000,
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom',
+      panelClass: ['error-snackbar']
+    });
+  }
+
+  mostrarMensaje(mensaje: string) {
+    this.snackBar.open(mensaje, 'Aceptar', {
+      duration: 5000,
+      panelClass: ['snackbar-exito'],
+      horizontalPosition: 'center',
+      verticalPosition: 'top'
+    });
+  }
+  
+  
 
   listarClientes(): void {
 
@@ -213,11 +246,22 @@ puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
   }
 
   seleccionarXnumeroPresupuesto() {
+    if(!this.numPresupuesto){
+      this.mostrarError("Debe ingresar un número de presupuesto")
+      return
+    }
   
     this.presupuestoService.get(this.numPresupuesto).subscribe({
       next: (presupuesto) => {
         console.log('Presupuesto encontrado:', presupuesto);
         // Acá podés asignarlo a una variable o hacer lo que necesites
+        if (presupuesto.estadoPresupuesto?.id === this.estadosPresupuesto?.find(estado=>estado.codigo==="FAC")?.id) {
+          this.mostrarError("El presupuesto está facturado");
+          this.currentPresupuesto = undefined;
+          this.mapaPresupuestoArticulos = new Map();
+          this.numPresupuesto = undefined;
+          return;
+        }
         this.presupuestoAAcceder = presupuesto;
         this.currentPresupuesto = presupuesto;
         this.currentCliente = presupuesto.cliente
@@ -231,8 +275,10 @@ puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
 
       },
       error: (err) => {
-        console.error('Error al buscar presupuesto:', err);
-        // Mostrar mensaje si querés
+        const mensajeError = err?.error?.mensaje || err.message || 'Error desconocido';
+        this.mostrarError(mensajeError);
+        this.numCliente = null
+        this.clienteControl.setValue('')
       }
     });
 
@@ -286,7 +332,7 @@ puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
     this.presupuestoService.getByCliente(unCLiente.id).subscribe({
       next: (data) => {
         this.presupuestosXCliente = 
-        [null, ...data.filter(presu => presu.estadoPresupuesto?.id != 1)]
+        [null, ...data.filter(presu => presu.estadoPresupuesto?.id != this.estadosPresupuesto?.find(estado=>estado.codigo=="FAC")?.id)]
           .sort((a, b) => {
             if (!a) return -1;  // null primero
             if (!b) return 1;   // null primero
@@ -485,25 +531,37 @@ puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
 
 
   borrarArticulo(key: any, color: string) {
-    const articulos = this.mapaPresupuestoArticulos?.get(key);  // Obtener los artículos en esa clave
-    const articuloBorrado = articulos?.filter(presuArt=>presuArt.articulo?.color?.codigo == color)
-    if (articulos) {
-      const index = articulos.findIndex(presuArt => presuArt.articulo?.color?.codigo === color);  // Buscar el artículo por color
-      if (index !== -1) {
-        articulos.splice(index, 1);  // Eliminar el artículo específico (por índice)
-        
-        // Volver a poner la lista modificada en el Map
-        this.mapaPresupuestoArticulos?.set(key, articulos);
+    const articulos = this.mapaPresupuestoArticulos?.get(key);
+    const articuloBorrado = articulos?.filter(presuArt => presuArt.articulo?.color?.codigo === color);
   
-        // Si la lista está vacía, eliminar la clave del Map
+    if (articulos) {
+      const index = articulos.findIndex(presuArt => presuArt.articulo?.color?.codigo === color);
+      if (index !== -1) {
+        articulos.splice(index, 1);
+  
         if (articulos.length === 0) {
           this.mapaPresupuestoArticulos?.delete(key);
+        } else {
+          this.mapaPresupuestoArticulos?.set(key, articulos);
         }
   
+        // Guardar el código expandido actual antes de actualizar
+        const codigoExpandido = this.expandedElement?.codigo;
+  
         this.actualizarDataSource();
-        this.agregarAMapaEliminados(key,articuloBorrado!)  // Actualizar el DataSource para que la vista se refresque
+        this.actualizarTotales();
+        this.agregarAMapaEliminados(key, articuloBorrado!);
+  
+        // Reasignar el elemento expandido si sigue existiendo
+        const nuevoElementoExpandido = this.dataSourceCodigo.find(e => e.codigo === codigoExpandido);
+        if (nuevoElementoExpandido) {
+          this.expandedElement = nuevoElementoExpandido;
+        } else {
+          this.expandedElement = undefined;
+        }
       }
     }
+    this.mostrarVariedadColores();
   }
   
   
@@ -651,7 +709,7 @@ puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
 
       if (!this.validarDatosRequeridos()) {
         // Asignar cliente y otros valores
-        this.currentFactura!.cliente = this.currentCliente;
+        this.currentFactura!.cliente = this.currentCliente!;
         this.currentFactura!.eximirIVA = this.eximirIVA;
         this.currentFactura!.articulos = [];
         this.currentFactura!.descuentoGeneral = Number(this.descTotal)
@@ -660,7 +718,7 @@ puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
         this.currentFactura!.presupuesto = this.currentPresupuesto
      
     
-        // Recorrer el mapa de artículos y agregarlos al presupuesto
+        // Recorrer el mapa de artículos y agregarlos a la factura
         this.mapaPresupuestoArticulos?.forEach((valor, clave) => {
           valor.forEach(presuArt => {
             console.log("PRESUART ANTES DE ACTUALIZAZR", presuArt)
@@ -676,29 +734,42 @@ puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
           });
         });
     
-        // Mostrar el presupuesto que se va a guardar (para depuración)
-        console.log("Este es el presupuesto a guardar", this.currentFactura);
+        console.log("Este es la factura a guardar", this.currentFactura);
+
+        if(this.currentPresupuesto){
+          this.currentPresupuesto.estadoPresupuesto = this.estadosPresupuesto?.find(estado=> estado.codigo == "FAC");
+
+          this.presupuestoService.actualizar(this.currentPresupuesto).subscribe({
+            next: (response) => {
+              console.log('Presupuesto actualizado correctamente', response);
+            },
+            error: (error) => {
+              console.error('Error al actualizar presupuesto', error);
+              const msg = error?.error?.message || 'No se pudo actualizar el presupuesto. Intente nuevamente.';
+              this.mostrarError(msg);
+            }
+          });
+          
+          }
+
+        
     
-        // Verificar si es un presupuesto nuevo o uno existente
         if (!this.currentFactura?.id) {
           
-          // Crear un nuevo presupuesto
           this.facturaService.crear(this.currentFactura!).subscribe((id: object) => {
             this.idFacturaActual = Number(id)
             this.mostrarBotonGuardar = false;
           })
           if (this.idFacturaActual) {
-            // Aquí puedes reiniciar el formulario y mostrar el número del presupuesto
-            alert('Presupuesto creado exitosamente');
+            alert('Factura creada exitosamente');
           }
         } else {
           alert("HAY UN ERROR CON EL FRONT, SE LE ESTÁ ASIGNANDO ID A LA FACTURA DE MANERA ERRÓNEA")
         }
     
-        // Mostrar el backdrop (pantalla de espera o de carga)
+        this.generarPresupuestoBorrados()
         this.showBackDrop = true;
       } else {
-        // Mostrar alerta si no se selecciona un cliente ni se agregan artículos
         alert("Debe seleccionar un cliente, agregar artículos,tipo de la factura y punto de venta antes de continuar.");
         throw new Error("Validación fallida: Cliente o presupuesto no definidos.");
       }
@@ -717,7 +788,18 @@ puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
         descuentoGeneral: this.currentPresupuesto?.descuentoGeneral ?? 0
       });
       console.log("ESTE ES EL PRESUPUESTO CREADO CON LOS BORRADOS", presupuesto)
-      this.presupuestoService.crear(presupuesto)
+      this.presupuestoService.crear(presupuesto).subscribe({
+        next: (id: object) => {
+          this.idPresupuestoCreado = Number(id);
+          this.mostrarBotonGuardar = false;
+          this.mostrarMensaje(`Presupuesto N° ${this.idPresupuestoCreado} creado correctamente`);
+        },
+        error: (err) => {
+          const msg = err?.error?.message || 'No se pudo actualizar el presupuesto. Intente nuevamente.';
+          this.mostrarError(msg);
+        }
+      });
+      
     }
     }
      
@@ -730,33 +812,51 @@ puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
         const tablaBody: any[] = [
           [
             { text: 'Código', style: 'tableHeader' },
-            { text: 'Cantidad', style: 'tableHeader' },
             { text: 'Descripción', style: 'tableHeader' },
+            { text: 'Cant', style: 'tableHeader' },
             { text: 'Precio Unitario', style: 'tableHeader' },
+            { text: 'Desc', style: 'tableHeader' },
             { text: 'Subtotal', style: 'tableHeader' }
           ]
         ];
+
+        const formatNumberWithThousandsSeparator = (numberString: String) => {
+          const parts = numberString.split('.');
+          parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+          return parts.join(',');
+        };
     
         this.mapaPresupuestoArticulos?.forEach((presupuestosArticulos, clave) => {
           const cantidades = presupuestosArticulos.map(pa => pa.cantidad || 0);
           const totalCantidad = cantidades.reduce((acc, c) => acc + c, 0);
+          let descuentoUnitario = " "
+          if ((presupuestosArticulos[0].descuento === 0 || presupuestosArticulos[0].descuento === null)) {
+            descuentoUnitario = " ";
+          } else if (presupuestosArticulos[0].descuento !== undefined) {
+            descuentoUnitario = String(presupuestosArticulos[0].descuento) + "%";
+          }
           const descripcion = presupuestosArticulos[0].articulo?.descripcion || '';
           const descripcionCompleta = presupuestosArticulos
             .map(pa => `${pa.cantidad || 0}${pa.articulo?.color?.codigo || ''}`)
             .join(' ');
-          const precioUnitario = (presupuestosArticulos[0].precioUnitario || 0).toFixed(2);
-          const subtotalXArticulo = (this.calcularPrecioConDescuento(presupuestosArticulos[0]) * (totalCantidad || 0)).toFixed(2);
+          const precioUnitario = formatNumberWithThousandsSeparator((presupuestosArticulos[0].precioUnitario || 0).toFixed(2));
+          const subtotalXArticulo = formatNumberWithThousandsSeparator((this.calcularPrecioConDescuento(presupuestosArticulos[0]) * (totalCantidad || 0)).toFixed(2));
     
           tablaBody.push([
             { text: clave, style: 'tableCell' },
-            { text: totalCantidad.toString(), style: 'tableCell' },
             { text: `${descripcion} ${descripcionCompleta}`, style: 'tableCell' },
-            { text: precioUnitario, style: 'tableCell' },
-            { text: subtotalXArticulo, style: 'tableCell' }
+            { text: totalCantidad.toString(), style: 'tableCell' },
+            { text: `$ ${precioUnitario}`, style: 'tableCell' },
+            { text: `${descuentoUnitario}`, style: 'tableCellNumber' },
+            { text: `$ ${subtotalXArticulo}`, style: 'tableCell' }
           ]);
         });
     
         const precioSubtotal = this.calcularPrecioSubtotal().toFixed(2);
+        let descuentoGeneral
+        if (this.descTotal==="0" || this.descTotal===null || this.descTotal===undefined){
+          descuentoGeneral = " "
+        }else {descuentoGeneral= `Descuento : $${formatNumberWithThousandsSeparator(Math.abs(this.calcularPrecioTotal()-this.calcularPrecioSubtotal()).toFixed(2))} (${this.descTotal}%)`}
         const precioTotal = this.calcularPrecioTotal().toFixed(2);
     
         docDefinition = {
@@ -787,14 +887,14 @@ puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
               ]
             },
             {
-              text: `Presupuesto de ${this.currentCliente?.razonSocial}`,
+              text: `Factura de ${this.currentCliente?.razonSocial}`,
               style: 'header',
               margin: [0, 20, 0, 10]
             },
             {
               table: {
                 headerRows: 1,
-                widths: [80, 60, '*', 60, 60],
+                widths: [80,'*', 25 , 60, 25 , 70],
                 body: tablaBody
               },
               layout: 'lightHorizontalLines',
@@ -806,8 +906,9 @@ puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
                 {
                   width: 'auto',
                   stack: [
-                    { text: `Subtotal: $${precioSubtotal}`, style: 'subtotal' },
-                    { text: `Total: $${precioTotal}`, style: 'total' }
+                    { text: `Subtotal: $${formatNumberWithThousandsSeparator(precioSubtotal)}`, style: 'subtotal' },
+                    { text: `${descuentoGeneral}`, style: 'subtotal' },
+                    { text: `Total: $${formatNumberWithThousandsSeparator(precioTotal)}`, style: 'total' }
                   ],
                   margin: [0, 20, 0, 0]
                 }
@@ -820,7 +921,7 @@ puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
 
     
       // Generar el PDF
-      const nombreArchivo = `Presupuesto_${this.currentCliente?.razonSocial}_${this.formatearFecha(this.fechaFactura)}.pdf`;
+      const nombreArchivo = `Factura_${this.currentCliente?.razonSocial}_${this.formatearFecha(this.fechaFactura)}.pdf`;
       pdfMake.createPdf(docDefinition).download(nombreArchivo);
     }
      
@@ -890,30 +991,35 @@ cancelarPDF() {
 
 validarDatosRequeridos() : Boolean{
 
-  return Object.keys((this.currentCliente || "")).length === 0 || this.currentCliente == undefined || this.mapaPresupuestoArticulos?.size == 0 || this.tipoFactura === '' || this.puntoDeVenta === undefined
+  return Object.keys((this.currentCliente || "")).length === 0 || this.currentCliente == undefined || this.currentCliente == null || this.mapaPresupuestoArticulos?.size == 0 || this.tipoFactura === '' || this.puntoDeVenta === undefined
 
 }
 
 cargarDetallesPresupuesto(id: Number) {
-  if(id === null){
-    return
+  if (!id) {
+    return;
   }
 
-  console.log("este es el id a cargar: ", id)
+  console.log("Este es el id a cargar: ", id);
   this.presupuestoService.get(id).subscribe({
     next: (data) => {
       console.log(data);
-      this.currentPresupuesto = data
-      this.descTotal = String(this.currentPresupuesto.descuentoGeneral)
-      this.mapaPresupuestoArticulos = new Map()
-      this.cargarMapa(this.mapaPresupuestoArticulos, this.currentPresupuesto.articulos)
-      this.numPresupuesto = data.id
+      this.currentPresupuesto = data;
+      this.descTotal = String(this.currentPresupuesto.descuentoGeneral);
+      this.mapaPresupuestoArticulos = new Map();
+      this.cargarMapa(this.mapaPresupuestoArticulos, this.currentPresupuesto.articulos);
+      this.numPresupuesto = data.id;
     },
     error: (e) => {
       console.error("Error al cargar el presupuesto:", e);
+      this.mostrarError("Error al cargar el presupuesto. Intente nuevamente.");
+      this.currentPresupuesto = undefined;
+      this.mapaPresupuestoArticulos = new Map();
+      this.numPresupuesto = undefined;
     }
   });
 }
+
 
 cargarMapa(mapaACargar: Map<string, PresupuestoArticulo[]> | undefined, presupuestoArticulos: PresupuestoArticulo[] | undefined) {
   if (!mapaACargar || !presupuestoArticulos) return;
