@@ -1201,7 +1201,7 @@ guardarPresupuestoArticulo(pa: PresupuestoArticulo) {
 export class EditarGenericoDialogFacturacionComponent {
   constructor(
     public dialogRef: MatDialogRef<EditarGenericoDialogFacturacionComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { descripcion: string; precio: number }
+    @Inject(MAT_DIALOG_DATA) public data: { descripcion: string; cantidad: number;  precioUnitario: number }
   ) {}
 
   onNoClick(): void {

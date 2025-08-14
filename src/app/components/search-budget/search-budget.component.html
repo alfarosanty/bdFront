@@ -4,15 +4,21 @@
 <div class="general-container">
 
 <div class="superior-container">
-<div class="selector-container">
+<div class="selector-container" *ngIf="!estaFacturado">
     <h2>Clientes</h2>
 
     <!-- Menú desplegable de clientes -->
     <div class="dropdown">
-        <div>
-            <label for="cliente id">Numero de Cliente:</label>
-            <input type="text" id="numCliente" [(ngModel)]="numCliente" (keydown.enter)="seleccionarXnumeroCliente(); inputArticulos.focus()">
-        </div>
+      <div class="cliente-container">
+        <label for="numCliente">Número de Cliente:</label>
+        <input 
+          type="number" 
+          id="numCliente" 
+          [(ngModel)]="numCliente" 
+          (keydown.enter)="seleccionarXnumeroCliente(); inputArticulos.nativeElement.focus()"
+        >
+      </div>
+      
 
         <label for="cliente razón social">Cliente:</label>
 
@@ -23,8 +29,8 @@
                  [formControl]="clienteControl"
                  [matAutocomplete]="autoCliente"
                  (input)="clienteControl.setValue(clienteControl.value?.toUpperCase(), { emitEvent: false })"
-                 (keydown.enter)="inputArticulos.focus()">
-            <mat-autocomplete #autoCliente="matAutocomplete" autoActiveFirstOption (optionSelected)="seleccionarCliente();">
+                 (keydown.enter)="inputArticulos.nativeElement.focus()">
+                 <mat-autocomplete #autoCliente="matAutocomplete" autoActiveFirstOption (optionSelected)="seleccionarCliente();">
             <mat-option *ngFor="let c of filteredClientes | async" [value]="c.razonSocial">
               {{ c.razonSocial }}
             </mat-option>
@@ -45,6 +51,7 @@
     <p><strong>I.V.A:</strong> {{ currentCliente.condicionFiscal?.descripcion }}</p>
     <p><strong>CUIT:</strong> {{ currentCliente.cuit }}</p>
   </div>
+
 </div>
 
 
@@ -82,7 +89,7 @@
 
 
 <div class="presupuesto-container">
-    <div class="seleccion-y-colores-container">
+    <div class="seleccion-y-colores-container" *ngIf="!estaFacturado">
     <div class="seleccion-container">
         <div>
             <label>Artículo:</label>

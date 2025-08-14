@@ -19,6 +19,7 @@ import { ArticuloPrecio } from 'src/app/models/articulo-precio.model';
 import { ViewChild, ChangeDetectorRef } from '@angular/core';
 import { MatSelect } from '@angular/material/select';
 import { ConsultaMedida } from 'src/app/models/consulta-medida.model';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 
 
@@ -55,6 +56,7 @@ export class SearchBudgetComponent {
   clientes?: Cliente[];
   articulos: Articulo[]=[];
   articulosPrecio: ArticuloPrecio[]=[];
+  estadosPresupuesto?: EstadoPresupuesto[];
   familiaMedida: string[] = [];
   mapaPresupuestoArticulos ?: Map<string,PresupuestoArticulo[]>;
   mapaPresuXArtParaAcceder ?: Map<string,PresupuestoArticulo[]>
@@ -86,6 +88,10 @@ export class SearchBudgetComponent {
 
   precioSubtotal?: number;
   filterValue ='';
+
+
+// FLAGS
+estaFacturado?: Boolean = false
 
   // NG MODEL
   listaSeleccionada = 'lista1'
@@ -121,7 +127,7 @@ medidasConsultadas?: ConsultaMedida[]
 ];
 
 
-  constructor(private clienteService: ClienteService, private articuloService:ArticuloService, private presupuestoService:PresupuestoService, private route : ActivatedRoute, public dialog: MatDialog, private cdr: ChangeDetectorRef, private router: Router) {}
+  constructor(private clienteService: ClienteService, private articuloService:ArticuloService, private presupuestoService:PresupuestoService, private route : ActivatedRoute, public dialog: MatDialog, private cdr: ChangeDetectorRef, private router: Router, private snackBar: MatSnackBar) {}
 
   ngOnInit(): void {
     this.listarClientes();
@@ -151,6 +157,16 @@ medidasConsultadas?: ConsultaMedida[]
     
     this.intentoDeCrearCurrentPresupuesto()
     
+    this.presupuestoService.getEstadosPresupuesto().subscribe({
+      next: (data) => {
+        this.estadosPresupuesto = data;    
+        console.log("ESTADOS PRESUPUESTO DE LA BD",data);
+      },
+      error: (error) => {
+        console.error('Error al cargar estados de presupuesto:', error);
+        this.mostrarError('No se pudieron cargar los estados de presupuesto');
+      }    })
+
       if (presupuestoId) {
         // Si el ID está presente, cargar los detalles del presupuesto
         console.log('ID del presupuesto:', presupuestoId);
@@ -177,6 +193,25 @@ medidasConsultadas?: ConsultaMedida[]
     return this.clientes!.filter(cliente => cliente.razonSocial?.toLowerCase().includes(filterValue))
     .sort((a,b) => a.razonSocial!.localeCompare(b.razonSocial!) );
   }
+
+  mostrarError(mensaje: string) {
+    this.snackBar.open(mensaje, 'Cerrar', {
+      duration: 5000,
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom',
+      panelClass: ['error-snackbar']
+    });
+  }
+
+  mostrarMensaje(mensaje: string) {
+    this.snackBar.open(mensaje, 'Aceptar', {
+      duration: 5000,
+      panelClass: ['snackbar-exito'],
+      horizontalPosition: 'center',
+      verticalPosition: 'top'
+    });
+  }
+
 
 listarClientes(): void {
 
@@ -547,71 +582,82 @@ listarClientes(): void {
     
   
     guardarPresupuesto() {
-
-
+    
+      // Si está facturado, salir inmediatamente
+      if (this.estaFacturado) {
+        this.idPresupuestoActual = this.presupuestoAAcceder?.id
+        console.log("ID DEL PRESUPUESTO FACTURADO", this.presupuestoAAcceder?.id)
+        this.showBackDrop=true
+        return;
+      }
+    
+      // Validar datos requeridos antes de guardar
       if (!this.validarDatosRequeridos()) {
-        // Asignar cliente y otros valores
-        this.currentPresupuesto!.id=this.presupuestoAAcceder?.id
-        this.currentPresupuesto!.cliente = this.currentCliente;
-        this.currentPresupuesto!.EximirIVA = this.eximirIVA;
-        this.currentPresupuesto!.articulos = [];
-        this.currentPresupuesto!.descuentoGeneral = Number(this.descTotal)
-        if(this.fechaPresupuesto != undefined){this.currentPresupuesto!.fecha = this.fechaPresupuesto}
-     
+        alert("Debe seleccionar un cliente y agregar artículos al presupuesto antes de continuar.");
+        return;
+      }
     
-        // Recorrer el mapa de artículos y agregarlos al presupuesto
-        this.mapaPresupuestoArticulos?.forEach((valor, clave) => {
-          valor.forEach(presuArt => {
-            console.log("PRESUART ANTES DE ACTUALIZAZR", presuArt)
-            presuArt.cantidadPendiente = presuArt.cantidad;
-            if(presuArt.articulo?.codigo!="GEN"){
-            presuArt.codigo = presuArt.articulo?.codigo
-            presuArt.descripcion = presuArt.articulo?.descripcion
+      // Asignar datos al presupuesto
+      this.currentPresupuesto!.id = this.presupuestoAAcceder?.id;
+      this.currentPresupuesto!.cliente = this.currentCliente;
+      this.currentPresupuesto!.EximirIVA = this.eximirIVA;
+      this.currentPresupuesto!.descuentoGeneral = Number(this.descTotal);
+      this.currentPresupuesto!.articulos = [];
+      if (this.fechaPresupuesto) {
+        this.currentPresupuesto!.fecha = this.fechaPresupuesto;
+      }
+    
+      // Cargar artículos desde el mapa
+      this.mapaPresupuestoArticulos?.forEach(valor => {
+        valor.forEach(presuArt => {
+          presuArt.cantidadPendiente = presuArt.cantidad;
+          if (presuArt.articulo?.codigo !== "GEN") {
+            presuArt.codigo = presuArt.articulo?.codigo;
+            presuArt.descripcion = presuArt.articulo?.descripcion;
           }
-          console.log("PRESUART después DE ACTUALIZAZR", presuArt)
-          console.log(presuArt.articulo)
-
-            this.currentPresupuesto!.articulos?.push(presuArt);
-          });
+          this.currentPresupuesto!.articulos?.push(presuArt);
         });
+      });
     
-        // Mostrar el presupuesto que se va a guardar (para depuración)
-        console.log("Este es el presupuesto a guardar", this.currentPresupuesto);
+      console.log("Este es el presupuesto a guardar", this.currentPresupuesto);
     
-        // Verificar si es un presupuesto nuevo o uno existente
-        if (!this.currentPresupuesto?.id) {
-          
-          // Crear un nuevo presupuesto
-          this.presupuestoService.crear(this.currentPresupuesto!).subscribe((id: object) => {
-            this.idPresupuestoActual = Number(id)
-            this.mostrarBotonGuardar = false;
-          })
-          if (this.idPresupuestoActual) {
-            // Aquí puedes reiniciar el formulario y mostrar el número del presupuesto
-            alert('Presupuesto creado exitosamente');
-          }
-        } else {
-          // Si el presupuesto ya existe, actualizarlo
-          this.presupuestoService.actualizar(this.currentPresupuesto!).subscribe((id: object)=>{
+      // Mostrar loader o backdrop
+      
+      // Crear o actualizar
+      if (!this.currentPresupuesto?.id) {
+        this.presupuestoService.crear(this.currentPresupuesto!).subscribe({
+          next: (id: object) => {
+            console.log("ID DEVUELTO POR CREAR", id)
             this.idPresupuestoActual = Number(id);
             this.mostrarBotonGuardar = false;
+            this.showBackDrop = true;
 
-          });
-          if (this.idPresupuestoActual) {
-            // Aquí puedes reiniciar el formulario y mostrar el número del presupuesto
-            alert('Presupuesto actualizado exitosamente');
+          },
+          error: (err) => {
+            this.mostrarError("Error al crear presupuesto: " + err.message);
+            this.showBackDrop = false;
           }
-        }
-    
-        // Mostrar el backdrop (pantalla de espera o de carga)
-        this.showBackDrop = true;
+        });
       } else {
-        // Mostrar alerta si no se selecciona un cliente ni se agregan artículos
-        alert("Debe seleccionar un cliente y agregar artículos al presupuesto antes de continuar.");
-        throw new Error("Validación fallida: Cliente o presupuesto no definidos.");
+        this.presupuestoService.actualizar(this.currentPresupuesto!).subscribe({
+          next: (id: object) => {
+            console.log("ID DEVUELTO POR ACTUALIZAR", id)
+            this.idPresupuestoActual = Number(id);
+            this.mostrarBotonGuardar = false;
+            this.showBackDrop = true;
+
+          },
+          error: (err) => {
+            this.mostrarError("Error al actualizar presupuesto: " + err.message);
+            this.showBackDrop = false;
+          }
+        });
+        
+        
       }
     }
-
+    
+    
 procesarSeleccion() {
   if (this.opcionSeleccionada === 'cliente') {
     this.presupuestoCliente = true;
@@ -1104,17 +1150,20 @@ consultaMedidasNecesariasYGenerarPDF() {
 }
 
 
-
-validarDatosRequeridos() : Boolean{
-
-  return Object.keys((this.currentCliente || "")).length === 0 || this.currentCliente == undefined || this.mapaPresupuestoArticulos?.size == 0 
-
+validarDatosRequeridos(): boolean {
+  return this.currentCliente != undefined
+      && Object.keys(this.currentCliente).length > 0
+      && this.mapaPresupuestoArticulos?.size! > 0;
 }
 
 cargarDetallesPresupuesto(id: Number) {
   this.presupuestoService.get(id).subscribe({
     next: (data) => {
       console.log(data);
+
+      if(data.estadoPresupuesto?.id == this.estadosPresupuesto?.find(estado=>estado.descripcion == "FACTURADO")?.id){
+        this.estaFacturado = true
+      }
       
       // Verificar si el presupuesto cargado tiene los datos esperados
       if (data) {

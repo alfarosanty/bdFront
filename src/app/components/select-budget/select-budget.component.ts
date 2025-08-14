@@ -8,6 +8,7 @@ import { Presupuesto } from 'src/app/models/presupuesto.model';
 import { PresupuestoService } from 'src/app/services/budget.service';
 import { ClienteService } from 'src/app/services/cliente.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { EstadoPresupuesto } from 'src/app/models/estado-presupuesto.model';
 
 @Component({
   selector: 'app-select-budget',
@@ -31,6 +32,7 @@ export class SelectBudgetComponent {
   clientes?: Cliente[];
   presupuestosXCliente?: Presupuesto[];
   presupuestoSeleccionado ?: Presupuesto|null;
+  estadosPresupuesto?: EstadoPresupuesto[];
 
 // OBJETOS ÚNICOS
 currentCliente?: Cliente|null
@@ -59,7 +61,19 @@ currentCliente?: Cliente|null
 
   ngOnInit(): void {
     this.listarClientes();
-    this.fechaPresupuesto =  new Date().toISOString().split('T')[0];;
+    this.fechaPresupuesto =  new Date().toISOString().split('T')[0];
+
+    this.presupuestoService.getEstadosPresupuesto().subscribe({
+      next: (data) => {
+        this.estadosPresupuesto = data;
+        console.log(data);
+
+      },
+      error: (error) => {
+        console.error('Error al cargar estados de presupuesto:', error);
+        this.mostrarError('No se pudieron cargar los estados de presupuesto');
+      }      
+    });
 
   }
 
@@ -121,6 +135,10 @@ currentCliente?: Cliente|null
   }
 
   seleccionarPresupuesto(){
+    if(this.presupuestoSeleccionado?.estadoPresupuesto?.id === this.estadosPresupuesto?.find(estado=>estado.descripcion==="FACTURADO")?.id){
+      this.mostrarError("No puede entrar a separacón de productos un presupuesto facturado")
+      return
+    }
     if (this.presupuestoSeleccionado) {
       this.router.navigate(['/seleccionarPresupuesto', this.presupuestoSeleccionado.id]);
     } else {
