@@ -48,6 +48,10 @@ export class OrdenProduccionService {
     return this.http.post<{ idPedidoProduccion: number, cliente: Cliente }[]>(`${baseUrl}/ObtenerClientes`, ids);
   }
   
+  eliminarPedidosProduccion(listaIdsPedidosAEliminar: number[]): Observable<number[]> {
+    return this.http.post<number[]>(`${baseUrl}/EliminarPedidosProduccion`, listaIdsPedidosAEliminar);
+  }
+
   
   
   

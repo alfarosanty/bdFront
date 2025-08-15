@@ -111,10 +111,7 @@ export class RevisionPedidosProduccionComponent {
         let item = this.articulosPrecio[i];
         if(item.codigo && item.descripcion)
           this.options.push(item.codigo + ' ' + item.descripcion);
-        console.log(item);
         }
-        console.log('items options ' +  this.options.length);       
-      console.log(data);
     },
     error: (e) => console.error(e)
   });

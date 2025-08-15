@@ -105,16 +105,6 @@
           {{mostrarEstado(element)}}
         </ng-container>
 
-        <!-- BOTÓN GENERAR PDF Original
-        <ng-container *ngSwitchCase="'Generar PDF Original'">
-          <button mat-button (click)="generarPDFOriginalDePedido(element.id); $event.stopPropagation()">Generar PDF Original</button>
-        </ng-container>
--->
-        <!-- BOTÓN GENERAR PDF Pendiente
-        <ng-container *ngSwitchCase="'Generar PDF Pendientes'">
-          <button mat-button (click)="generarPDFPendientesDePedido(element.id); $event.stopPropagation()">Generar PDF Pendientes</button>
-        </ng-container>
--->
         <!-- COLUMNA Seleccionar -->
         <ng-container *ngSwitchCase="'Seleccionar'">
           <mat-checkbox [(ngModel)]="element.seleccionadoImprimir" (click)="$event.stopPropagation(); agregarClienteAMapa(element)"></mat-checkbox>

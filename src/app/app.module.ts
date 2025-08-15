@@ -54,6 +54,7 @@ import { MatSortModule } from '@angular/material/sort';
 import { ActualizacionPreciosComponent } from './components/actualizacion-precios/actualizacion-precios.component';
 import { VistaGeneralComponent } from './components/vista-general/vista-general.component';
 import { ConsultasGeneralComponent } from './components/consultas-general/consultas-general.component';
+import { EliminacionesComponent } from './components/eliminaciones/eliminaciones.component';
 
 
 
@@ -82,6 +83,7 @@ import { ConsultasGeneralComponent } from './components/consultas-general/consul
     ActualizacionPreciosComponent,
     VistaGeneralComponent,
     ConsultasGeneralComponent,
+    EliminacionesComponent,
   ],
   imports: [
     MatSelectModule,
