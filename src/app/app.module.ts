@@ -27,6 +27,9 @@ import {MatDialogModule} from '@angular/material/dialog';
 import {MatMenuModule} from '@angular/material/menu';
 import {MatProgressBarModule} from '@angular/material/progress-bar';
 import {MatSnackBarModule} from '@angular/material/snack-bar';
+import {MatStepperModule} from '@angular/material/stepper';
+
+
 
 
 
@@ -55,6 +58,7 @@ import { ActualizacionPreciosComponent } from './components/actualizacion-precio
 import { VistaGeneralComponent } from './components/vista-general/vista-general.component';
 import { ConsultasGeneralComponent } from './components/consultas-general/consultas-general.component';
 import { EliminacionesComponent } from './components/eliminaciones/eliminaciones.component';
+import { SeleccionClienteComponent } from './components/seleccion-cliente/seleccion-cliente.component';
 
 
 
@@ -84,6 +88,7 @@ import { EliminacionesComponent } from './components/eliminaciones/eliminaciones
     VistaGeneralComponent,
     ConsultasGeneralComponent,
     EliminacionesComponent,
+    SeleccionClienteComponent,
   ],
   imports: [
     MatSelectModule,
@@ -112,6 +117,7 @@ import { EliminacionesComponent } from './components/eliminaciones/eliminaciones
     MatSortModule,
     MatProgressBarModule,
     MatSnackBarModule,
+    MatStepperModule
   ],
   
   providers: [

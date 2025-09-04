@@ -1,0 +1,86 @@
+<div class="superior-container">
+
+    <div class="boton-container">
+      <div class="boton-seleccionarPresupuesto">
+        <button mat-raised-button (click)="generarCliente()" color="primary" class="boton-lindo azul">
+          Generar Cliente
+        </button>
+      </div>
+    </div>
+  
+  </div>
+  <div>
+
+  
+      <div>
+
+        <mat-form-field>
+            <mat-label>Filter</mat-label>
+            <input matInput (keyup)="applyFilter($event)" placeholder="Buscar..." #input>
+          </mat-form-field>
+          
+          <div class="mat-elevation-z8">
+            <table mat-table [dataSource]="clienteDataSource!" matSort>
+          
+              <!-- RAZON SOCIAL -->
+              <ng-container matColumnDef="razonSocial">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Razón Social </th>
+                <td mat-cell *matCellDef="let row"> {{row.razonSocial}} </td>
+              </ng-container>
+          
+              <!-- TELEFONO -->
+              <ng-container matColumnDef="telefono">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Teléfono </th>
+                <td mat-cell *matCellDef="let row"> {{row.telefono}} </td>
+              </ng-container>
+          
+              <!-- DOMICILIO -->
+              <ng-container matColumnDef="domicilio">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Domicilio </th>
+                <td mat-cell *matCellDef="let row"> {{row.domicilio}} </td>
+              </ng-container>
+          
+              <!-- LOCALIDAD -->
+              <ng-container matColumnDef="localidad">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Localidad </th>
+                <td mat-cell *matCellDef="let row"> {{row.localidad}} </td>
+              </ng-container>
+          
+              <!-- PROVINCIA 
+              <ng-container matColumnDef="provincia">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> Provincia </th>
+                <td mat-cell *matCellDef="let row"> {{row.provincia}} </td>
+              </ng-container>
+-->
+              <!-- CUIT -->
+              <ng-container matColumnDef="cuit">
+                <th mat-header-cell *matHeaderCellDef mat-sort-header> CUIT </th>
+                <td mat-cell *matCellDef="let row"> {{row.cuit}} </td>
+              </ng-container>
+
+            <!-- EDITAR -->
+            <ng-container matColumnDef="editar">
+                <th mat-header-cell *matHeaderCellDef> Editar </th>
+                <td mat-cell *matCellDef="let row">
+                <button mat-icon-button color="primary" (click)="editarCliente(row.id)">
+                    <mat-icon>edit</mat-icon>
+                </button>
+                </td>
+            </ng-container>
+  
+          
+              <tr mat-header-row *matHeaderRowDef="displayedClienteColumns"></tr>
+              <tr mat-row *matRowDef="let row; columns: displayedClienteColumns;"></tr>
+          
+              <tr class="mat-row" *matNoDataRow>
+                <td class="mat-cell" colspan="6">No hay clientes que coincidan con "{{input.value}}"</td>
+              </tr>
+            </table>
+          </div>
+          
+          </div>
+
+        </div>
+      
+  
+  

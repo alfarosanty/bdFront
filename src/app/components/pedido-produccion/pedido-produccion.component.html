@@ -169,7 +169,7 @@
           <th mat-header-cell *matHeaderCellDef>Borrar</th>
           <td mat-cell *matCellDef="let element">
             <button (click)="borrarFila(element.codigo)" class="boton-borrar">
-              <i class="fas fa-trash-alt"></i>
+              <mat-icon>delete</mat-icon>
             </button>
           </td>
         </ng-container>
@@ -205,7 +205,7 @@
                   <th mat-header-cell *matHeaderCellDef>Borrar</th>
                   <td mat-cell *matCellDef="let presuArt">
                     <button (click)="borrarArticulo(presuArt.articulo.codigo,presuArt.articulo.color.codigo)" class="boton-borrar">
-                      <i class="fas fa-trash-alt"></i>
+                      <mat-icon>delete</mat-icon>
                     </button>
                   </td>
                 </ng-container>

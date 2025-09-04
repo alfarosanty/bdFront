@@ -1,8 +1,7 @@
 import { Component } from '@angular/core';
-import { FormControl } from '@angular/forms';
-import { Router } from '@angular/router';
-import { catchError, map, Observable, startWith, throwError } from 'rxjs';
-import { Cliente } from 'src/app/models/cliente';
+import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { Cliente, CondicionFiscal } from 'src/app/models/cliente';
 import { ClienteService } from 'src/app/services/cliente.service';
 
 @Component({
@@ -11,113 +10,129 @@ import { ClienteService } from 'src/app/services/cliente.service';
   styleUrls: ['./clientes.component.css']
 })
 export class ClientesComponent {
+  firstFormGroup!: FormGroup;
+  secondFormGroup!: FormGroup;
+  thirdFormGroup!: FormGroup;
+  idCliente?: number|null = null;
+  clienteEditando?: Cliente;
+
+//LISTAS
+condicionesFiscales?: CondicionFiscal[];
+
+  constructor(
+    private fb: FormBuilder,
+    private route: ActivatedRoute,
+    private clienteService: ClienteService
+  ) {}
+
+  // FLAGS
+showBackDrop = false
 
 
-  clientes?: Cliente[];
+  ngOnInit() {
+    // Leer idCliente desde la ruta (si existe)
+    this.idCliente = +this.route.snapshot.paramMap.get('id')!; // puede ser undefined
+
+    this.clienteService.getCondicionFiscal().subscribe(condiciones => {
+      this.condicionesFiscales = condiciones;
+      console.log(this.condicionesFiscales);
+    });
+    
+
+    this.firstFormGroup = this.fb.group({
+      razonSocial: ['', Validators.required],
+      telefono: ['', Validators.required]
+    });
   
+    this.secondFormGroup = this.fb.group({
+      domicilio: [''],
+      localidad: [''],
+      provincia: [''],
+      cuit: [''],
+      transporte: ['']
+    });
   
-  currentCliente?: Cliente
-  fechaPresupuesto ?:string;
-  idCliente = '';
-  currentIndex = -1;
-  mostrarPanelBusqueda = false;
-  mostrarPanelCreacion = false;
-  myControl = new FormControl();
-  options: string[] = [];
-  filteredOptions: Observable<string[]>= new Observable<string[]>();
-  clienteSeleccionado = ''
+    this.thirdFormGroup = this.fb.group({
+      condicionFiscal: ['', Validators.required],
+    });
 
+    // Si hay idCliente, cargar datos y setear en el form
+    if (this.idCliente) {
+      this.clienteService.get(this.idCliente).subscribe(cliente => {
+        this.clienteEditando = cliente;
+        console.log("cliente cargado:", cliente)
 
-
-  constructor(private clienteService : ClienteService, private router : Router) {}
-
-
-
-  ngOnInit(): void {
-    this.listarClientes();
-    this.fechaPresupuesto =  new Date().toISOString().split('T')[0];;
-
-    this.filteredOptions = this.myControl.valueChanges.pipe(
-      startWith(''),
-      map(value => this._filter(value || ''))
-    );
-
-    this.currentCliente = new Cliente()
-  }
-  
-  private _filter(value: string): string[] {
-    const filterValue = value.toLowerCase();
-    return this.options.filter(option => option.toLowerCase().includes(filterValue));
-  }
-
-  listarClientes(): void {
-
-    this.currentIndex = -1;
-    this.clienteService.getAll().pipe(
-      catchError(error => {
-        // Manejo del error
-        console.error('Ocurrió un error:', error);
-        alert('No se puede obtener los datos provenientes de la base de datos (ERROR DE IP)');
-        return throwError(() => new Error('Hubo un problema al obtener los clientes.'));
+        // Setear valores en el FormGroup
+        this.firstFormGroup.patchValue({
+          razonSocial: cliente.razonSocial,
+          telefono: cliente.telefono,
+        });
+        
+      this.secondFormGroup.patchValue({
+        domicilio: cliente.domicilio,
+        localidad: cliente.localidad,
+        cuit: cliente.cuit,
+        transporte: cliente.transporte,
+        provincia: cliente.provincia
       })
-    ).subscribe({
-      next: (data) => {
-        this.clientes = data;
-        console.log(data);
-        this.options = this.clientes.map(cliente=>cliente.razonSocial ?? '')
-        console.log(this.options)
-      },
-      error: (e) => console.error(e)
+
+      this.thirdFormGroup.patchValue({
+        condicionFiscal: this.condicionesFiscales?.find(c => c.id === cliente.condicionFiscal?.id)
+      });
       
-    });
+      });
+    }
+
+    this.setUppercase(this.firstFormGroup);
+    this.setUppercase(this.secondFormGroup);
   }
 
-  buscarCliente(){
-    console.log("se ejecutó el método")
-    console.log(this.clienteSeleccionado)
-    if(this.clienteSeleccionado){
-     const clienteBuscado = this.clientes?.find(cliente=> cliente.razonSocial == this.clienteSeleccionado);
-     console.log(clienteBuscado)
-     this.clienteService.get(clienteBuscado?.id).subscribe({
-      next: (data) => {
-        this.currentCliente = data;
-        console.log(this.currentCliente);
-        console.log(data)
-      },
-      error: (e) => console.error(e)
-
+  private setUppercase(group: FormGroup) {
+    Object.keys(group.controls).forEach(key => {
+      group.get(key)?.valueChanges.subscribe(value => {
+        if (value && typeof value === 'string' && value !== value.toUpperCase()) {
+          group.get(key)?.setValue(value.toUpperCase(), { emitEvent: false });
+        }
+      });
     });
-    } 
-    else if(this.idCliente){
-     this.clienteService.get(this.idCliente).subscribe({
-      next: (data) => {
-        this.currentCliente = data;
-        console.log(this.currentCliente);
-        console.log(data)
-      },
-      error: (e) => console.error(e)
+  }
+  
+  guardarCliente() {
+    // Construir objeto Cliente con todos los datos de los 3 steps
+    const cliente: Cliente = {
+      id: this.idCliente!,
+      razonSocial: this.firstFormGroup.value.razonSocial,
+      telefono: this.firstFormGroup.value.telefono,
+      domicilio: this.secondFormGroup.value.domicilio,
+      localidad: this.secondFormGroup.value.localidad,
+      cuit: this.secondFormGroup.value.cuit,
+      transporte: this.secondFormGroup.value.transporte,
+      provincia: this.secondFormGroup.value.provincia,
+      condicionFiscal: this.thirdFormGroup.value.condicionFiscal // puede ser código o objeto según como lo tengas
+    };
+    console.log("Cliente a actualizar:", cliente)
+  
+    if (this.idCliente) {
+      // Edición
+      this.clienteService.actualizar(cliente).subscribe(res => {
+        console.log('Cliente actualizado', res);
+        this.showBackDrop = true; // Se ejecutó correctamente el back
 
-    });
+        setTimeout(() => {
+          location.reload(); // recarga toda la página
+        }, 3000);
+      });
+    } else {
+      // Creación
+      this.clienteService.crear(cliente).subscribe(res => {
+        console.log('Cliente creado', res);
+        this.showBackDrop = true; // Se ejecutó correctamente el back
+
+        setTimeout(() => {
+          location.reload(); // recarga toda la página
+        }, 3000);
+      });
     }
   }
-
-  actualizarCliente(){
-    if(this.currentCliente){
-      console.log("CLIENTE A ACTUALIZAR ", this.currentCliente); // Mostrar el cliente a actualizar
-      this.clienteService.actualizar(this.currentCliente)
-      console.log("CLIENTE ACTUALIZADO")
-    }
-    else alert("no se pudo actualizar al cliente")
-}
-
-guardarCliente(){
-  if(this.currentCliente){
-    console.log("CLIENTE A GUARDAR ", this.currentCliente); // Mostrar el cliente a actualizar
-    this.clienteService.guardar(this.currentCliente)
-    console.log("CLIENTE ACTUALIZADO")
-  }
-  else alert("no se pudo actualizar al cliente")
-}
-
-
+  
 }

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { PedidoProduccion } from '../models/pedido-produccion.model';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { IngresoMercaderia } from '../models/ingreso-mercaderia.model';
+import { Ingreso } from '../models/ingreso.model';
 import { environment } from 'src/environment/environment';
 
 const baseUrl = environment.apiUrl+'/Ingreso';
@@ -15,7 +15,7 @@ export class IngresoService {
 
   constructor(private http:HttpClient) {}
 
-  crear(ingresoMercaderia : IngresoMercaderia)  {
+  crear(ingresoMercaderia : Ingreso)  {
     //alert('url' + baseUrl);
   return this.http.post(`${baseUrl}/crear`, ingresoMercaderia).subscribe(
     response => {
@@ -27,7 +27,7 @@ export class IngresoService {
   );
   }
 
-  actualizar(ingresoMercaderia :IngresoMercaderia)  {
+  actualizar(ingresoMercaderia :Ingreso)  {
     //alert('url' + baseUrl);
    return this.http.post(`${baseUrl}/actualizar`, ingresoMercaderia).subscribe(
     response => {

@@ -244,6 +244,7 @@ listarClientes(): void {
      this.clienteService.get(this.numCliente).subscribe({
       next: (data) => {
         this.currentCliente = data;
+        console.log(data)
       },
       error: (e) => console.error(e)
 
@@ -587,6 +588,7 @@ listarClientes(): void {
       if (this.estaFacturado) {
         this.idPresupuestoActual = this.presupuestoAAcceder?.id
         console.log("ID DEL PRESUPUESTO FACTURADO", this.presupuestoAAcceder?.id)
+        this.mostrarMensaje("Presupuesto facturado, solo muestra. No se modifica la información")
         this.showBackDrop=true
         return;
       }
@@ -758,7 +760,8 @@ procesarSeleccion() {
                             { text: `Fecha: ${this.formatearFecha(this.fechaPresupuesto)}`, style: 'headerBold' },
                             { text: `\nDirección: ${domicilio} ${localidad} ${provincia}`, style: 'caption' },
                             { text: `Teléfono: ${this.currentCliente?.telefono}`, style: 'caption' },
-                            { text: `CUIT: ${this.currentCliente?.cuit}`, style: 'caption' }
+                            { text: `CUIT: ${this.currentCliente?.cuit}`, style: 'caption' },
+                            { text: `Transporte: ${this.currentCliente?.transporte ?? 'Sin especificar'}`, style: 'caption' }
                           ]
                         }
                       ]
@@ -876,7 +879,8 @@ procesarSeleccion() {
                     { text: `Fecha: ${this.formatearFecha(this.fechaPresupuesto)}`, style: 'headerBold' },
                     { text: `\nDirección: ${domicilio} ${localidad} ${provincia}`, style: 'caption' },
                     { text: `Teléfono: ${this.currentCliente?.telefono}`, style: 'caption' },
-                    { text: `CUIT: ${this.currentCliente?.cuit}`, style: 'caption' }
+                    { text: `CUIT: ${this.currentCliente?.cuit}`, style: 'caption' },
+                    { text: `Transporte: ${this.currentCliente?.transporte ?? 'Sin especificar'}`, style: 'caption' }
                   ]
                 },
                 {

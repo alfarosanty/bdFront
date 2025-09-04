@@ -9,17 +9,31 @@
 
     <!-- Menú desplegable de clientes -->
     <div class="dropdown">
-
-      <label for="clientes">Seleccionar Taller:</label>
+      <h6>Seleccionar Taller:</h6>
       <mat-form-field appearance="fill">
         <mat-label>Seleccione un Taller</mat-label>
-        <mat-select [(ngModel)]="currentTaller" (selectionChange)="seleccionarTaller()">
+        <mat-select 
+          [(ngModel)]="currentTaller" 
+          (selectionChange)="seleccionarTaller()"
+          [disabled]="!tipoEliminacion">
           <mat-option [value]="null">Seleccione un Taller</mat-option>
           <mat-option *ngFor="let taller of talleres" [value]="taller">
             {{ taller.razonSocial }}
           </mat-option>
         </mat-select>
       </mat-form-field>
+
+      <h6>Tipo de eliminación</h6>
+      <mat-form-field appearance="fill">
+        <mat-label>Tipo de eliminación</mat-label>
+        <mat-select [(ngModel)]="tipoEliminacion"
+        (selectionChange)="buscarOrdenXTaller()">
+          <mat-option [value]="null">Seleccione tipo</mat-option>
+          <mat-option value="PedidoProduccion">PEDIDO PRODUCCIÓN</mat-option>
+          <mat-option value="Ingreso">INGRESO</mat-option>
+        </mat-select>
+      </mat-form-field>
+      
       
       
                     
@@ -54,7 +68,7 @@
         </div>
 
             <div>
-              <mat-form-field appearance="fill">
+              <mat-form-field appearance="fill" *ngIf="tipoEliminacion == 'PedidoProduccion'">
                 <mat-label>Filtro estado</mat-label>
                 <mat-select [(ngModel)]="filtroEstadoPedido"
                             name="filtroEstadoPedido"
@@ -97,11 +111,11 @@
             {{ sumatoriaCantidadTotal(element) }}
           </ng-container>
   
-          <!-- SUMATORIA CANTIDADES PENDIENTES -->
+          <!-- SUMATORIA CANTIDADES PENDIENTES 
           <ng-container *ngSwitchCase="'Cantidad Pendiente'">
             {{ sumatoriaCantidadPendienteTotal(element) }}
           </ng-container>
-  
+  -->
           <!-- ESTADO -->
           <ng-container *ngSwitchCase="'Estado'">
             {{ mostrarEstado(element) }}
@@ -156,17 +170,17 @@
               </td>
             </ng-container>
   
-            <!-- COLUMNA CANTIDAD PENDIENTE -->
+            <!-- COLUMNA CANTIDAD PENDIENTE 
             <ng-container matColumnDef="cantidadPendiente">
               <th mat-header-cell *matHeaderCellDef>Cantidad Pendiente</th>
               <td mat-cell *matCellDef="let articulo">
                 {{ articulo.cantidadPendiente }}
               </td>
             </ng-container>
-  
+  -->
             <!-- FILAS DE ARTÍCULOS -->
-            <tr mat-header-row *matHeaderRowDef="['codigoArticulo', 'descripcionArticulo', 'cantidad', 'cantidadPendiente']"></tr>
-            <tr mat-row *matRowDef="let row; columns: ['codigoArticulo', 'descripcionArticulo', 'cantidad', 'cantidadPendiente']"></tr>
+            <tr mat-header-row *matHeaderRowDef="['codigoArticulo', 'descripcionArticulo', 'cantidad']"></tr>
+            <tr mat-row *matRowDef="let row; columns: ['codigoArticulo', 'descripcionArticulo', 'cantidad']"></tr>
   
           </table>
         </div>

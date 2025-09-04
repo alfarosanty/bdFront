@@ -1,0 +1,55 @@
+/*TABLA DATA*/
+table {
+    width: 100%;
+  }
+  
+  .mat-mdc-form-field {
+    font-size: 14px;
+    width: 100%;
+  }
+  
+  td, th {
+    width: 25%;
+  }
+
+/* Anchos en % del total de la tabla */
+.mat-column-razonSocial {
+    width: 30%;   /* la más ancha */
+  }
+  
+  .mat-column-telefono {
+    width: 12%;
+  }
+  
+  .mat-column-domicilio {
+    width: 18%;
+  }
+  
+  .mat-column-localidad {
+    width: 12%;
+  }
+  
+  .mat-column-provincia {
+    width: 12%;
+  }
+  
+  .mat-column-cuit {
+    width: 12%;
+  }
+  
+  .mat-column-editar {
+    width: 4%;    /* botón pequeño */
+  }
+  
+  /* Mantener los anchos fijos relativos */
+  table.mat-table {
+    table-layout: fixed; /* evita que las columnas cambien al filtrar */
+    width: 100%;
+  }
+  
+/*BOTON DATA*/
+  .boton-seleccionarPresupuesto {
+    display: inline-flex;
+    margin-bottom: 10%;
+  }
+  

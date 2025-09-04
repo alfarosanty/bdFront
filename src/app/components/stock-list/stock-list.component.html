@@ -26,11 +26,29 @@
                 
   
             </div>
-  
-      </div>
 
+            
+          </div>
+          
+          <div class="excel-upload-container" (drop)="onDrop($event)" (dragover)="onDragOver($event)">
+            <input type="file" id="excelInput" (change)="onArchivoExcelSeleccionado($event)" accept=".xlsx,.xls,.csv" hidden />
+            <label for="excelInput" class="excel-drop-zone">
+              <mat-icon>cloud_upload</mat-icon>
+              <span>Soltá tu Excel acá o hacé clic para buscar</span>
+            </label>
+          
+            <mat-progress-bar *ngIf="cargandoExcel" mode="determinate" [value]="progresoCarga"></mat-progress-bar>
+            <p *ngIf="cargaCompleta" class="mensaje-carga">✔ Archivo cargado correctamente</p>
+            <p class="texto-progreso">Cargando... {{ progresoCarga }}%</p>
+          </div>
 
   </div>
+
+  
+  <div>
+    <button mat-raised-button color="primary" class="btn-buscar boton-busqueda-filtrado" (click)="actualizarStock()">Actualizar stock</button>
+  </div>
+
 
   <div class="grilla-container">
     <h3  style="text-align: center;">Grilla de Información</h3>
@@ -133,5 +151,16 @@
         
       </div>
 
+</div>
+
+<!-- Backdrop con opciones -->
+<div class="backdrop" *ngIf="showBackDrop">
+  <div class="mensaje-confirmacion animado">
+    <div>
+      <span *ngIf="cantidadArticulosActualizados! > 0">
+      <span class="icono">✅</span>
+      ¡Se actualizaron los precios de {{ cantidadArticulosActualizados }} artículos!</span>
+    </div>
+  </div>
 </div>
 

@@ -1,9 +1,8 @@
 import { Component, NgModule } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import jsPDF from 'jspdf';
 import { Articulo } from 'src/app/models/articulo.model';
-import { IngresoMercaderia } from 'src/app/models/ingreso-mercaderia.model';
+import { Ingreso } from 'src/app/models/ingreso.model';
 import { PresupuestoArticulo } from 'src/app/models/presupuesto-articulo.model';
 import { RegistroDescuento } from 'src/app/models/registro-descuento.model';
 import { Taller } from 'src/app/models/taller.model';
@@ -52,7 +51,7 @@ logoBase64: String = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAADMCAYA
   articulosPrecio: ArticuloPrecio[]=[];
   articulos: Articulo[]=[];
   familiaMedida: string[] = [];
-  ingresosMercaderiaXTaller: IngresoMercaderia[] =[];
+  ingresosMercaderiaXTaller: Ingreso[] =[];
   pedidosProduccionesGenerados: PedidoProduccion[] = [];
   estadosPedidoProduccion: EstadoPedidoProduccion[] = [];
 
@@ -86,7 +85,7 @@ logoBase64: String = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAADMCAYA
   articuloColorIndex = -1;
 
 
-  columnsToDisplay = ['Articulo', 'Cantidad', 'Descripcion', 'Taller'];
+  columnsToDisplay = ['Articulo', 'Cantidad', 'Descripcion', 'Hay stock', 'Taller'];
   articuloColumnsToDisplay = ['Articulo', 'Cantidad', 'Hay stock', 'Taller'];
   expandedElement: PresupuestoArticulo | undefined;
 
@@ -472,16 +471,25 @@ actualizarTallerIndividual(presuArt: PresupuestoArticulo, nuevoTallerId: number)
   console.log("este es el mapa actualizado", this.mapaPresupuestoArticulos)
 }
 
+todosConStock(codigo: string): boolean {
+  const articulos = this.getArticulosParaArticulo(codigo);
+  return articulos.every(a => a.hayStock);
+}
 
+// Marca o desmarca todos los artículos con ese código
+toggleStockTodos(codigo: string, valor: boolean) {
+  const articulos = this.getArticulosParaArticulo(codigo);
+  articulos.forEach(a => a.hayStock = valor);
+}
+
+    getArticulosParaArticulo(codigo: string): PresupuestoArticulo[]{
+      const todosLosArticulos = this.dataSourceArticulos.data.flatMap(element => element.presuArt);
+      const listaDeArticulosDeFila = todosLosArticulos.filter(presuArt=>presuArt.articulo?.codigo == codigo)
+      return listaDeArticulosDeFila
+    }
   formatearFecha(fecha: any): string {
     const fechaObj = new Date(fecha);
     return isNaN(fechaObj.getTime()) ? 'Fecha inválida' : `${fechaObj.getDate()}/${fechaObj.getMonth() + 1}/${fechaObj.getFullYear()}`;
-  }
-
-  getArticulosParaArticulo(codigo: string): PresupuestoArticulo[]{
-    const todosLosArticulos = this.dataSourceArticulos.data.flatMap(element => element.presuArt);
-    const listaDeArticulosDeFila = todosLosArticulos.filter(presuArt=>presuArt.articulo?.codigo == codigo)
-    return listaDeArticulosDeFila
   }
   
   generarPedidosProduccion() {

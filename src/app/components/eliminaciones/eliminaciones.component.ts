@@ -1,15 +1,18 @@
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { Component } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource } from '@angular/material/table';
 import { catchError, throwError } from 'rxjs';
 import { EstadoPedidoProduccion } from 'src/app/models/estado-presupuesto.model';
+import { Ingreso } from 'src/app/models/ingreso.model';
 import { PedidoProduccion } from 'src/app/models/pedido-produccion.model';
 import { PresupuestoArticulo } from 'src/app/models/presupuesto-articulo.model';
 import { Presupuesto } from 'src/app/models/presupuesto.model';
 import { Taller } from 'src/app/models/taller.model';
 import { PresupuestoService } from 'src/app/services/budget.service';
+import { IngresoService } from 'src/app/services/ingreso.service';
 import { OrdenProduccionService } from 'src/app/services/orden-produccion.service';
 import { TallerService } from 'src/app/services/taller.service';
 
@@ -28,12 +31,15 @@ import { TallerService } from 'src/app/services/taller.service';
 export class EliminacionesComponent {
 
 // NGMODELS
-currentTaller?: Taller;
+currentTaller?: Taller|null=null;
+tipoEliminacion: 'PedidoProduccion' | 'Ingreso' | null = null;
 
 
 // LISTAS
 pedidosProduccionXTaller: PedidoProduccion[] = [];
 pedidosProdXTallerFiltrados: PedidoProduccion[] = [];
+ingresosXTaller: Ingreso[] = [];
+ingresosXTallerFiltrados: Ingreso[] = [];
 talleres?: Taller[];
 estadosPedidoProduccion: EstadoPedidoProduccion[] = [];
 
@@ -54,20 +60,12 @@ mostrarConfirmacionPDF = false;
 
 
 // MAT TABLE PP
-columnsToDisplay = ['Pedido', 'Cantidad Total', 'Cantidad Pendiente','Estado', 'Seleccionar'];
-articuloColumnsToDisplay = ['Articulo', 'Descripcion' ,  'Cantidad', 'Cantidad Pendiente'];
+columnsToDisplay = ['Pedido', 'Cantidad Total', /*'Cantidad Pendiente',*/'Estado', 'Seleccionar'];
+articuloColumnsToDisplay = ['Articulo', 'Descripcion' ,  'Cantidad'/*, 'Cantidad Pendiente'*/];
 expandedElement: PresupuestoArticulo | undefined;
 dataSourcePedidoProduccion = new MatTableDataSource<PedidoProduccion>();
 
-
-
-
-
-
-
-
-
-  constructor(private ordenProduccionService:OrdenProduccionService, private tallerService:TallerService, private presupuestoService:PresupuestoService, private snackBar: MatSnackBar){}
+  constructor(private ingresoService: IngresoService, private ordenProduccionService:OrdenProduccionService, private tallerService:TallerService, private presupuestoService:PresupuestoService, private snackBar: MatSnackBar){}
 
   ngOnInit(): void {
     this.listarTalleres();
@@ -114,21 +112,51 @@ dataSourcePedidoProduccion = new MatTableDataSource<PedidoProduccion>();
     }
   }
 
-  buscarOrdenXTaller(){
-    if(this.currentTaller){
-     this.ordenProduccionService.getByTaller(this.currentTaller?.id).subscribe({
-      next: (data) => {
-        this.pedidosProduccionXTaller = data;
-        this.pedidosProdXTallerFiltrados= data.sort((a, b) => new Date(a.fecha!).getTime() - new Date(b.fecha!).getTime());
-        this.dataSourcePedidoProduccion.data = this.pedidosProdXTallerFiltrados;
-        this.pedidosProdXTallerFiltrados.forEach(pedidoProduccion=>this.agregarClienteAMapa(pedidoProduccion))
-        this.aplicarFiltros(data)
-      },
-      error: (e) => console.error(e)
+  buscarOrdenXTaller() {
+    // Revisar si hay taller y su ID
+    if (!this.currentTaller?.id) {
+      console.log("Debe seleccionar un Taller válido");
+      return;
+    }
   
-    });
+    const tallerId = this.currentTaller.id;
+  
+    if (this.tipoEliminacion === 'PedidoProduccion') {
+      this.ordenProduccionService.getByTaller(tallerId).subscribe({
+        next: (data) => {
+          this.pedidosProduccionXTaller = data;
+  
+          // Ordenar por fecha
+          this.pedidosProdXTallerFiltrados = data.sort(
+            (a, b) => new Date(a.fecha!).getTime() - new Date(b.fecha!).getTime()
+          );
+  
+          this.dataSourcePedidoProduccion.data = this.pedidosProdXTallerFiltrados;
+  
+          // Agregar cliente a cada pedido
+          this.pedidosProdXTallerFiltrados.forEach(pedidoProduccion =>
+            this.agregarClienteAMapa(pedidoProduccion)
+          );
+  
+          // Aplicar filtros
+          this.aplicarFiltros(data);
+        },
+        error: (e) => console.error(e)
+      });
+  
+    } else if (this.tipoEliminacion === 'Ingreso') {
+      this.ingresoService.getByTaller(tallerId).subscribe({
+        next: (data) => {
+          console.log('Los ingresos son: ', data);
+        },
+        error: (e) => console.error(e)
+      });
+  
+    } else {
+      console.log("Tipo de eliminación no válido");
     }
   }
+  
 
   aplicarFiltros(listaAFiltrar: PedidoProduccion[]) {
     const primerFiltroAplicado = this.filtrarPedidosProduccionXEstado(listaAFiltrar);

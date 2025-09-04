@@ -7,7 +7,10 @@ import { ArticuloPrecio } from 'src/app/models/articulo-precio.model';
 import { Articulo } from 'src/app/models/articulo.model';
 import { ConsultaTallerCortePorCodigo } from 'src/app/models/consulta-medida.model';
 import { PedidoProduccion } from 'src/app/models/pedido-produccion.model';
+import { Stock } from 'src/app/models/stock.model';
 import { ArticuloService } from 'src/app/services/articulo.service';
+import * as XLSX from 'xlsx';
+
 
 @Component({
   selector: 'app-stock-list',
@@ -26,17 +29,25 @@ export class StockListComponent {
 articuloSeleccionado ='';
 cantidadTotalEnCorteArticulo?: {codigo: string, cantidadEnCorte:number}[];
 cantidadTotalEnTallerArticulo?: {codigo: string, cantidadEnCorte:number}[];
+cantidadArticulosActualizados?: number
 
 //LISTAS
 articulosPrecio: ArticuloPrecio[]=[];
 articulos: ConsultaTallerCortePorCodigo[]=[];
 pedidosProduccion: PedidoProduccion[]=[]
 cantidadesCorteTallerArticulo: ConsultaTallerCortePorCodigo[]=[]
+informacionDeExcel: any[] = [];
+
+//FLAGS
+showBackDrop=false
 
 //MAPAS
 mapaArticulosXInformacion?: Map<string, ConsultaTallerCortePorCodigo> = new Map()
 
-
+// EXCEL
+cargandoExcel = false;
+progresoCarga = 0;
+cargaCompleta = false;
 
 
 // INPUTS
@@ -210,5 +221,96 @@ calcularStock(codigo: string, mapaArticulos: Map<string, Articulo[]>): number {
   return listaArticulos.reduce((total, articulo) => total + (articulo.stock || 0), 0);
 }
 
+
+onArchivoExcelSeleccionado(event: Event) {
+  const input = event.target as HTMLInputElement;
+  if (!input.files?.length) {
+    return;
+  }
+  const archivo = input.files[0];
+  this.leerArchivoExcel(archivo);
+}
+
+onDrop(event: DragEvent) {
+  event.preventDefault();
+  if (!event.dataTransfer?.files.length) {
+    return;
+  }
+  const archivo = event.dataTransfer.files[0];
+  this.leerArchivoExcel(archivo);
+}
+
+onDragOver(event: DragEvent) {
+  event.preventDefault(); // necesario para permitir drop
+}
+
+leerArchivoExcel(archivo: File) {
+  this.cargandoExcel = true;
+  this.cargaCompleta = false;
+  this.progresoCarga = 0;
+
+  const reader = new FileReader();
+
+  reader.onprogress = (e) => {
+    if (e.lengthComputable) {
+      this.progresoCarga = Math.round((e.loaded / e.total) * 100);
+    }
+  };
+
+  reader.onload = (e: any) => {
+    this.progresoCarga = 100;
+
+    setTimeout(() => {
+      this.cargandoExcel = false;
+      this.cargaCompleta = true;
+
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+
+      const nombreHoja = workbook.SheetNames[0];
+      const hoja = workbook.Sheets[nombreHoja];
+
+      // Leemos todo pero solo nos quedamos con las columnas que necesitamos
+      const datosExcel = XLSX.utils.sheet_to_json<any>(hoja, {
+        defval: '',
+        raw: true
+      });
+
+      // Filtramos solo ID_ARTICULO y STOCK
+      this.informacionDeExcel = datosExcel.map((fila: any) => ({
+        IdArticulo: fila["ID_ARTICULO"],
+        CantidadStock: fila["STOCK"]
+      }));
+
+      console.log('Datos del Excel filtrados:', this.informacionDeExcel);
+    }, 1000);
+  };
+
+  reader.onerror = () => {
+    this.cargandoExcel = false;
+    this.cargaCompleta = false;
+    this.progresoCarga = 0;
+    alert('Error al leer el archivo Excel');
+  };
+
+  reader.readAsArrayBuffer(archivo);
+}
+
+actualizarStock(){
+  this.articuloService.actualizarStock(this.informacionDeExcel).subscribe({
+    next: (data) => {
+      console.log(data)
+      this.cantidadArticulosActualizados = data
+      this.showBackDrop = true
+      
+      setTimeout(() => {
+        window.location.reload();
+      }, 5000);
+
+    },
+    error: (e) => console.error(e)
+
+  })
+}
 
 }

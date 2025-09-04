@@ -9,6 +9,7 @@ export class Cliente {
     telefono?:number;
     condicionFiscal?:CondicionFiscal;
     cuit?:string;
+    transporte?:string;
 
     constructor(){
         this.razonSocial = ''
@@ -22,7 +23,8 @@ export class Cliente {
     
 }
 
-class CondicionFiscal{
+export class CondicionFiscal{
+    id?: number;
     codigo?: string;
     descripcion?: string;
 }

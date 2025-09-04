@@ -18,6 +18,7 @@
         <mat-icon>{{ item.icon }}</mat-icon>
         <span>{{ item.label }}</span>
       </button>
+      
     </mat-menu>
   </nav>
   
@@ -105,7 +106,96 @@
 
   </div>
     </ng-template>
-<!--    
+   
+    <ng-template #filtro2Tpl>
+      <div class="filtro filtro2">  
+        
+            <!-- Autocompletado -->
+            <mat-form-field class="input-mat" appearance="outline" style="width: 40%;">
+              <mat-label>Seleccione un artículo...</mat-label>
+              <input
+                [(ngModel)]="articuloSeleccionado"
+                matInput
+                [formControl]="articuloControl"
+                [matAutocomplete]="auto"
+                (input)="articuloControl.setValue(articuloControl.value?.toUpperCase()!, { emitEvent: false })"
+                (keydown.enter)="buscarData()">
+              
+              <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption>
+                <mat-option *ngFor="let option of filteredArticuloOptions | async" [value]="option">
+                  {{ option }}
+                </mat-option>
+              </mat-autocomplete>
+            </mat-form-field>
+            
+            
+            
+
+    <!-- FECHAS -->
+
+    <form [formGroup]="range">
+      <mat-form-field appearance="outline">
+        <mat-label>Seleccione rango de fechas</mat-label>
+        <mat-date-range-input [rangePicker]="picker">
+          <input matStartDate formControlName="fechaInicio" placeholder="Desde">
+          <input matEndDate formControlName="fechaFin" placeholder="Hasta">
+        </mat-date-range-input>
+        <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-date-range-picker #picker></mat-date-range-picker>
+
+        <mat-error *ngIf="range.controls.fechaInicio.hasError('matStartDateInvalid')">
+          Fecha de inicio inválida
+        </mat-error>
+        <mat-error *ngIf="range.controls.fechaFin.hasError('matEndDateInvalid')">
+          Fecha de fin inválida
+        </mat-error>
+      </mat-form-field>
+    </form>
+
+
+
+<!-- DATOS DE TABLA -->
+        <section class="example-container mat-elevation-z8" tabindex="0">
+          <table mat-table [dataSource]="dataSourceArticulosPresupuestados">
+            <!-- Artículo -->
+            <ng-container matColumnDef="Articulo">
+              <th mat-header-cell *matHeaderCellDef> Artículo </th>
+              <td mat-cell *matCellDef="let presuArt"> 
+                <span class="color-circle"
+                [ngStyle]="{ 'background-color': presuArt.articulo.color?.colorHexa || '#000' }">
+                </span>
+                {{presuArt.codigo}} </td>
+              <td mat-footer-cell *matFooterCellDef> Total </td>
+            </ng-container>
+        
+            <!-- Descripción -->
+            <ng-container matColumnDef="Descripcion">
+              <th mat-header-cell *matHeaderCellDef> Descripción </th>
+              <td mat-cell *matCellDef="let presuArt">
+                {{ presuArt.articulo?.descripcion }}
+                {{ presuArt.articulo?.color.descripcion }}
+              </td>              
+              <td mat-footer-cell *matFooterCellDef> </td>
+            </ng-container>
+
+          <!-- Cantidad -->
+          <ng-container matColumnDef="Cantidad">
+            <th mat-header-cell *matHeaderCellDef> Cantidad </th>
+            <td mat-cell *matCellDef="let presuArt"> {{ presuArt.cantidad }} </td>
+            <td mat-footer-cell *matFooterCellDef> {{ cantidadTotalPresupuestado() }} </td>
+          </ng-container>
+
+        
+            <tr mat-header-row *matHeaderRowDef="displayedProductosPresupuestadosColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedProductosPresupuestadosColumns;"></tr>
+            <tr mat-footer-row *matFooterRowDef="displayedProductosPresupuestadosColumns; sticky: true"></tr>
+          </table>
+        </section>
+
+      </div>
+    </ng-template>    
+
+  <!--    
     <ng-template #filtro2Tpl>
       <div class="filtro filtro2">
         <form [formGroup]="range">

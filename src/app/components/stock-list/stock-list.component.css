@@ -59,3 +59,110 @@ tr.example-detail-row {
   height: 0;
 }
 
+/*  EXCEL OPCIONES */
+
+.excel-upload-container {
+  display: flex; 
+  flex-direction: column; 
+  align-items: center;        
+  justify-content: flex-start;
+  gap: 12px;                  
+  width: 100%;                
+  padding: 16px;             
+  box-sizing: border-box;     
+  text-align: center;         
+  max-width: 400px;           
+  margin: 0 auto;             
+}
+
+
+mat-progress-bar {
+  width: 100%;
+}
+
+
+.excel-drop-zone {
+  border: 2px dashed #1976d2;
+  border-radius: 12px;
+  padding: 24px;
+  text-align: center;
+  color: #1976d2;
+  background-color: #f4faff;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  width: 100%;
+  max-width: 500px;
+}
+
+.excel-drop-zone:hover {
+  background-color: #e3f2fd;
+}
+
+.excel-drop-zone mat-icon {
+  font-size: 40px;
+  margin-bottom: 8px;
+}
+
+.mensaje-carga {
+  margin-top: 12px;
+  color: green;
+  font-weight: 500;
+}
+
+.texto-progreso {
+  text-align: center;
+  margin-top: 8px;
+  font-weight: 500;
+  color: #333;
+}
+
+
+/* MENSAJE CONFIRMACION */
+
+/* Capa de fondo borroso */
+.backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+  display: flex;
+  flex-direction: column; /* Establece los elementos en columna */
+  justify-content: center; /* Centra los elementos verticalmente */
+  align-items: center; /* Centra los elementos horizontalmente */
+  z-index: 1000;
+}
+
+.mensaje-confirmacion {
+  background: white;
+  padding: 20px 30px;
+  border-radius: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  font-size: 20px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 30px;
+  animation: aparecer 0.4s ease-out;
+}
+
+
+.icono {
+  font-size: 28px;
+  color: green;
+}
+
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

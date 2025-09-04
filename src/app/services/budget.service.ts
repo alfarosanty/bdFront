@@ -1,9 +1,10 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Presupuesto } from '../models/presupuesto.model';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environment/environment';
 import { EstadoPresupuesto } from '../models/estado-presupuesto.model';
+import { PresupuestoArticulo } from '../models/presupuesto-articulo.model';
 
 const baseUrl = environment.apiUrl+'/Presupuesto';
 
@@ -43,6 +44,16 @@ export class PresupuestoService {
   getEstadosPresupuesto(): Observable<EstadoPresupuesto[]> {
     return this.http.get<EstadoPresupuesto[]>(`${baseUrl}/GetEstadosPresupuesto`);
   }
+
+  getArticulosPresupuestados(idArticuloPrecio: number, filtros: { fechaInicio: string|null, fechaFin: string|null }): Observable<PresupuestoArticulo[]>{
+    let params = new HttpParams()
+    .set('idArticuloPrecio', idArticuloPrecio.toString())
+    .set('fechaInicio', filtros.fechaInicio!)
+    .set('fechaFin', filtros.fechaFin!);
+
+    return this.http.get<PresupuestoArticulo[]>(`${baseUrl}/ArticulosPresupuestados`, { params });  
+  }
+
 }
 
 

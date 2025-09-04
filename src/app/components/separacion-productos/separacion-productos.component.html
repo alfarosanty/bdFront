@@ -56,6 +56,13 @@
       <ng-container *ngIf="column === 'Articulo'">{{ element.codigo }}</ng-container>
       <ng-container *ngIf="column === 'Cantidad'">{{ element.cantidadTotal }}</ng-container>
       <ng-container *ngIf="column === 'Descripcion'">{{ element.descripcion }}</ng-container>
+      <ng-container *ngIf="column === 'Hay stock'">
+        <mat-checkbox 
+        [checked]="todosConStock(element.codigo)"
+        (change)="toggleStockTodos(element.codigo, $event.checked)"
+        (click)="$event.stopPropagation()">
+      </mat-checkbox>      
+      </ng-container>
       <ng-container *ngIf="column === 'Taller'">
         <mat-form-field appearance="outline"class="combo-taller" (click)="$event.stopPropagation()">
           <mat-select [(value)]="element.taller" placeholder="Seleccionar taller" (selectionChange)="actualizarTallerParaCodigo(element, $event.value)">
@@ -64,7 +71,7 @@
             </mat-option>
           </mat-select>
         </mat-form-field>
-      </ng-container>
+      </ng-container>      
       
     </td>
   </ng-container>

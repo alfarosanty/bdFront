@@ -18,6 +18,7 @@ import { ActualizacionPreciosComponent } from './components/actualizacion-precio
 import { VistaGeneralComponent } from './components/vista-general/vista-general.component';
 import { ConsultasGeneralComponent } from './components/consultas-general/consultas-general.component';
 import { EliminacionesComponent } from './components/eliminaciones/eliminaciones.component';
+import { SeleccionClienteComponent } from './components/seleccion-cliente/seleccion-cliente.component';
 
 
 const routes: Routes = [
@@ -30,6 +31,7 @@ const routes: Routes = [
   { path:  'searchBudget/:id', component: SearchBudgetComponent},
   { path:  'selectBudget', component: SelectBudgetComponent},
   { path:  'clientes', component: ClientesComponent},
+  { path:  'clientes/:id', component: ClientesComponent},
   { path:  'facturacion', component: FacturacionComponent},
   { path:  'pedidoProduccion', component: PedidoProduccionComponent},
   { path:  'ingreso', component: IngresoComponent},
@@ -42,6 +44,8 @@ const routes: Routes = [
   { path:  'vista/:id', component: VistaGeneralComponent},
   { path:  'consultasGeneral', component: ConsultasGeneralComponent},
   { path:  'eliminaciones', component: EliminacionesComponent},
+  { path:  'seleccion-cliente', component: SeleccionClienteComponent},
+
 
 ];
 

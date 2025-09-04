@@ -1,77 +1,62 @@
-.superior-container{
+.example-input-wrapper {
+    margin-bottom: 16px;
+  }
+  
+  label {
+    margin-right: 4px;
+  }
+
+  .form-row {
     display: flex;
-    justify-content: space-between;
-    margin-bottom: 5%;
+    flex-wrap: wrap;   /* si la pantalla es chica, se bajan los inputs */
+    gap: 16px;         /* espacio entre inputs */
+  }
+  
+
+/* Capa de fondo borroso */
+.backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    display: flex;
+    flex-direction: column; /* Establece los elementos en columna */
+    justify-content: center; /* Centra los elementos verticalmente */
+    align-items: center; /* Centra los elementos horizontalmente */
+    z-index: 1000;
 }
 
-.search-panel {
-    margin-top: 2%;
-    padding: 2%;
-    border: 1px solid #ccc;
-    border-radius: 2%;
-    width:120%;
+.mensaje-confirmacion {
+    background: white;
+    padding: 20px 30px;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    font-size: 20px;
+    font-weight: bold;
     display: flex;
-    
-  }
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 30px;
+    animation: aparecer 0.4s ease-out;
+}
   
-  .search-panel input {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 10px;
-    display: flex;
-    margin-bottom: 10%;
-  }
-  
-  .search-panel button {
-    width: 130%;
-    padding: 20%;
-    background-color: #007BFF;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    display: flex;
-  }
-  
-  .search-panel button:hover {
-    background-color: #0056b3;
-  }
 
-  .boton-de-busqueda{
-    margin-top: 5%;
-  }
+.icono {
+    font-size: 28px;
+    color: green;
+}
 
-  .presupuestos-bar {
-    width: 28%; /* Barra de presupuestos al 28% de la pantalla */
-    padding-left: 10px;
-  }
 
-  .inferior-container {
-    display: flex;
-    justify-content: space-between; /* Opcional: para añadir espacio entre los contenedores internos */
-  }
-
-  .contenedor-inferior-izquierdo{
-    width: 48%; /* O el tamaño que desees para cada contenedor interno */
-    padding: 10px;
-  }
-  .contenedor-inferior-derecho{
-    width: 48%; /* O el tamaño que desees para cada contenedor interno */
-    padding: 10px;
-    margin-bottom: 30%;
-  }
-
-  .presupuesto-seleccionado {
-    display: inline; /* Alinea el texto en una sola línea */
-  }
-
-  .presupuesto-seleccionado div {
-    width: 500%; /* El div ocupará el 80% del ancho del contenedor padre */
-    margin-bottom: 10px; /* Espaciado entre los divs */
-  }
-
-  .boton-de-guardado{
-    width: 30%;
-    background-color: white;
-    color: #0056b3;
-  }
+@keyframes aparecer {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+ }

@@ -13,7 +13,7 @@ import { PedidoProduccion } from 'src/app/models/pedido-produccion.model';
 import { OrdenProduccionService } from 'src/app/services/orden-produccion.service';
 import { TallerService } from 'src/app/services/taller.service';
 import { IngresoService } from 'src/app/services/ingreso.service';
-import { IngresoMercaderia } from 'src/app/models/ingreso-mercaderia.model';
+import { Ingreso } from 'src/app/models/ingreso.model';
 import { RegistroDescuento } from 'src/app/models/registro-descuento.model';
 import { firstValueFrom } from 'rxjs';
 import { EstadoPedidoProduccion, EstadoPresupuesto } from 'src/app/models/estado-presupuesto.model';
@@ -53,8 +53,8 @@ export class IngresoComponent {
   articulosPrecio: ArticuloPrecio[] = [];
   articulos: Articulo[]=[];
   familiaMedida: string[] = [];
-  ingresosMercaderiaXTaller: IngresoMercaderia[] =[];
-  ingresosMercaderiaXTallerFiltrados: IngresoMercaderia[] =[];
+  ingresosMercaderiaXTaller: Ingreso[] =[];
+  ingresosMercaderiaXTallerFiltrados: Ingreso[] =[];
   pedidosProduccionXTaller: PedidoProduccion[] = [];
   presupuestosAModificar : Presupuesto[] = [];
   estadosPedidoProduccion?: EstadoPedidoProduccion[] 
@@ -67,11 +67,11 @@ export class IngresoComponent {
   ingresoMercaderiaSeleccionado?: PedidoProduccion
   currentTaller?: Taller;
   currentArticulo ?: Articulo;
-  currentIngresoMercaderia?: IngresoMercaderia;
+  currentIngresoMercaderia?: Ingreso;
   pedidoProduccionSeleccionado ?: PedidoProduccion
 
   pedidoProduccionAAcceder ?: PedidoProduccion
-  ingresoMercaderiaAAcceder ?: IngresoMercaderia
+  ingresoMercaderiaAAcceder ?: Ingreso
   fechaIngresoMercaderia?: Date;
   producto = '';
   codigoArticulo = '';

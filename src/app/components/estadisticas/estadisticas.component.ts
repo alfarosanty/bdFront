@@ -10,6 +10,12 @@ import * as pdfMake from 'pdfmake/build/pdfmake';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 import * as FileSaver from 'file-saver';
 import * as ExcelJS from 'exceljs';
+import { PresupuestoArticulo } from 'src/app/models/presupuesto-articulo.model';
+import { PresupuestoService } from 'src/app/services/budget.service';
+import { map, Observable, startWith } from 'rxjs';
+import { ArticuloPrecio } from 'src/app/models/articulo-precio.model';
+import { ArticuloService } from 'src/app/services/articulo.service';
+
 
 (pdfMake as any).vfs = (pdfFonts as any).vfs;
 
@@ -25,7 +31,9 @@ export class EstadisticasComponent {
 
 
 @ViewChild('filtro1Tpl', { static: true }) filtro1Tpl!: TemplateRef<any>;
-//@ViewChild('filtro2Tpl', { static: true }) filtro2Tpl!: TemplateRef<any>;
+@ViewChild('filtro2Tpl', { static: true }) filtro2Tpl!: TemplateRef<any>;
+//@ViewChild('filtro3Tpl', { static: true }) filtro3Tpl!: TemplateRef<any>;
+
 private _sort!: MatSort;
 
 @ViewChild(MatSort)
@@ -38,11 +46,15 @@ set sort(sort: MatSort) {
 
 menuListItems = [
   { id: 'filtro1', icon: 'monetization_on', label: 'Facturación x Cliente' },
-//  { id: 'filtro2', icon: 'bar_chart', label: 'Productos vendidos' },
+  { id: 'filtro2', icon: 'bar_chart', label: 'Productos presupuestados' },
+//  { id: 'filtro3', icon: 'bar_chart', label: 'Productos vendidos' },
   { id: 'None', icon: 'clear', label: 'Sin filtro' }
 ];
 
 templateMap: Record<string, TemplateRef<any>> = {};
+
+// LISTAS
+articulosPrecio: ArticuloPrecio[]=[];
 
 // HTML GNMODEL
 filtroSeleccionado = 'None';
@@ -50,72 +62,113 @@ currentCliente = ''
 
 // MAT TABLE INFO
 displayedFacturacionXClienteColumns: string[] = ['Cliente', 'Monto Bruto', 'Cantidad'];
+displayedProductosPresupuestadosColumns: string[] = ['Articulo', 'Descripcion', 'Cantidad'];
+
 dataSourceCodigo = new MatTableDataSource<RespuestaEstadistica>([]);
+dataSourceArticulosPresupuestados = new MatTableDataSource<PresupuestoArticulo>([]);
+
+/*INPUT BUSQUEDA*/
+articuloControl = new FormControl('');
+options: string[] = [];
+filteredArticuloOptions!: Observable<string[]>;
+articuloSeleccionado = ''
+articuloPrecioSeleccionado: ArticuloPrecio|null = {codigo: '',descripcion: '',precio1: 0,precio2: 0,precio3: 0};
+filterValue = ''
 
 
 
 
-constructor(private facturacionService: FacturaService, private cdr: ChangeDetectorRef, private decimalPipe: DecimalPipe){}
+
+constructor(private articuloService : ArticuloService, private facturacionService: FacturaService, private presupuestoService: PresupuestoService, private cdr: ChangeDetectorRef, private decimalPipe: DecimalPipe){}
 
 ngOnInit() {
   // El mapa se puede inicializar acá si los templates ya están definidos
   this.templateMap = {
     filtro1: this.filtro1Tpl,
-//    filtro2: this.filtro2Tpl
+    filtro2: this.filtro2Tpl
+//    filtro3: this.filtro2Tpl
+
   };
+
+  this.articuloService.getAllArticuloPrecio().subscribe({
+    next: (data) => {
+      console.log("esto llega de la bd", data)
+      this.articulosPrecio = data.sort((a, b) => a.codigo!.localeCompare(b.codigo!));
+      console.log("Estos son los artículos ordenados", this.articulosPrecio)
+      for (let i = 0; i < this.articulosPrecio?.length; i++) {
+        let item = this.articulosPrecio[i];
+        this.options.push(item.codigo + ' ' + item.descripcion);
+        }
+    },
+    error: (e) => console.error(e)
+  });
+  
+  this.filteredArticuloOptions = this.articuloControl.valueChanges.pipe(
+    startWith(''),
+    map(value => this._filter(value!))
+  );  
+}
+
+private _filter(value: string): string[] {
+  const filterValue = value.toLowerCase();
+  return this.options.filter(option => option.toLowerCase().includes(filterValue));
+}
+
+displayArticulo(articulo?: ArticuloPrecio): string {
+  return articulo ? articulo.descripcion! : '';
 }
 
 ngAfterViewInit() {
   this.dataSourceCodigo.sort = this.sort;
-
+  
   this.dataSourceCodigo.sortingDataAccessor = (item, property) => {
     switch (property) {
       case 'Cliente':
         return item.cliente?.razonSocial?.toLowerCase() || '';
-      case 'Monto Bruto':
-        return item.dinero || 0;
-      case 'Cantidad':
-        return item.cantidadArticulos || 0;
-      default:
-        return (item as Record<string, any>)[property];
-      }
-  };
-}
-
-
-/** Announce the change in sort state for assistive technology. */
-announceSortChange(sortState: Sort) {
-  // This example uses English messages. If your application supports
-  // multiple language, you would internationalize these strings.
-  // Furthermore, you can customize the message to add additional
-  // details about the values being sorted.
-  if (sortState.direction) {
-    this._liveAnnouncer.announce(`Sorted ${sortState.direction}ending`);
-  } else {
-    this._liveAnnouncer.announce('Sorting cleared');
-  }
-}
-
-readonly range = new FormGroup({
-  fechaInicio: new FormControl<Date | null>(this.getPrimerDiaMes()),
-  fechaFin: new FormControl<Date | null>(new Date())
-});
-
-private getPrimerDiaMes(): Date {
-  const hoy = new Date();
-  return new Date(hoy.getFullYear(), hoy.getMonth(), 1); // Día 1 del mes actual
-}
-
-
-get templateSeleccionado(): TemplateRef<any> | null {
-  return this.templateMap[this.filtroSeleccionado] || null;
-}
-
-setFiltroSeleccionado(id: string) {
-  this.filtroSeleccionado = id;
-  this.cdr.detectChanges(); // Forzar actualización de vista y @ViewChild
-  // ahora el @ViewChild debería estar actualizado
-  if (this._sort && this.dataSourceCodigo) {
+        case 'Monto Bruto':
+          return item.dinero || 0;
+          case 'Cantidad':
+            return item.cantidadArticulos || 0;
+            default:
+              return (item as Record<string, any>)[property];
+            }
+          };
+        }
+        
+        
+        /** Announce the change in sort state for assistive technology. */
+        announceSortChange(sortState: Sort) {
+          // This example uses English messages. If your application supports
+          // multiple language, you would internationalize these strings.
+          // Furthermore, you can customize the message to add additional
+          // details about the values being sorted.
+          if (sortState.direction) {
+            this._liveAnnouncer.announce(`Sorted ${sortState.direction}ending`);
+          } else {
+            this._liveAnnouncer.announce('Sorting cleared');
+          }
+        }
+        
+        readonly range = new FormGroup({
+          fechaInicio: new FormControl<Date | null>(this.getPrimerDiaMes()),
+          fechaFin: new FormControl<Date | null>(new Date())
+        });
+        
+        private getPrimerDiaMes(): Date {
+          const hoy = new Date();
+          return new Date(hoy.getFullYear(), hoy.getMonth(), 1); // Día 1 del mes actual
+        }
+        
+        
+        get templateSeleccionado(): TemplateRef<any> | null {
+          return this.templateMap[this.filtroSeleccionado] || null;
+        }
+        
+        setFiltroSeleccionado(id: string) {
+          this.filtroSeleccionado = id;
+          this.cdr.detectChanges(); // Forzar actualización de vista y @ViewChild
+          // ahora el @ViewChild debería estar actualizado
+          if (this._sort && this.dataSourceCodigo) {
     this.dataSourceCodigo.sort = this._sort;
   }
   this.dataSourceCodigo.data = [];
@@ -199,6 +252,38 @@ facturacionXCliente() {
 
 productosVendidos(){
 
+  const fechaInicio = this.range.get('fechaInicio')?.value as Date | null;
+  const fechaFin = this.range.get('fechaFin')?.value as Date | null;
+
+  if (!fechaInicio || !fechaFin) {
+    alert('Por favor seleccioná ambas fechas');
+    return;
+  }
+
+  const filtros = {
+    fechaInicio: this.formatearFecha(fechaInicio),
+    fechaFin: this.formatearFecha(fechaFin)
+  };
+
+
+  const idArticuloPrecio = this.articulosPrecio.find(
+    articuloPrecio => (articuloPrecio.codigo! + ' ' + articuloPrecio.descripcion!) === this.articuloSeleccionado
+  )?.id;
+  
+  console.log("Articulo precio seleccionado:", idArticuloPrecio!)
+
+  this.presupuestoService.getArticulosPresupuestados(idArticuloPrecio!, filtros).subscribe({
+    next: (data: PresupuestoArticulo[]) => {
+      console.log('Respuesta del backend:', data);
+
+    this.actualizarDataSourceArticulosPresupuestados(data);
+
+    },
+    error: err => {
+      console.error('Error al consultar articulos presupuestados:', err);
+    }
+  });
+
 }
 
 actualizarDataSource(nuevaData: RespuestaEstadistica[]) {
@@ -211,6 +296,15 @@ actualizarDataSource(nuevaData: RespuestaEstadistica[]) {
     console.warn('Sort aún no está disponible al actualizar dataSource');
   }
 }
+
+actualizarDataSourceArticulosPresupuestados(nuevaData: PresupuestoArticulo[]) {
+  this.dataSourceArticulosPresupuestados.data = [...nuevaData].sort((a, b) =>
+    (a.articulo?.color?.descripcion ?? '').localeCompare(b.articulo?.color?.descripcion ?? '')
+  );
+
+}
+
+
 
 totalDinero(): number {
   return this.dataSourceCodigo?.data.reduce((acc, el) => acc + (el.dinero || 0), 0);
@@ -362,6 +456,12 @@ generarExcel() {
     const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     FileSaver.saveAs(blob, `Estadisticas-por-cliente-${this.formatearFecha(fechaHoy)}.xlsx`);
   });
+}
+
+
+cantidadTotalPresupuestado(): number {
+  return this.dataSourceArticulosPresupuestados.data
+    .reduce((total, presuArt) => total + presuArt.cantidad!, 0);
 }
 
 

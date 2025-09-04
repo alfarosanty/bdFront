@@ -14,29 +14,14 @@ export class ClienteService {
 
   constructor(private http: HttpClient) {}
 
-  actualizar(cliente :Cliente)  {
-    //alert('url' + '${baseUrl}');
-   return this.http.post(`${baseUrl}`, cliente).subscribe(
-    response => {
-      console.log('Respuesta de la API:', response);
-    },
-    error => {
-      console.error('Error en la llamada POST:', error);
-    }
-  );
+  actualizar(cliente: Cliente): Observable<any> {
+    return this.http.post(`${baseUrl}/Actualizar/`, cliente);
   }
-
-  guardar(cliente :Cliente)  {
-    //alert('url' + '${baseUrl}');
-   return this.http.post(`${baseUrl}`, cliente).subscribe(
-    response => {
-      console.log('Respuesta de la API:', response);
-    },
-    error => {
-      console.error('Error en la llamada POST:', error);
-    }
-  );
+  
+  crear(cliente: Cliente): Observable<any> {
+    return this.http.post(`${baseUrl}/Crear`, cliente);
   }
+  
 
   getAll(): Observable<Cliente[]> {
     return this.http.get<Cliente[]>(`${baseUrl}/GetClientes `);
@@ -44,6 +29,11 @@ export class ClienteService {
 
   get(id: any): Observable<Cliente> {
     return this.http.get<Cliente>(`${baseUrl}/GetClienteById/${id}`);
+  }
+
+
+  getCondicionFiscal(): Observable<any>{
+    return this.http.get<any>(`${baseUrl}/GetCondicionFiscal`)
   }
 
 }

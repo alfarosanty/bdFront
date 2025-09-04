@@ -26,13 +26,16 @@
         <div>
           <label for="numCliente">Número de Cliente</label>
           <input type="number" id="numCliente" [(ngModel)]="numCliente" style="width: 15%;"
-                 (keydown.enter)="seleccionarXnumeroCliente()">
+          (keydown.enter)="seleccionarXnumeroCliente()"
+          (blur)="seleccionarXnumeroCliente()">
+
         </div>
 
         <div>
           <label for="numPresupuesto">Número de Presupuesto</label>
           <input type="number" id="numPresupuesto" [(ngModel)]="numPresupuesto" style="width: 15%;"
-                 (keydown.enter)="seleccionarXnumeroPresupuesto(numPresupuesto!)">
+          (keydown.enter)="seleccionarXnumeroPresupuesto(numPresupuesto!)"
+          (blur)="seleccionarXnumeroPresupuesto(numPresupuesto!)">
         </div>
 
         <!-- Selector de cliente -->

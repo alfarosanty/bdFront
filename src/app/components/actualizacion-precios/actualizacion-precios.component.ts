@@ -6,6 +6,8 @@ import { map, Observable, startWith } from 'rxjs';
 import { ArticuloPrecio } from 'src/app/models/articulo-precio.model';
 import { ArticuloService } from 'src/app/services/articulo.service';
 import * as XLSX from 'xlsx';
+import { forkJoin, of } from 'rxjs';
+
 
 
 @Component({
@@ -159,53 +161,39 @@ mostrarMapas(){
   console.log("mapa de creación", this.mapaArticulosPreciosACrear)
 }
 
+
 actualizarArticulos() {
   const articulosPrecioACrear = Array.from(this.mapaArticulosPreciosACrear?.values() || []);
   const articulosPrecioAActualizar = Array.from(this.mapaArticulosPreciosAActualizar?.values() || []);
 
-  let actualizarOk = false;
-  let crearOk = false;
+  const obsActualizar = articulosPrecioAActualizar.length > 0 
+    ? this.articuloService.actualizarArticulosPrecios(articulosPrecioAActualizar) 
+    : of(null);
 
-  if (articulosPrecioAActualizar.length > 0) {
-    this.articuloService.actualizarArticulosPrecios(articulosPrecioAActualizar).subscribe({
-      next: (res) => {
-        console.log('Artículos actualizados correctamente', res);
-        actualizarOk = true;
-        if ((articulosPrecioACrear.length === 0 || crearOk) && actualizarOk) {
-          this.showBackDrop = true;
-          this.cantidadArticulosActualizados = articulosPrecioAActualizar.length
-          setTimeout(() => location.reload(), 3000);
-        }
-      },
-      error: (err) => {
-        alert('Error al actualizar artículos: ' + err.message || err);
-        console.error('Error al actualizar artículos', err);
-      }
-    });
-  } else {
-    actualizarOk = true; // Si no hay para actualizar, consideramos OK
-  }
+  const obsCrear = articulosPrecioACrear.length > 0 
+    ? this.articuloService.crearArticulosPrecios(articulosPrecioACrear) 
+    : of(null);
 
-  if (articulosPrecioACrear.length > 0) {
-    this.articuloService.crearArticulosPrecios(articulosPrecioACrear).subscribe({
-      next: (res) => {
-        console.log('Artículos creados correctamente', res);
-        crearOk = true;
-        if ((articulosPrecioAActualizar.length === 0 || actualizarOk) && crearOk) {
-          this.showBackDrop = true;
-          this.cantidadArticulosCreados = articulosPrecioACrear.length
-          setTimeout(() => location.reload(), 3000);
-        }
-      },
-      error: (err) => {
-        alert('Error al crear artículos: ' + err.message || err);
-        console.error('Error al crear artículos', err);
+  forkJoin([obsActualizar, obsCrear]).subscribe({
+    next: ([resActualizar, resCrear]) => {
+      if (resActualizar) {
+        console.log('Artículos actualizados correctamente', resActualizar);
+        this.cantidadArticulosActualizados = articulosPrecioAActualizar.length;
       }
-    });
-  } else {
-    crearOk = true; // Si no hay para crear, consideramos OK
-  }
+      if (resCrear) {
+        console.log('Artículos creados correctamente', resCrear);
+        this.cantidadArticulosCreados = articulosPrecioACrear.length;
+      }
+      this.showBackDrop = true;
+      setTimeout(() => location.reload(), 3000);
+    },
+    error: (err) => {
+      alert('Error en operación de artículos: ' + (err.message || err));
+      console.error('Error en operación de artículos', err);
+    }
+  });
 }
+
 
 
 onArchivoExcelSeleccionado(event: Event) {
