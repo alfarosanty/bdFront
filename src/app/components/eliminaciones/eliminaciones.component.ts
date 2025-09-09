@@ -60,10 +60,10 @@ mostrarConfirmacionPDF = false;
 
 
 // MAT TABLE PP
-columnsToDisplay = ['Pedido', 'Cantidad Total', /*'Cantidad Pendiente',*/'Estado', 'Seleccionar'];
+columnsToDisplay: string[] = [];
 articuloColumnsToDisplay = ['Articulo', 'Descripcion' ,  'Cantidad'/*, 'Cantidad Pendiente'*/];
 expandedElement: PresupuestoArticulo | undefined;
-dataSourcePedidoProduccion = new MatTableDataSource<PedidoProduccion>();
+dataSource = new MatTableDataSource<PedidoProduccion|Ingreso>();
 
   constructor(private ingresoService: IngresoService, private ordenProduccionService:OrdenProduccionService, private tallerService:TallerService, private presupuestoService:PresupuestoService, private snackBar: MatSnackBar){}
 
@@ -104,6 +104,16 @@ dataSourcePedidoProduccion = new MatTableDataSource<PedidoProduccion>();
     });
   }
 
+  definirColumnas() {
+    if (this.tipoEliminacion === 'PedidoProduccion') {
+      this.columnsToDisplay = ['Pedido', 'Cantidad Total', 'Estado', 'Seleccionar'];
+    } else if (this.tipoEliminacion === 'Ingreso') {
+      this.columnsToDisplay = ['Ingreso', 'Cantidad Total', 'Seleccionar']; // sin Estado
+    } else {
+      this.columnsToDisplay = [];
+    }
+  }
+
 
   seleccionarTaller(): void {
     if (this.currentTaller) {
@@ -113,7 +123,9 @@ dataSourcePedidoProduccion = new MatTableDataSource<PedidoProduccion>();
   }
 
   buscarOrdenXTaller() {
-    // Revisar si hay taller y su ID
+    this.definirColumnas();
+    this.dataSource.data = []; // limpiar tabla
+  
     if (!this.currentTaller?.id) {
       console.log("Debe seleccionar un Taller válido");
       return;
@@ -126,20 +138,20 @@ dataSourcePedidoProduccion = new MatTableDataSource<PedidoProduccion>();
         next: (data) => {
           this.pedidosProduccionXTaller = data;
   
-          // Ordenar por fecha
-          this.pedidosProdXTallerFiltrados = data.sort(
+          // Ordenar por fecha sin mutar original
+          this.pedidosProdXTallerFiltrados = [...data].sort(
             (a, b) => new Date(a.fecha!).getTime() - new Date(b.fecha!).getTime()
           );
   
-          this.dataSourcePedidoProduccion.data = this.pedidosProdXTallerFiltrados;
+          this.dataSource.data = this.pedidosProdXTallerFiltrados;
   
-          // Agregar cliente a cada pedido
-          this.pedidosProdXTallerFiltrados.forEach(pedidoProduccion =>
-            this.agregarClienteAMapa(pedidoProduccion)
+          // Agregar cliente
+          this.pedidosProdXTallerFiltrados.forEach(p =>
+            this.agregarClienteAMapa(p)
           );
   
           // Aplicar filtros
-          this.aplicarFiltros(data);
+          this.aplicarFiltros(this.pedidosProdXTallerFiltrados);
         },
         error: (e) => console.error(e)
       });
@@ -147,23 +159,35 @@ dataSourcePedidoProduccion = new MatTableDataSource<PedidoProduccion>();
     } else if (this.tipoEliminacion === 'Ingreso') {
       this.ingresoService.getByTaller(tallerId).subscribe({
         next: (data) => {
-          console.log('Los ingresos son: ', data);
+          this.ingresosXTaller = data;
+  
+          this.ingresosXTallerFiltrados = [...data].sort(
+            (a, b) => new Date(a.fecha!).getTime() - new Date(b.fecha!).getTime()
+          );
+  
+          this.dataSource.data = this.ingresosXTallerFiltrados;
+  
+          // Aplicar filtros
+          this.aplicarFiltros(this.ingresosXTallerFiltrados);
         },
         error: (e) => console.error(e)
       });
-  
     } else {
       console.log("Tipo de eliminación no válido");
     }
   }
-  
-
-  aplicarFiltros(listaAFiltrar: PedidoProduccion[]) {
-    const primerFiltroAplicado = this.filtrarPedidosProduccionXEstado(listaAFiltrar);
-    const segundoFiltroAplicado = this.filtrarPedidosProduccionXRangoFechas(primerFiltroAplicado);
-    this.dataSourcePedidoProduccion.data = segundoFiltroAplicado;
-    console.log("DATOS A MOSTRAR", this.dataSourcePedidoProduccion.data)
     
+  aplicarFiltros(listaAFiltrar: PedidoProduccion[]|Ingreso[]) {
+    if(this.tipoEliminacion=='PedidoProduccion'){
+    const primerFiltroAplicado = this.filtrarPedidosProduccionXEstado(listaAFiltrar as PedidoProduccion[]);
+    const segundoFiltroAplicado = this.filtrarPedidosProduccionXRangoFechas(primerFiltroAplicado);
+    this.dataSource.data = segundoFiltroAplicado;
+    console.log("DATOS A MOSTRAR", this.dataSource.data)
+  } else if(this.tipoEliminacion=='Ingreso'){
+    const primerFiltroAplicado = this.filtrarPedidosProduccionXRangoFechas(listaAFiltrar);
+    this.dataSource.data = primerFiltroAplicado;
+    console.log("DATOS A MOSTRAR", this.dataSource.data)
+  }
   }
 
   filtrarPedidosProduccionXEstado(listaAFiltrar:PedidoProduccion[]):PedidoProduccion[] {
@@ -180,7 +204,7 @@ dataSourcePedidoProduccion = new MatTableDataSource<PedidoProduccion>();
   }
   
   
-  filtrarPedidosProduccionXRangoFechas(listaPedidosProduccion: PedidoProduccion[]): PedidoProduccion[] {
+  filtrarPedidosProduccionXRangoFechas(listaPedidosProduccion: PedidoProduccion[]|Ingreso[]): PedidoProduccion[]|Ingreso[] {
     console.log("DEBERÍA ESTAR FILTRANDO POR FECHAS");
   
     if (this.fechaInicio && this.fechaFin) {
@@ -240,10 +264,10 @@ dataSourcePedidoProduccion = new MatTableDataSource<PedidoProduccion>();
       return;
     }
   
-    const data = this.dataSourcePedidoProduccion.data;
+    const data = this.dataSource.data;
     console.log(data)
     moveItemInArray(data, event.previousIndex, event.currentIndex);
-    this.dataSourcePedidoProduccion.data = data;
+    this.dataSource.data = data;
   }
 
   sumatoriaCantidadTotal(pedido: PedidoProduccion): number|undefined {
@@ -257,26 +281,47 @@ dataSourcePedidoProduccion = new MatTableDataSource<PedidoProduccion>();
   mostrarEstado(pedidoProduccion: PedidoProduccion): string{
     const idEstadoPedidoProduccion = pedidoProduccion.idEstadoPedidoProduccion
     const estadoPedidoProduccion = this.estadosPedidoProduccion.find(estado=>estado.id===idEstadoPedidoProduccion)
+    console.log("LOGGGG",(estadoPedidoProduccion?.descripcion || 'no hay estado'))
 
     return (estadoPedidoProduccion?.descripcion || 'no hay estado')
   }
  
 
   mostrarOpciones() {
+    if(this.tipoEliminacion=='PedidoProduccion'){
+
+    
   
     if (this.cantidadPedidosABorrar() < 1) {
-      alert("Debe seleccionar un pedido producción para continuar");
+      this.mostrarError("Debe seleccionar un pedido producción para continuar");
       return;
     }
   
     // Si pasa ambas validaciones:
     this.borrarPedidosProduccion();
+  } else  if(this.tipoEliminacion=='Ingreso'){
+
+    if (this.cantidadIngresosABorrar() < 1) {
+      this.mostrarError("Debe seleccionar un ingreso para continuar");
+      return;
+    }
+  
+    // Si pasa ambas validaciones:
+    this.borrarIngresos();
+
+  }
     this.mostrarConfirmacionPDF = true;
   }
 
   cantidadPedidosABorrar(): number {
     console.log("LOS PEDIDOS QUE HAY", this.pedidosProdXTallerFiltrados)
     return this.pedidosProduccionXTaller.filter(pedido => pedido.seleccionadoEliminar).length;
+
+  }
+
+  cantidadIngresosABorrar(): number {
+    console.log("LOS PEDIDOS QUE HAY", this.ingresosXTallerFiltrados)
+    return this.ingresosXTallerFiltrados.filter(ingreso => ingreso.seleccionadoEliminar).length;
 
   }
 
@@ -329,6 +374,10 @@ dataSourcePedidoProduccion = new MatTableDataSource<PedidoProduccion>();
         this.mostrarConfirmacionPDF = false;
       }
     });
+  }
+
+  borrarIngresos(){
+    console.log("Se borraron los ingresos")
   }
 
 // Devuelve un array con los IDs de los pedidos seleccionados

@@ -24,6 +24,7 @@ import { ArticuloPrecio } from 'src/app/models/articulo-precio.model';
 import { MatSelect, MatSelectModule } from '@angular/material/select';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { Cliente } from 'src/app/models/cliente';
+import { PedidoProduccionIngresoDetalle } from 'src/app/models/pedido-produccion-ingreso-detalle.model';
 
 (pdfMake as any).vfs = (pdfFonts as any).vfs;
 
@@ -56,6 +57,7 @@ export class IngresoComponent {
   ingresosMercaderiaXTaller: Ingreso[] =[];
   ingresosMercaderiaXTallerFiltrados: Ingreso[] =[];
   pedidosProduccionXTaller: PedidoProduccion[] = [];
+  detallesIngresosXPedidoProduccion: PedidoProduccionIngresoDetalle[] = []
   presupuestosAModificar : Presupuesto[] = [];
   estadosPedidoProduccion?: EstadoPedidoProduccion[] 
   mapaPresupuestoArticulos ?: Map<string,PresupuestoArticulo[]>;
@@ -457,9 +459,31 @@ borrarArticulo(key: any, color: string) {
         });
     
         console.log("Este es la orden de produccion generada", this.currentIngresoMercaderia);
-        this.ingresoService.crear(this.currentIngresoMercaderia)
+
+        this.ingresoService.crear(this.currentIngresoMercaderia).subscribe({
+          next: (idCreado) => {
+            console.log('ID creado:', idCreado);
+        
+            // Recorremos todos los detalles y asignamos el ingreso
+            this.detallesIngresosXPedidoProduccion.forEach(detalle => {
+              detalle.ingreso = { id: idCreado } as Ingreso;
+            });
+        
+            // Ahora podés subirlos a la API
+            this.ingresoService.crearDetallesIngresoPedidoProduccion(this.detallesIngresosXPedidoProduccion).subscribe({
+              next: (resp) => {
+                console.log('Detalles guardados:', resp);
+                this.mostrarConfirmacionPDF = true;
+              },
+              error: (err) => console.error(err)
+            });
+        
+          },
+          error: (err) => console.error(err)
+        });
+        
         this.mostrarConfirmacionPDF=true
-} else return
+      } else return
     }
 
     confirmarGenerarPDF(generar: boolean) {
@@ -877,7 +901,20 @@ aclararProductoPendentesDisminuidos() {
       let cantidadPendienteDespues = cantidadPendienteAntes - cantidadADescontar;
 
 
-      cantidadRestante! -= cantidadADescontar; // Reducimos la cantidad restante
+      cantidadRestante! -= cantidadADescontar;
+
+      // === Crear objeto PedidoProduccionIngresoDetalle ===
+      const presuSeleccionado = this.presupuestosAModificar.find(presupuesto=>presupuesto.id===pedidoProduccion?.idPresupuesto)
+      const detalle = new PedidoProduccionIngresoDetalle();
+      detalle.pedidoProduccion = pedidoProduccion;
+      detalle.ingreso = this.currentIngresoMercaderia;
+      detalle.presupuesto = presuSeleccionado; // si existe
+      detalle.articulo = articuloIngreso.articulo;
+      detalle.cantidadDescontada = cantidadADescontar;
+
+      this.detallesIngresosXPedidoProduccion.push(detalle)
+
+
 
       const key = `#${pedidoProduccion.id} - ${this.formatearFecha(pedidoProduccion.fecha!)}`
       const nuevoValor ={

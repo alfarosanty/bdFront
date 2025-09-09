@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Ingreso } from '../models/ingreso.model';
 import { environment } from 'src/environment/environment';
+import { PedidoProduccionIngresoDetalle } from '../models/pedido-produccion-ingreso-detalle.model';
 
 const baseUrl = environment.apiUrl+'/Ingreso';
 
@@ -15,17 +16,10 @@ export class IngresoService {
 
   constructor(private http:HttpClient) {}
 
-  crear(ingresoMercaderia : Ingreso)  {
-    //alert('url' + baseUrl);
-  return this.http.post(`${baseUrl}/crear`, ingresoMercaderia).subscribe(
-    response => {
-      console.log('Respuesta de la API:', response);
-    },
-    error => {
-      console.error('Error en la llamada POST:', error);
-    }
-  );
+  crear(ingresoMercaderia: Ingreso): Observable<any> {
+    return this.http.post<any>(`${baseUrl}/crear`, ingresoMercaderia);
   }
+  
 
   actualizar(ingresoMercaderia :Ingreso)  {
     //alert('url' + baseUrl);
@@ -46,5 +40,10 @@ export class IngresoService {
   
   get(id: any): Observable<PedidoProduccion> {
     return this.http.get<PedidoProduccion>(`${baseUrl}/GetIngresoByNumero/${id}`);
+  }
+
+  crearDetallesIngresoPedidoProduccion(detallesPedidoProduccion: PedidoProduccionIngresoDetalle[]): Observable<any> {
+    return this.http.post<any>(`${baseUrl}/DetallesIngresoPedidoProduccion`, detallesPedidoProduccion);
+
   }
 }

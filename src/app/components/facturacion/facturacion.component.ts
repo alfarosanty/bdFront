@@ -498,8 +498,8 @@ puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
   }
 
   aplicarDescuentoTotal() {
-    if (this.currentPresupuesto) { // Verificar si currentPresupuesto está definido
-      this.currentPresupuesto.descuentoGeneral = Number(this.descTotal); // Asignar el valor
+    if (this.currentFactura) { // Verificar si currentPresupuesto está definido
+      this.currentFactura.descuentoGeneral = Number(this.descTotal); // Asignar el valor
     }
   }
 
@@ -510,6 +510,8 @@ puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
   actualizarTotales() {
     const subtotal = this.calcularPrecioSubtotal(); // Calcula el subtotal
     const total = this.calcularPrecioTotal() // Total final
+
+    console.log("Estos son los precios", subtotal, total)
   
     // Actualiza el array que alimenta la mat-table
     this.totalesData = [
@@ -696,7 +698,7 @@ puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
         });
       });
     
-      const descuentoGeneral = this.currentPresupuesto?.descuentoGeneral || 0;
+      const descuentoGeneral = this.currentFactura?.descuentoGeneral || 0;
       const descuentoTotalPresupuesto = precioTotalConDescuentos * descuentoGeneral * 0.01; // Descuento general como porcentaje
       const precioTotal = precioTotalConDescuentos - descuentoTotalPresupuesto;
     

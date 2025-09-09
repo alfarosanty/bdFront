@@ -7,4 +7,5 @@ export class Ingreso {
     fecha?: Date
     taller?: Taller
     articulos?: PresupuestoArticulo[]
+    seleccionadoEliminar?: boolean = false;
 }
