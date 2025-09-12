@@ -225,10 +225,13 @@
   <div class="mensaje-confirmacion animado">
     <span class="icono">✅</span>
     <span>
-        ¡Se eliminaron {{ cantidadPedidosABorrar() }} Pedidos producción de id: 
-        {{ pedidosABorrarIdsString() }}
+      ¡Se eliminaron 
+      {{ tipoEliminacion === 'PedidoProduccion' ? cantidadPedidosABorrar() : cantidadIngresosABorrar() }} 
+      {{ tipoEliminacion === 'PedidoProduccion' ? 'Pedidos producción' : 'Ingresos' }} de id: 
+      {{ tipoEliminacion === 'PedidoProduccion' ? pedidosABorrarIdsString() : ingresosABorrarIdsString() }}
       </span>
-        </div>
+  </div>
 </div>
+
 
 

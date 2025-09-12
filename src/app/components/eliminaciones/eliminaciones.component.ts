@@ -1,12 +1,13 @@
 import { animate, state, style, transition, trigger } from '@angular/animations';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { Component } from '@angular/core';
-import { FormControl } from '@angular/forms';
+import { firstValueFrom, mergeMap } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource } from '@angular/material/table';
-import { catchError, throwError } from 'rxjs';
+import { catchError, map, throwError } from 'rxjs';
 import { EstadoPedidoProduccion } from 'src/app/models/estado-presupuesto.model';
 import { Ingreso } from 'src/app/models/ingreso.model';
+import { PedidoProduccionIngresoDetalle } from 'src/app/models/pedido-produccion-ingreso-detalle.model';
 import { PedidoProduccion } from 'src/app/models/pedido-produccion.model';
 import { PresupuestoArticulo } from 'src/app/models/presupuesto-articulo.model';
 import { Presupuesto } from 'src/app/models/presupuesto.model';
@@ -15,6 +16,8 @@ import { PresupuestoService } from 'src/app/services/budget.service';
 import { IngresoService } from 'src/app/services/ingreso.service';
 import { OrdenProduccionService } from 'src/app/services/orden-produccion.service';
 import { TallerService } from 'src/app/services/taller.service';
+import { forkJoin, Observable, of } from 'rxjs';
+
 
 @Component({
   selector: 'app-eliminaciones',
@@ -42,6 +45,8 @@ ingresosXTaller: Ingreso[] = [];
 ingresosXTallerFiltrados: Ingreso[] = [];
 talleres?: Taller[];
 estadosPedidoProduccion: EstadoPedidoProduccion[] = [];
+detallesDeIngresoPP: PedidoProduccionIngresoDetalle[] = []; // variable local en el componente
+
 
 
 //MAPAS
@@ -376,10 +381,74 @@ dataSource = new MatTableDataSource<PedidoProduccion|Ingreso>();
     });
   }
 
-  borrarIngresos(){
-    console.log("Se borraron los ingresos")
+  borrarIngresos(): void {
+    const ingresosABorrar = this.ingresosXTaller.filter(ingreso => ingreso.seleccionadoEliminar);
+  
+    this.obtenerDetallesDeIngresos(ingresosABorrar).pipe(
+      // 1️⃣ Agrupamos y aplicamos los cambios a los pedidos
+      mergeMap((detalles: PedidoProduccionIngresoDetalle[]) => {
+        const pedidosMap = new Map<number, PedidoProduccion>();
+  
+        detalles.forEach(detalle => {
+          const idPP = detalle.pedidoProduccion?.id;
+          if (!idPP) return;
+  
+          let pedido = pedidosMap.get(idPP);
+          if (!pedido) {
+            // Primero buscamos en memoria
+            pedido = this.pedidosProduccionXTaller.find(p => p.id === idPP) || { id: idPP, articulos: [] } as PedidoProduccion;
+            pedidosMap.set(idPP, pedido);
+          }
+  
+          // Aplicamos la cantidad descontada a los artículos correspondientes
+          pedido.articulos?.forEach(a => {
+            if (a.articulo?.id === detalle.articulo?.id) {
+              a.cantidad! -= detalle.cantidadDescontada!;
+            }
+          });
+        });
+  
+        // 2️⃣ Actualizamos todos los pedidos en paralelo
+        const pedidosArray = Array.from(pedidosMap.values());
+        return forkJoin(pedidosArray.map(p => this.ordenProduccionService.actualizar(p))).pipe(
+          map(() => detalles) // Pasamos los detalles al siguiente paso
+        );
+      }),
+      // 3️⃣ Borrar los detalles en backend
+      mergeMap((detalles: PedidoProduccionIngresoDetalle[]) => this.ingresoService.borrarDetalles(detalles)),
+      // 4️⃣ Borrar los ingresos en backend
+      mergeMap(() => this.ingresoService.borrarIngresos(ingresosABorrar))
+    ).subscribe({
+      next: () => console.log('Proceso completado exitosamente'),
+      error: (err) => console.error('Error en el proceso de borrado:', err)
+    });
   }
+  
+  
 
+  encontrarPedidoProduccionDe(idPedidoProduccion: number): Observable<PedidoProduccion> {
+    const pedidoProduccion = this.pedidosProduccionXTaller.find(pedido => pedido.id === idPedidoProduccion);
+  
+    if (pedidoProduccion) {
+      // Si ya existe en memoria, devolvemos un observable que emite el pedido
+      return of(pedidoProduccion);
+    } else {
+      // Si no, lo traemos de la API
+      return this.ordenProduccionService.get(idPedidoProduccion);
+    }
+  }
+  
+
+  obtenerDetallesDeIngresos(ingresosABorrar: Ingreso[]): Observable<PedidoProduccionIngresoDetalle[]> {
+    const requests: Observable<PedidoProduccionIngresoDetalle[]>[] = ingresosABorrar.map(ingreso =>
+      this.ingresoService.getDetallePPI(ingreso)
+    );
+  
+    return forkJoin(requests).pipe(
+      map((arraysDeDetalles: PedidoProduccionIngresoDetalle[][]) => arraysDeDetalles.flat())
+    );
+  }
+  
 // Devuelve un array con los IDs de los pedidos seleccionados
 pedidosABorrarIds(): number[] {
   return this.pedidosProduccionXTaller
@@ -387,8 +456,18 @@ pedidosABorrarIds(): number[] {
              .map(pedido => pedido.id!);
 }
 
+ingresosABorrarIds(): Number[] {
+  return this.ingresosXTaller
+             .filter(ingreso => ingreso.seleccionadoEliminar)
+             .map(ingreso => ingreso.id!);
+}
+
 // Si querés mostrarlo como string separado por comas
 pedidosABorrarIdsString(): string {
+  return this.pedidosABorrarIds().join(', ');
+}
+
+ingresosABorrarIdsString(): string {
   return this.pedidosABorrarIds().join(', ');
 }
   

@@ -46,4 +46,23 @@ export class IngresoService {
     return this.http.post<any>(`${baseUrl}/DetallesIngresoPedidoProduccion`, detallesPedidoProduccion);
 
   }
+
+  getDetallePPI(ingreso: Ingreso): Observable<PedidoProduccionIngresoDetalle[]> {
+    // Suponiendo que la API responde con el detalle de un ingreso específico
+    return this.http.get<PedidoProduccionIngresoDetalle[]>(`${baseUrl}/${ingreso.id}/detalle`);
+  }
+
+  borrarDetalles(detallesDeIngresosPP: PedidoProduccionIngresoDetalle[]): Observable<any> {
+    return this.http.delete<any>(`${baseUrl}/DetallesIngresoPedidoProduccion/borrar`, {
+      body: detallesDeIngresosPP
+    });
+  }
+  
+  borrarIngresos(ingresos: Ingreso[]): Observable<any> {
+    return this.http.delete<any>(`${baseUrl}/borrar`, {
+      body: ingresos
+    });
+  }
+  
+
 }
