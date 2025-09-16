@@ -24,12 +24,18 @@ export class OrdenProduccionService {
   actualizar(ordenDePedido: PedidoProduccion): Observable<number> {
     return this.http.post<number>(`${baseUrl}/actualizar`, ordenDePedido);
   }
+
   
 
   getByTaller(id:any): Observable<PedidoProduccion[]> {
     return this.http.get<PedidoProduccion[]>(`${baseUrl}/GetPedidoProduccionByTaller/${id} `);
   }
 
+  getByIds(ids: number[]): Observable<PedidoProduccion[]> {
+    const params = new HttpParams().set('ids', ids.join(','));
+
+    return this.http.get<PedidoProduccion[]>(`${baseUrl}/PedidosProduccionByIds`, { params });
+  }
   
   get(id: any): Observable<PedidoProduccion> {
     return this.http.get<PedidoProduccion>(`${baseUrl}/GetPedidoProduccionByNumero/${id}`);

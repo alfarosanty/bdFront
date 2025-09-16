@@ -41,6 +41,13 @@ export class PresupuestoService {
     return this.http.get<Presupuesto>(`${baseUrl}/GetPresupuestoByNumero/${id}`);
   }
 
+
+  getByIds(ids: number[]): Observable<Presupuesto[]> {
+    const params = new HttpParams().set('ids', ids.join(','));
+
+    return this.http.get<Presupuesto[]>(`${baseUrl}/PresupuestosByIds`, { params });
+  }
+
   getEstadosPresupuesto(): Observable<EstadoPresupuesto[]> {
     return this.http.get<EstadoPresupuesto[]>(`${baseUrl}/GetEstadosPresupuesto`);
   }

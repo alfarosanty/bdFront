@@ -45,7 +45,9 @@ ingresosXTaller: Ingreso[] = [];
 ingresosXTallerFiltrados: Ingreso[] = [];
 talleres?: Taller[];
 estadosPedidoProduccion: EstadoPedidoProduccion[] = [];
-detallesDeIngresoPP: PedidoProduccionIngresoDetalle[] = []; // variable local en el componente
+detallesDeIngresoPP: PedidoProduccionIngresoDetalle[] = [];
+pedidosProduccionAModificar: PedidoProduccion[] = []
+presupuestosAModificar: Presupuesto[] = []
 
 
 
@@ -148,7 +150,7 @@ dataSource = new MatTableDataSource<PedidoProduccion|Ingreso>();
             (a, b) => new Date(a.fecha!).getTime() - new Date(b.fecha!).getTime()
           );
   
-          this.dataSource.data = this.pedidosProdXTallerFiltrados;
+          this.dataSource.data = this.pedidosProdXTallerFiltrados.sort((a, b) => a.id! - b.id!);
   
           // Agregar cliente
           this.pedidosProdXTallerFiltrados.forEach(p =>
@@ -170,7 +172,7 @@ dataSource = new MatTableDataSource<PedidoProduccion|Ingreso>();
             (a, b) => new Date(a.fecha!).getTime() - new Date(b.fecha!).getTime()
           );
   
-          this.dataSource.data = this.ingresosXTallerFiltrados;
+          this.dataSource.data = this.ingresosXTallerFiltrados.sort((a, b) => Number(a.id)! - Number(b.id)!);
   
           // Aplicar filtros
           this.aplicarFiltros(this.ingresosXTallerFiltrados);
@@ -178,7 +180,6 @@ dataSource = new MatTableDataSource<PedidoProduccion|Ingreso>();
         error: (e) => console.error(e)
       });
     } else {
-      console.log("Tipo de eliminación no válido");
     }
   }
     
@@ -187,11 +188,9 @@ dataSource = new MatTableDataSource<PedidoProduccion|Ingreso>();
     const primerFiltroAplicado = this.filtrarPedidosProduccionXEstado(listaAFiltrar as PedidoProduccion[]);
     const segundoFiltroAplicado = this.filtrarPedidosProduccionXRangoFechas(primerFiltroAplicado);
     this.dataSource.data = segundoFiltroAplicado;
-    console.log("DATOS A MOSTRAR", this.dataSource.data)
   } else if(this.tipoEliminacion=='Ingreso'){
     const primerFiltroAplicado = this.filtrarPedidosProduccionXRangoFechas(listaAFiltrar);
     this.dataSource.data = primerFiltroAplicado;
-    console.log("DATOS A MOSTRAR", this.dataSource.data)
   }
   }
 
@@ -210,7 +209,6 @@ dataSource = new MatTableDataSource<PedidoProduccion|Ingreso>();
   
   
   filtrarPedidosProduccionXRangoFechas(listaPedidosProduccion: PedidoProduccion[]|Ingreso[]): PedidoProduccion[]|Ingreso[] {
-    console.log("DEBERÍA ESTAR FILTRANDO POR FECHAS");
   
     if (this.fechaInicio && this.fechaFin) {
       const pedidosFiltradosEntreFechas = listaPedidosProduccion.filter(pedidoProduccion =>
@@ -232,7 +230,6 @@ dataSource = new MatTableDataSource<PedidoProduccion|Ingreso>();
     const inicio = new Date(fechaInicio);
     const fin = new Date(fechaFin);
     const evaluar = new Date(fechaEvaluar);
-    console.log(evaluar);
     // Si alguna fecha es inválida, por seguridad devuelvo false
     if (isNaN(inicio.getTime()) || isNaN(fin.getTime()) || isNaN(evaluar.getTime())) {
       return false;
@@ -252,7 +249,6 @@ dataSource = new MatTableDataSource<PedidoProduccion|Ingreso>();
     this.presupuestoService.get(id).subscribe(
       (presupuesto) => {
         this.presupuestosMap.set(id, presupuesto);
-        console.log(this.presupuestosMap)
       },
       (error) => {
         console.error('Error al obtener presupuesto:', error);
@@ -262,15 +258,12 @@ dataSource = new MatTableDataSource<PedidoProduccion|Ingreso>();
   }
 
   drop(event: CdkDragDrop<PedidoProduccion[]>) {
-    console.log("movemos de", event.previousIndex, "a", event.currentIndex);
   
     if (event.previousIndex === event.currentIndex) {
-      console.log("No se movió de lugar");
       return;
     }
   
     const data = this.dataSource.data;
-    console.log(data)
     moveItemInArray(data, event.previousIndex, event.currentIndex);
     this.dataSource.data = data;
   }
@@ -286,7 +279,6 @@ dataSource = new MatTableDataSource<PedidoProduccion|Ingreso>();
   mostrarEstado(pedidoProduccion: PedidoProduccion): string{
     const idEstadoPedidoProduccion = pedidoProduccion.idEstadoPedidoProduccion
     const estadoPedidoProduccion = this.estadosPedidoProduccion.find(estado=>estado.id===idEstadoPedidoProduccion)
-    console.log("LOGGGG",(estadoPedidoProduccion?.descripcion || 'no hay estado'))
 
     return (estadoPedidoProduccion?.descripcion || 'no hay estado')
   }
@@ -311,7 +303,7 @@ dataSource = new MatTableDataSource<PedidoProduccion|Ingreso>();
       return;
     }
   
-    // Si pasa ambas validaciones:
+    this.actualizarDocumentacion();
     this.borrarIngresos();
 
   }
@@ -319,13 +311,11 @@ dataSource = new MatTableDataSource<PedidoProduccion|Ingreso>();
   }
 
   cantidadPedidosABorrar(): number {
-    console.log("LOS PEDIDOS QUE HAY", this.pedidosProdXTallerFiltrados)
     return this.pedidosProduccionXTaller.filter(pedido => pedido.seleccionadoEliminar).length;
 
   }
 
   cantidadIngresosABorrar(): number {
-    console.log("LOS PEDIDOS QUE HAY", this.ingresosXTallerFiltrados)
     return this.ingresosXTallerFiltrados.filter(ingreso => ingreso.seleccionadoEliminar).length;
 
   }
@@ -381,47 +371,11 @@ dataSource = new MatTableDataSource<PedidoProduccion|Ingreso>();
     });
   }
 
-  borrarIngresos(): void {
+  actualizarDocumentacion(): void {
     const ingresosABorrar = this.ingresosXTaller.filter(ingreso => ingreso.seleccionadoEliminar);
   
-    this.obtenerDetallesDeIngresos(ingresosABorrar).pipe(
-      // 1️⃣ Agrupamos y aplicamos los cambios a los pedidos
-      mergeMap((detalles: PedidoProduccionIngresoDetalle[]) => {
-        const pedidosMap = new Map<number, PedidoProduccion>();
-  
-        detalles.forEach(detalle => {
-          const idPP = detalle.pedidoProduccion?.id;
-          if (!idPP) return;
-  
-          let pedido = pedidosMap.get(idPP);
-          if (!pedido) {
-            // Primero buscamos en memoria
-            pedido = this.pedidosProduccionXTaller.find(p => p.id === idPP) || { id: idPP, articulos: [] } as PedidoProduccion;
-            pedidosMap.set(idPP, pedido);
-          }
-  
-          // Aplicamos la cantidad descontada a los artículos correspondientes
-          pedido.articulos?.forEach(a => {
-            if (a.articulo?.id === detalle.articulo?.id) {
-              a.cantidad! -= detalle.cantidadDescontada!;
-            }
-          });
-        });
-  
-        // 2️⃣ Actualizamos todos los pedidos en paralelo
-        const pedidosArray = Array.from(pedidosMap.values());
-        return forkJoin(pedidosArray.map(p => this.ordenProduccionService.actualizar(p))).pipe(
-          map(() => detalles) // Pasamos los detalles al siguiente paso
-        );
-      }),
-      // 3️⃣ Borrar los detalles en backend
-      mergeMap((detalles: PedidoProduccionIngresoDetalle[]) => this.ingresoService.borrarDetalles(detalles)),
-      // 4️⃣ Borrar los ingresos en backend
-      mergeMap(() => this.ingresoService.borrarIngresos(ingresosABorrar))
-    ).subscribe({
-      next: () => console.log('Proceso completado exitosamente'),
-      error: (err) => console.error('Error en el proceso de borrado:', err)
-    });
+    this.obtenerDetallesDeIngresos(ingresosABorrar)
+
   }
   
   
@@ -439,14 +393,88 @@ dataSource = new MatTableDataSource<PedidoProduccion|Ingreso>();
   }
   
 
-  obtenerDetallesDeIngresos(ingresosABorrar: Ingreso[]): Observable<PedidoProduccionIngresoDetalle[]> {
-    const requests: Observable<PedidoProduccionIngresoDetalle[]>[] = ingresosABorrar.map(ingreso =>
-      this.ingresoService.getDetallePPI(ingreso)
+  obtenerDetallesDeIngresos(ingresosABorrar: Ingreso[]){
+
+    this.detallesDeIngresoPP = []
+
+    ingresosABorrar.forEach(detalle=>{
+      this.ingresoService.getDetallePPI(detalle).subscribe({
+        next:(data) => {
+          this.detallesDeIngresoPP = this.detallesDeIngresoPP.concat(data);
+          if(this.detallesDeIngresoPP.length>0)
+          this.obtenerDocumentosAModificar()
+
+        },
+        error: (err) => {
+          console.error('Error al obtener estados:', err);
+        }
+      })
+
+    })
+
+
+  }
+
+  obtenerDocumentosAModificar(){
+
+
+    const idsPedidosProduccion = Array.from(
+      new Set(this.detallesDeIngresoPP.map(detalle => detalle.pedidoProduccion?.id!))
     );
+
+    const idsPresupuestos = Array.from(
+      new Set(this.detallesDeIngresoPP.map(detalle => detalle.presupuesto?.id!))
+    ).filter(id=>id!=null);
+
+    if(idsPedidosProduccion.length>0){
+      this.ordenProduccionService.getByIds(idsPedidosProduccion).subscribe({
+        next:(data) => {
+          this.pedidosProduccionAModificar = data
+
+          this.restaurarCantidades(this.detallesDeIngresoPP, this.pedidosProduccionAModificar, 'PP');
+
+            this.pedidosProduccionAModificar.forEach(pedido=>{
+              this.ordenProduccionService.actualizar(pedido).subscribe({
+                next:(data)=>{
+                }
+              })
+            })
+        }
+      })
+    }
+
+    if(idsPresupuestos.length>0){
+      this.presupuestoService.getByIds(idsPresupuestos).subscribe({
+        next:(data) => {
+          this.presupuestosAModificar = data
+
+          this.restaurarCantidades(this.detallesDeIngresoPP, this.presupuestosAModificar, 'P');
+
+          this.presupuestosAModificar.forEach(presupuesto=>{
+            this.ordenProduccionService.actualizar(presupuesto).subscribe({
+              next:(data)=>{
+              }
+            })
+          })
   
-    return forkJoin(requests).pipe(
-      map((arraysDeDetalles: PedidoProduccionIngresoDetalle[][]) => arraysDeDetalles.flat())
-    );
+        }
+      })
+    }
+
+  }
+
+  borrarIngresos(){
+    const ingresosABorrar = this.ingresosXTaller.filter(ingreso => ingreso.seleccionadoEliminar);
+    let idsEliminados: number[] = []
+
+    ingresosABorrar.forEach(ingreso => {
+        this.ingresoService.borrar(ingreso).subscribe({
+          next:(data) => {
+            idsEliminados.push(data as number)
+          }
+        })
+    })
+
   }
   
 // Devuelve un array con los IDs de los pedidos seleccionados
@@ -470,6 +498,43 @@ pedidosABorrarIdsString(): string {
 ingresosABorrarIdsString(): string {
   return this.pedidosABorrarIds().join(', ');
 }
+
+
+restaurarCantidades(
+  detalles: PedidoProduccionIngresoDetalle[],
+  docARestaurar: (PedidoProduccion | Presupuesto)[],
+  tipo: string
+) {
+  detalles.forEach(detalle => {
+    // Buscamos el documento correspondiente
+    let doc: PedidoProduccion | Presupuesto | undefined;
+
+    if (tipo === 'PP') {
+      doc = docARestaurar.find(d => d.id === detalle.pedidoProduccion?.id) as PedidoProduccion;
+    } else if (tipo === 'P') {
+      doc = docARestaurar.find(d => d.id === detalle.presupuesto?.id) as Presupuesto;
+    }
+
+    if (!doc) return;
+
+    // Buscamos el artículo dentro del documento
+    const articulo = doc.articulos?.find(a => a.articulo?.id === detalle.articulo?.id);
+    if (!articulo) return;
+
+    // Restauramos la cantidad
+    articulo.cantidad = (articulo.cantidad || 0) + (detalle.cantidadDescontada || 0);
+
+    // Reacomodamos el estado del documento
+    if (tipo === 'PP') {
+      (doc as PedidoProduccion).idEstadoPedidoProduccion = 3;
+    } else if (tipo === 'P') {
+      (doc as Presupuesto).estadoPresupuesto!.id = 3;
+    }
+  });
+}
+
+
+
   
 
   mostrarError(mensaje: string) {
