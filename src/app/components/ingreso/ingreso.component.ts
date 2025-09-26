@@ -436,7 +436,7 @@ borrarArticulo(key: any, color: string) {
     }
       
   
-    generarIngreso() {
+  async  generarIngreso() {
 
       if (!this.currentIngresoMercaderia) {
         this.currentIngresoMercaderia = {
@@ -458,18 +458,25 @@ borrarArticulo(key: any, color: string) {
         // Recorrer el mapa de artículos y agregarlos a la orden
         this.mapaPresupuestoArticulos?.forEach((valor, clave) => {
           valor.forEach(presuArt => {
-            presuArt.cantidad = presuArt.cantidadActual;
             this.currentIngresoMercaderia!.articulos?.push(presuArt);
           });
         });
+
+        console.log("Ingreso a ingresar", this.currentIngresoMercaderia)
     
-        this.ingresoService.crear(this.currentIngresoMercaderia).subscribe(id => {
+    await    this.ingresoService.crear(this.currentIngresoMercaderia).subscribe(id => {
           // cuando el backend responde, acá ya tenés el id
           this.currentIngresoMercaderia!.id = id;
         })
         this.mostrarConfirmacionPDF=true
 } else return
     }
+
+    async procesarIngreso() {
+      await this.generarIngreso();
+      this.aplicarIngresoAPedidosProduccion();
+    }
+    
 
     confirmarGenerarPDF(generar: boolean) {
       if (generar) {
@@ -826,11 +833,14 @@ aclararProductoPendentesDisminuidos() {
   this.pedidosProduccionXTaller.sort((a, b) => (new Date(a.fecha!).getTime()) - (new Date(b.fecha!).getTime()));
   const pedidosAAgregarIngresos = this.pedidosProduccionXTaller.filter(pedido=>pedido.idEstadoPedidoProduccion == this.estadosPedidoProduccion?.find(estado=>estado.codigo =="TA")?.id)
 
+console.log("Ingreso que deberia estar completo", this.currentIngresoMercaderia)
 
   for (let articuloIngreso of this.currentIngresoMercaderia.articulos ?? []) {
+    console.log("ArticuloIngreso", articuloIngreso)
   
 
     let cantidadRestante = articuloIngreso.cantidad;
+    console.log("Cantidad restante", cantidadRestante)
     let cantidadInicial = cantidadRestante; // Cantidad inicial ingresada
 
     for (let pedidoProduccion of pedidosAAgregarIngresos) {
@@ -839,7 +849,10 @@ aclararProductoPendentesDisminuidos() {
       if(!articuloADescontar || articuloADescontar.cantidadPendiente == 0){continue}
 
       let cantidadPendienteAntes = articuloADescontar.cantidadPendiente ?? 0;
+      console.log("CantidadPendienteAntes:", cantidadPendienteAntes)
       let cantidadADescontar = Math.min(cantidadPendienteAntes, cantidadRestante!);
+      console.log("CantidadADescontar:", cantidadADescontar)
+
       let cantidadPendienteDespues = cantidadPendienteAntes - cantidadADescontar;
 
 
@@ -855,6 +868,7 @@ aclararProductoPendentesDisminuidos() {
         cantidadPedidaOriginal : articuloADescontar.cantidad,
         hayStock : this.noTienePendientes(cantidadPendienteDespues)
       }
+      console.log("Nuevo valor", nuevoValor)
 
       const detallePPI: PedidoProduccionIngresoDetalle = {
         pedidoProduccion: pedidoProduccion,
@@ -934,13 +948,18 @@ async actualizarPedidosProduccion() {
     }
 
     for (let registro of valor) {
+      const presuArtAModificar = ppSeleccionado.articulos?.find(
+        presuArt => presuArt.articulo?.id == registro.articuloAfectado?.id
+      )
+
+      console.log("PresuArt a disminuir pendiente", presuArtAModificar)
       ppSeleccionado.articulos = ppSeleccionado.articulos?.filter(
         presuArt => presuArt.articulo?.id !== registro.articuloAfectado?.id
       ) ?? [];
 
       const articuloActualizado = {
         articulo: registro.articuloAfectado,
-        cantidad: registro.cantidadPedidaOriginal,
+        cantidad: presuArtAModificar?.cantidad,
         cantidadPendiente: registro.pendienteDespues,
         cantidadActual: registro.pendienteDespues,
         cantidadOriginal: registro.cantidadPedidaOriginal,
@@ -950,6 +969,7 @@ async actualizarPedidosProduccion() {
         descripcion: registro.articuloAfectado?.descripcion
 
       };
+      console.log("Articulo actualizado", articuloActualizado)
       ppSeleccionado.articulos.push(articuloActualizado);
     }
 

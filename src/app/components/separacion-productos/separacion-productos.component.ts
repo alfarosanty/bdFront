@@ -253,7 +253,7 @@ logoBase64: String = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAADMCAYA
                 .map(pa => pa.cantidad || 0)
                 .reduce((acc, curr) => acc + curr, 0);
           
-              const descripcion = presupuestosArticulos[0].articulo?.descripcion || '';
+              const descripcion = presupuestosArticulos[0]?.descripcion || '';
               const descripcionColores = presupuestosArticulos
                 .map(pa => `${pa.cantidad || 0}${pa.articulo?.color?.codigo || ''}`)
                 .join(' ');
@@ -352,7 +352,7 @@ procesarMapaDeArticulos() {
   if(this.presupuestoAAcceder)
   this.mapaPresuXArtParaAcceder = new Map()
   this.presupuestoAAcceder?.articulos?.forEach(presuArt => {
-    const key = presuArt.articulo?.codigo!;
+    const key = presuArt?.codigo!;
     
     if (this.mapaPresuXArtParaAcceder?.has(key)) {
       const listaDePresuArtActualizada = (this.mapaPresuXArtParaAcceder.get(key) || []);
@@ -484,7 +484,7 @@ toggleStockTodos(codigo: string, valor: boolean) {
 
     getArticulosParaArticulo(codigo: string): PresupuestoArticulo[]{
       const todosLosArticulos = this.dataSourceArticulos.data.flatMap(element => element.presuArt);
-      const listaDeArticulosDeFila = todosLosArticulos.filter(presuArt=>presuArt.articulo?.codigo == codigo)
+      const listaDeArticulosDeFila = todosLosArticulos.filter(presuArt=>presuArt.codigo == codigo)
       return listaDeArticulosDeFila
     }
   formatearFecha(fecha: any): string {
@@ -504,7 +504,7 @@ toggleStockTodos(codigo: string, valor: boolean) {
       const articulosXTaller = articulosAPedir.filter(presuArt => presuArt.articulo?.idFabricante === Number(taller.id));
   
       if (articulosXTaller.length === 0) continue;
-      articulosXTaller.forEach(presuArt=> {presuArt.cantidadPendiente = presuArt.cantidad; presuArt.presupuesto = this.currentPresupuesto; presuArt.codigo = presuArt.articulo?.codigo; presuArt.descripcion = presuArt.articulo?.descripcion})
+      articulosXTaller.forEach(presuArt=> {presuArt.cantidadPendiente = presuArt.cantidad; presuArt.presupuesto = this.currentPresupuesto; presuArt.codigo = presuArt.codigo; presuArt.descripcion = presuArt?.descripcion})
   
       const idEstadoCreado = this.estadosPedidoProduccion.find(estado=>estado.codigo=='CR')?.id
       const pedidoProduccion = new PedidoProduccion(this.fechaPedidoProduccion!, taller, idEstadoCreado!, articulosXTaller, this.currentCliente!.id, this.presupuestoAAcceder?.id);
@@ -531,7 +531,7 @@ toggleStockTodos(codigo: string, valor: boolean) {
 
   this.dataSourceArticulos.data.forEach(item => {
     item.presuArt.forEach(presuArt => {
-      const codigo = presuArt.articulo?.codigo;
+      const codigo = presuArt.codigo;
       if (!codigo) return;
 
       const listaExistente = this.mapaArticulosModificados?.get(codigo);
@@ -596,7 +596,7 @@ generarMapaPresuArt(pedidoProduccion: PedidoProduccion): Map<string, Presupuesto
   const mapaNuevo = new Map<string, PresupuestoArticulo[]>();
 
   for (const articulo of pedidoProduccion.articulos!) {
-    const key = articulo.articulo?.codigo!;
+    const key = articulo.codigo!;
 
       if (mapaNuevo.has(key)) {
         const listaExistente = mapaNuevo.get(key)!;

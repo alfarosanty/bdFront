@@ -297,7 +297,7 @@ filtrarPedidosProduccionXRangoFechas(listaPedidosProduccion: PedidoProduccion[])
     this.mapaPresupuestoArticulos?.forEach((presupuestosArticulos, clave) => {
       const cantidades = presupuestosArticulos.map(pa => pa.cantidad);
       const totalCantidad = cantidades.reduce((acc, c) => (acc || 0) + (c || 0), 0);
-      const descripcion = presupuestosArticulos[0].articulo?.descripcion || '';
+      const descripcion = presupuestosArticulos[0]?.descripcion || '';
       const descripcionCompleta = presupuestosArticulos.map(pa =>
         `${pa.cantidad || 0}${pa.articulo?.color?.codigo ? ' ' + pa.articulo.color.codigo : ''}`
       ).join(' ');
@@ -404,7 +404,7 @@ filtrarPedidosProduccionXRangoFechas(listaPedidosProduccion: PedidoProduccion[])
       mapaPresuArt.forEach((presupuestosArticulos, clave) => {
         const cantidades = presupuestosArticulos.map(pa => pa.cantidad || 0);
         const totalCantidad = cantidades.reduce((acc, c) => acc + c, 0);
-        const descripcion = presupuestosArticulos[0].articulo?.descripcion || '';
+        const descripcion = presupuestosArticulos[0].descripcion || '';
         const descripcionCompleta = presupuestosArticulos.map(pa =>
           `${pa.cantidad || 0}${pa.articulo?.color?.codigo ? ' ' + pa.articulo.color.codigo : ''}`
         ).join(' ');
@@ -498,7 +498,7 @@ filtrarPedidosProduccionXRangoFechas(listaPedidosProduccion: PedidoProduccion[])
         const cantidadesPendientes = presupuestosArticulos.map(pa => pa.cantidadPendiente || 0);
         const totalCantidadPendiente = cantidadesPendientes.reduce((acc, c) => acc + c, 0);
         const totalCantidadOriginal = cantidadesOriginales.reduce((acc, c) => acc + c, 0);
-        const descripcion = presupuestosArticulos[0].articulo?.descripcion || '';
+        const descripcion = presupuestosArticulos[0].descripcion || '';
         const descripcionCompleta = presupuestosArticulos.map(pa =>
           `${pa.cantidadPendiente || 0}${pa.articulo?.color?.codigo ? ' ' + pa.articulo.color.codigo : ''}`
         ).join(' ');
@@ -599,7 +599,7 @@ filtrarPedidosProduccionXRangoFechas(listaPedidosProduccion: PedidoProduccion[])
       mapaPresuArt.forEach((presupuestosArticulos, clave) => {
         const cantidades = presupuestosArticulos.map(pa => pa.cantidad || 0);
         const totalCantidad = cantidades.reduce((acc, c) => acc + c, 0);
-        const descripcion = presupuestosArticulos[0].articulo?.descripcion || '';
+        const descripcion = presupuestosArticulos[0].descripcion || '';
         const descripcionCompleta = presupuestosArticulos
           .map(pa => `${pa.cantidad || 0}${pa.articulo?.color?.codigo ? ' ' + pa.articulo.color.codigo : ''}`)
           .join(' ');
@@ -697,7 +697,7 @@ filtrarPedidosProduccionXRangoFechas(listaPedidosProduccion: PedidoProduccion[])
         const cantidadesPendientes = presupuestosArticulos.map(pa => pa.cantidadPendiente || 0);
         const totalCantidad = cantidades.reduce((acc, c) => acc + c, 0);
         const totalCantidadPendiente = cantidadesPendientes.reduce((acc, c) => acc + c, 0);
-        const descripcion = presupuestosArticulos[0].articulo?.descripcion || '';
+        const descripcion = presupuestosArticulos[0].descripcion || '';
         const descripcionCompleta = presupuestosArticulos
           .map(pa => `${pa.cantidad || 0}${pa.articulo?.color?.codigo ? ' ' + pa.articulo.color.codigo : ''}`)
           .join(' ');
@@ -754,7 +754,7 @@ generarPDFPendientes() {
     const totalCantidadOriginales = cantidadesOriginales.reduce((acc, c) => (acc || 0) + (c || 0), 0);
     const cantidadesPendientes = presupuestosArticulos.map(pa => pa.cantidadPendiente);
     const totalCantidadPendientes = cantidadesPendientes.reduce((acc, c) => (acc || 0) + (c || 0), 0);
-    const descripcion = presupuestosArticulos[0].articulo?.descripcion || '';
+    const descripcion = presupuestosArticulos[0].descripcion || '';
     const descripcionCompleta = presupuestosArticulos.map(pa =>
       `${pa.cantidadPendiente || 0}${pa.articulo?.color?.codigo ? ' ' + pa.articulo.color.codigo : ''}`
     ).join(' ');

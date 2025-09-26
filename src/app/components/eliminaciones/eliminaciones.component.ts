@@ -308,6 +308,8 @@ dataSource = new MatTableDataSource<PedidoProduccion|Ingreso>();
 
   }
     this.mostrarConfirmacionPDF = true;
+
+    setTimeout(() => {window.location.reload();}, 5000);
   }
 
   cantidadPedidosABorrar(): number {
@@ -522,7 +524,7 @@ restaurarCantidades(
     if (!articulo) return;
 
     // Restauramos la cantidad
-    articulo.cantidad = (articulo.cantidad || 0) + (detalle.cantidadDescontada || 0);
+    articulo.cantidadPendiente = (articulo.cantidadPendiente || 0) + (detalle.cantidadDescontada || 0);
 
     // Reacomodamos el estado del documento
     if (tipo === 'PP') {
