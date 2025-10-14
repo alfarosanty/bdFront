@@ -735,6 +735,9 @@ puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
             this.currentFactura!.articulos?.push(presuArt);
           });
         });
+
+        this.currentFactura!.importeBruto = this.calcularPrecioTotal()
+        this.currentFactura!.importeNeto = this.currentFactura!.importeBruto *0.79
     
         console.log("Este es la factura a guardar", this.currentFactura);
 
@@ -758,13 +761,34 @@ puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
     
         if (!this.currentFactura?.id) {
           
-          this.facturaService.crear(this.currentFactura!).subscribe((id: object) => {
-            this.idFacturaActual = Number(id)
-            this.mostrarBotonGuardar = false;
-          })
-          if (this.idFacturaActual) {
-            alert('Factura creada exitosamente');
-          }
+          this.facturaService.crear(this.currentFactura!).subscribe({
+            next: (id: number) => {
+              this.idFacturaActual = id;
+              this.mostrarBotonGuardar = false;
+          
+              //alert('Factura creada exitosamente');
+          
+              // recién ahora, facturás en AFIP
+             /* this.facturaService.facturarARCA(this.currentFactura!).subscribe({
+                next: (response) => {
+                  console.log('Factura enviada correctamente a AFIP:', response);
+                  // podés guardar el CAE, mostrar mensaje, etc.
+                },
+                error: (error) => {
+                  console.error('Error al enviar la factura a AFIP:', error);
+                  const msg = error?.error?.message || 'No se pudo enviar a AFIP. Intente nuevamente.';
+                  this.mostrarError(msg);
+                }
+              });*/
+            },
+            error: (error) => {
+              console.error('Error al crear factura:', error);
+              const msg = error?.error?.message || 'No se pudo crear la factura. Intente nuevamente.';
+              this.mostrarError(msg);
+            }
+          });
+          
+          
         } else {
           alert("HAY UN ERROR CON EL FRONT, SE LE ESTÁ ASIGNANDO ID A LA FACTURA DE MANERA ERRÓNEA")
         }
@@ -789,6 +813,10 @@ puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
         articulos: listaDeArticulos,
         descuentoGeneral: this.currentPresupuesto?.descuentoGeneral ?? 0
       });
+      if(listaDeArticulos == null || listaDeArticulos.length ===0){
+        this.mostrarError("No hay artículos para crear el presupuesto")
+        return
+      }
       console.log("ESTE ES EL PRESUPUESTO CREADO CON LOS BORRADOS", presupuesto)
       this.presupuestoService.crear(presupuesto).subscribe({
         next: (id: object) => {

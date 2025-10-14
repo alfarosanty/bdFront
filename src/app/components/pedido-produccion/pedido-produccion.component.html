@@ -94,14 +94,14 @@
                       matInput
                       [formControl]="articuloControl"
                       [matAutocomplete]="auto"
-                      (keydown.enter)="mostrarVariedadColores()"
-                      
                       (input)="articuloControl.setValue(articuloControl.value.toUpperCase(), { emitEvent: false })">
-                <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption>
-                  <mat-option *ngFor="let option of filteredArticulos | async" [value]="option">
-                    {{ option }}
-                  </mat-option>
-                </mat-autocomplete>
+                      
+                      <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption
+                      (optionSelected)="mostrarVariedadColores()">
+                      <mat-option *ngFor="let option of filteredArticulos | async" [value]="option">
+                        {{ option }}
+                      </mat-option>
+                    </mat-autocomplete>
               </mat-form-field>
               
 

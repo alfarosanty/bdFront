@@ -83,7 +83,7 @@
 
           <ng-container matColumnDef="Stock">
             <th mat-header-cell *matHeaderCellDef>Stock</th>
-            <td mat-cell *matCellDef="let element">{{ element.stock }}</td>
+            <td mat-cell *matCellDef="let element">{{ element.stock - element.separado }}</td>
             </ng-container>
   
         
@@ -126,7 +126,7 @@
                   <ng-container matColumnDef="Stock">
                     <th mat-header-cell *matHeaderCellDef>Stock</th>
                     <td mat-cell *matCellDef="let informacion">
-                      {{ informacion?.stockUnitario}}
+                      {{ informacion?.stockUnitario - informacion?.cantidadSeparadoUnitario}}
                     </td>
                   </ng-container> 
         

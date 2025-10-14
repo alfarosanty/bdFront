@@ -32,21 +32,30 @@
         </mat-form-field>       
       </div>
 
-            <div>
-                <label for="estado">Estado del Presupuesto:</label>
-                <select id="estado" [(ngModel)]="estadoPedido">
-                    <option [value]="4" >ARMADO</option>
-                    <option [value]="3" >EN TALLER</option>
-                    <option [value]="2" >SEPARADO</option>
-                    <option [value]="1" >CREADO</option>
-                </select>
-            </div>
+      <div>
+        <label for="estado">Estado del Presupuesto:</label>
+        <select id="estado" [(ngModel)]="estadoPresupuesto">
+          <option *ngFor="let estado of estadosPresupuesto" [ngValue]="estado">
+            {{ estado.descripcion }}
+          </option>
+        </select>
+      </div>
+      
         
 
     </div>
 </div>
 
-<h3>Grilla de Información</h3>  
+<h3 style="align-self: center">Grilla de Información</h3> 
+
+<div>
+  <mat-checkbox
+    [checked]="todosConStockGlobal()"
+    (change)="toggleStockGlobal($event.checked)">
+  </mat-checkbox>
+  <strong>Hay Stock Total</strong>
+</div>
+
 <table mat-table [dataSource]="dataSourceCodigo" multiTemplateDataRows class="mat-elevation-z8">
 
   <!-- Columnas dinámicas para las filas principales -->

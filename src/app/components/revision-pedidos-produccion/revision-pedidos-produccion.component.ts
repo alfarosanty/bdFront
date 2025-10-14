@@ -98,7 +98,14 @@ export class RevisionPedidosProduccionComponent {
   articuloSeleccionado ='';
  //END INPUT
 
-  constructor(private ordenDeProduccionService:OrdenProduccionService, private tallerService:TallerService, private articuloService:ArticuloService, private presupuestoService:PresupuestoService, private ordenProduccionService: OrdenProduccionService , private route : ActivatedRoute) {}
+  constructor(
+    private ordenDeProduccionService:OrdenProduccionService, 
+    private tallerService:TallerService, 
+    private articuloService:ArticuloService, 
+    private presupuestoService:PresupuestoService, 
+    private ordenProduccionService: OrdenProduccionService , 
+    private route : ActivatedRoute
+  ) {}
 
   ngOnInit(): void {
     this.listarTalleres();

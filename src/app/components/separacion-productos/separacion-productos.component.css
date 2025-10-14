@@ -139,8 +139,6 @@ select {
   }
 
   .grilla-container {
-    margin: 1rem 0;
-    border: 1px solid #ccc;
     width: 100%;
   }
   

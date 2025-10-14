@@ -135,10 +135,10 @@
                       matInput
                       [formControl]="articuloControl"
                       [matAutocomplete]="auto"
-                      (keydown.enter)="mostrarVariedadColores()"
-                      
                       (input)="articuloControl.setValue(articuloControl.value.toUpperCase(), { emitEvent: false })">
-                <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption>
+                
+                      <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption
+                                    (optionSelected)="mostrarVariedadColores()">
                   <mat-option *ngFor="let option of filteredArticulos | async" [value]="option">
                     {{ option }}
                   </mat-option>
@@ -344,8 +344,7 @@
       </div>
 
       <div class="button-container botones-separados">
-        <button mat-raised-button class="boton-opcion" color="primary" (click)="presupuestoCliente = true; generarPDF()">PDF Cliente</button>
-        <button mat-raised-button class="boton-opcion" color="accent" (click)="presupuestoCliente = false; generarPDF()">PDF Interno</button>
+        <button mat-raised-button class="boton-opcion" color="primary" (click)="presupuestoCliente = true; generarPDF()">Factura</button>
         <button mat-raised-button class="boton-opcion" color="warn" (click)="cancelarPDF()">Finalizar</button>
       </div>
     </div>

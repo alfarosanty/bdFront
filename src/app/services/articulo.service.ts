@@ -52,11 +52,11 @@ export class ArticuloService {
   }
 
   getCantidadesTallerCortePorArticuloPrecio(id: number): Observable<any> {
-    return this.http.get<any>(`${baseUrl}/${id}/cantidades-taller-corte`);
+    return this.http.get<any>(`${baseUrl}/${id}/cantidades-taller-corte-separado`);
   }
 
   getCantidadesTallerCorte(): Observable<any> {
-    return this.http.get<any>(`${baseUrl}/cantidades-taller-corte`);
+    return this.http.get<any>(`${baseUrl}/cantidades-taller-corte-separado`);
   }
  
 actualizarStock(listaStock:{IdArticulo: number, CantidadStock: number}[]): Observable<any>{

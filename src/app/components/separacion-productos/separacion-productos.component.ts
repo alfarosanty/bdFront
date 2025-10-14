@@ -20,7 +20,7 @@ import { PedidoProduccion } from 'src/app/models/pedido-produccion.model';
 import * as pdfMake from 'pdfmake/build/pdfmake';
 import * as pdfFonts from 'pdfmake/build/vfs_fonts';
 import { ArticuloPrecio } from 'src/app/models/articulo-precio.model';
-import { EstadoPedidoProduccion } from 'src/app/models/estado-presupuesto.model';
+import { EstadoPedidoProduccion, EstadoPresupuesto } from 'src/app/models/estado-presupuesto.model';
 
 (pdfMake as any).vfs = (pdfFonts as any).vfs;
 
@@ -54,6 +54,8 @@ logoBase64: String = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAADMCAYA
   ingresosMercaderiaXTaller: Ingreso[] =[];
   pedidosProduccionesGenerados: PedidoProduccion[] = [];
   estadosPedidoProduccion: EstadoPedidoProduccion[] = [];
+  estadosPresupuesto: EstadoPresupuesto[] = [];
+
 
 
   mapaPresupuestoArticulos ?: Map<string,PresupuestoArticulo[]>;
@@ -78,7 +80,7 @@ logoBase64: String = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAADMCAYA
   mostrarColores = false;
   mostrarConfirmacionPDF = false;
   showBackDrop=false;
-  estadoPedido = 1
+  estadoPresupuesto?: EstadoPresupuesto;
 
 
   currentIndex = -1;
@@ -110,10 +112,7 @@ logoBase64: String = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAADMCAYA
           let item = this.articulosPrecio[i];
           if(item.codigo && item.descripcion)
             this.options.push(item.codigo + ' ' + item.descripcion);
-          console.log(item);
           }
-          console.log('items options ' +  this.options.length);       
-        console.log(data);
       },
       error: (e) => console.error(e)
     });
@@ -133,6 +132,18 @@ logoBase64: String = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAADMCAYA
       next: (estados) => {
         console.log(estados)
         this.estadosPedidoProduccion = estados;
+      },
+      error: (err) => {
+        console.error('Error al obtener estados:', err);
+      }
+    });
+
+    this.presupuestoService.getEstadosPresupuesto().subscribe({
+      next: (estados) => {
+        console.log(estados)
+        this.estadosPresupuesto = estados;
+        this.estadoPresupuesto = estados.find(estado=>estado.codigo=="SEP")
+        console.log("Estado inicial", this.estadoPresupuesto)
       },
       error: (err) => {
         console.error('Error al obtener estados:', err);
@@ -471,6 +482,17 @@ actualizarTallerIndividual(presuArt: PresupuestoArticulo, nuevoTallerId: number)
   console.log("este es el mapa actualizado", this.mapaPresupuestoArticulos)
 }
 
+todosConStockGlobal(): boolean {
+  const todosLosArticulos = this.dataSourceArticulos.data.flatMap(fila => fila.presuArt);
+  return todosLosArticulos.every(a => a.hayStock);
+}
+
+toggleStockGlobal(valor: boolean) {
+  const todosLosArticulos = this.dataSourceArticulos.data.flatMap(fila => fila.presuArt);
+  todosLosArticulos.forEach(a => a.hayStock = valor);
+}
+
+
 todosConStock(codigo: string): boolean {
   const articulos = this.getArticulosParaArticulo(codigo);
   return articulos.every(a => a.hayStock);
@@ -527,62 +549,35 @@ toggleStockTodos(codigo: string, valor: boolean) {
  }
 
  actualizarHayStockDeArticulos() {
-  this.mapaArticulosModificados = new Map<string, PresupuestoArticulo[]>();
+  if (!this.presupuestoAAcceder) return;
 
-  this.dataSourceArticulos.data.forEach(item => {
-    item.presuArt.forEach(presuArt => {
-      const codigo = presuArt.codigo;
-      if (!codigo) return;
+  // Aplanar todos los artículos
+  const todosLosArticulos = this.dataSourceArticulos.data.flatMap(fila => fila.presuArt);
 
-      const listaExistente = this.mapaArticulosModificados?.get(codigo);
-      if (listaExistente) {
-        listaExistente.push(presuArt);
-      } else {
-        this.mapaArticulosModificados?.set(codigo, [presuArt]);
-      }
-    });
-  });
+  // Actualizar el presupuesto con la lista completa
+  this.presupuestoAAcceder.articulos = todosLosArticulos;
 
-  const listaDeArticulos: PresupuestoArticulo[] = Array.from(this.mapaArticulosModificados.values()).flat();
-  console.log("ArticulosModificados:", listaDeArticulos)
-  console.log("Articulos de presupuesto a actualizar", this.presupuestoAAcceder?.articulos)
+  // Determinar estado del presupuesto
+  const todosConStock = todosLosArticulos.every(a => a.hayStock);
 
-  const hayAlgunoConStock = listaDeArticulos.some(p => p?.hayStock === true);
-
-  console.log(hayAlgunoConStock)
-  console.log(this.presupuestoAAcceder)
-
-  if (hayAlgunoConStock && this.presupuestoAAcceder) {
-    this.presupuestoAAcceder.articulos = listaDeArticulos;
-
-    const todosConStock = listaDeArticulos.every(art => art.hayStock === true);
-
-    // Si todos tienen stock, y no hay estado asignado, lo ponemos como "Armado" (id = 4)
-    if (todosConStock) {
-      if (!this.presupuestoAAcceder.estadoPresupuesto) {
-        this.presupuestoAAcceder.estadoPresupuesto = { id: 4, descripcion: 'Armado', codigo: "ARM" };
-      } else {
-        this.presupuestoAAcceder.estadoPresupuesto.id = 4;
-      }
-    } else {
-      if (!this.estadoPedido) {
-        this.presupuestoAAcceder.estadoPresupuesto = { id: 1, descripcion: 'Creado', codigo: "CRE" };
-      } else {
-        if (!this.presupuestoAAcceder.estadoPresupuesto) {
-          this.presupuestoAAcceder.estadoPresupuesto = { id: this.estadoPedido, descripcion: '', codigo: '' };
-        } else {
-          this.presupuestoAAcceder.estadoPresupuesto.id = this.estadoPedido;
-        }
-      }
-      
-    }
-
-    console.log("Este es el presupuesto a actualizar",this.presupuestoAAcceder);
-    this.presupuestoService.actualizar(this.presupuestoAAcceder).subscribe((id: object)=>{
-
-    });
+  if (todosConStock) {
+    this.presupuestoAAcceder.estadoPresupuesto = this.estadosPresupuesto.find(estado=>estado.codigo=="ARM");
+  } else if (this.estadoPresupuesto) {
+    this.presupuestoAAcceder.estadoPresupuesto = this.estadoPresupuesto;
+  } else {
+    this.presupuestoAAcceder.estadoPresupuesto = { id: 2, descripcion: 'Separado', codigo: 'SEP' };
   }
+
+  console.log('Presupuesto a actualizar:', this.presupuestoAAcceder);
+
+  // Llamar al servicio
+  this.presupuestoService.actualizar(this.presupuestoAAcceder)
+    .subscribe({
+      next: res => console.log('Presupuesto actualizado correctamente'),
+      error: err => console.error('Error al actualizar presupuesto', err)
+    });
 }
+
 
 
 

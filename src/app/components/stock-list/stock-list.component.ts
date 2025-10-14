@@ -161,6 +161,7 @@ cargarCantidadesEnTallerYCorte(idArticuloPrecioDeseado: number){
         if (informacionExistente) {
           informacionExistente.cantidadEnCorteTotal = objetoConInfo.cantidadEnCorteTotal;
           informacionExistente.cantidadEnTallerTotal = objetoConInfo.cantidadEnTallerTotal;
+          informacionExistente.cantidadSeparadoTotal = objetoConInfo.cantidadSeparadoTotal;
           informacionExistente.stockTotal = objetoConInfo.stockTotal;
           informacionExistente.consultas = objetoConInfo.consultas
         }
@@ -205,9 +206,12 @@ actualizarDataSource() {
       descripcion: informacion.consultas?.[0]?.articulo?.descripcion || '',
       enCorte: informacion.cantidadEnCorteTotal,
       enTaller: informacion.cantidadEnTallerTotal,
+      separado: informacion.cantidadSeparadoTotal,
       stock: informacion.stockTotal
     };
   });
+
+  console.log("Este es el dataSourceCodigo: ", this.dataSourceCodigo)
 }
 
 

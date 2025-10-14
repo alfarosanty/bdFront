@@ -14,6 +14,7 @@ export class Factura {
     puntoDeVenta?: number;
     tipoFactura?: string;
     importeBruto?: number;
+    importeNeto?: number;
     iva?: number;
     numeroFactura?: number;
     caeNumero?: number;

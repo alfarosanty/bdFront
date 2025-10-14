@@ -32,7 +32,7 @@
       <mat-label>Selecciona una orden de pedido de: {{ currentTaller?.razonSocial }}</mat-label>
       <mat-select [(value)]="pedidoProduccionSeleccionado"
                   (selectionChange)="cargarDetallesPedidoProduccion((pedidoProduccionSeleccionado?.id ?? 0)); inputArticulos.focus()">
-        <mat-option *ngFor="let pedidoProduccion of pedidosProduccionXTaller" [value]="pedidoProduccion">
+        <mat-option *ngFor="let pedidoProduccion of pedidosProduccionEnTaller(pedidosProduccionXTaller)" [value]="pedidoProduccion">
           {{ pedidoProduccion.id }} - {{ getFecha(pedidoProduccion.fecha!) }} - {{ getCliente(pedidoProduccion) }}
         </mat-option>
       </mat-select>
@@ -78,11 +78,11 @@
                       [(ngModel)]="articuloSeleccionado"
                       matInput
                       [formControl]="articuloControl"
-                      [matAutocomplete]="auto"
-                      (keydown.enter)="mostrarVariedadColores()"
-                      
+                      [matAutocomplete]="auto"                      
                       (input)="articuloControl.setValue(articuloControl.value.toUpperCase(), { emitEvent: false })">
-                <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption>
+                
+                      <mat-autocomplete #auto="matAutocomplete" autoActiveFirstOption
+                                    (optionSelected)="mostrarVariedadColores()">
                   <mat-option *ngFor="let option of filteredArticulos | async" [value]="option">
                     {{ option }}
                   </mat-option>

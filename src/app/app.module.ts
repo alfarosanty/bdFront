@@ -51,7 +51,6 @@ import { EditarGenericoDialogComponent, SearchBudgetComponent } from './componen
 import { EditarGenericoDialogFacturacionComponent, FacturacionComponent } from './components/facturacion/facturacion.component';
 import { SelectBudgetComponent } from './components/select-budget/select-budget.component';
 import { ArticuloConfiguracionComponent } from './components/articulo-configuracion/articulo-configuracion.component';
-import { RevisionFacturaComponent } from './components/revision-factura/revision-factura.component';
 import { EstadisticasComponent } from './components/estadisticas/estadisticas.component';
 import { MatSortModule } from '@angular/material/sort';
 import { ActualizacionPreciosComponent } from './components/actualizacion-precios/actualizacion-precios.component';
@@ -82,7 +81,6 @@ import { SeleccionClienteComponent } from './components/seleccion-cliente/selecc
     EditarGenericoDialogPedidoProduccionComponent,
     PresentacionComponent,
     ArticuloConfiguracionComponent,
-    RevisionFacturaComponent,
     EstadisticasComponent,
     ActualizacionPreciosComponent,
     VistaGeneralComponent,

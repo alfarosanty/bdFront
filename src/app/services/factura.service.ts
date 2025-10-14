@@ -15,9 +15,9 @@ export class FacturaService {
 
   constructor(private http: HttpClient) { }
 
-crear(factura :Factura): Observable<Object>   {
+crear(factura :Factura): Observable<number>   {
   //alert('url' + baseUrl);
-  return this.http.post(`${baseUrl}/crear`, factura)
+  return this.http.post<number>(`${baseUrl}/crear`, factura);
   }
 
 actualizar(factura :Factura): Observable<Object>   {
@@ -55,6 +55,10 @@ actualizar(factura :Factura): Observable<Object>   {
     //alert('url' + baseUrl);
     return this.http.get(`${baseUrl}/GetArticulos/${idFactura}`)
     }
-  
+
+    
+facturarARCA(factura: Factura): Observable<Object>{
+  return this.http.post((`${baseUrl}/pruebaAFIP`), factura)
+}
 
 }

@@ -197,6 +197,11 @@ listarTalleres(): void {
     }
   }
 
+  pedidosProduccionEnTaller(pedidosProduccion: PedidoProduccion[]): PedidoProduccion[] {
+    return pedidosProduccion.filter(pedidoProduccion => pedidoProduccion.idEstadoPedidoProduccion === 3);
+  }
+  
+
   obtenerClientesXPedidoProduccion(pedidosProduccion: PedidoProduccion[]) {
   
     this.mapaClienteXPedidoProduccion = new Map<number, {idPedidoProduccion: number, cliente: Cliente}>();
@@ -531,11 +536,11 @@ borrarArticulo(key: any, color: string) {
       ];
     
       this.mapaPresupuestoArticulos?.forEach((presupuestosArticulos, clave) => {
-        const cantidades = presupuestosArticulos.map(pa => pa.cantidadActual || 0);
+        const cantidades = presupuestosArticulos.map(pa => pa.cantidad || 0);
         const totalCantidad = cantidades.reduce((acc, c) => acc + c, 0);
         const descripcion = presupuestosArticulos[0].descripcion || '';
         const descripcionCompleta = presupuestosArticulos
-          .map(pa => `${pa.cantidadActual || 0}${pa.articulo?.color?.codigo || ''}`)
+          .map(pa => `${pa.cantidad || 0}${pa.articulo?.color?.codigo || ''}`)
           .join(' ');
     
         tablaBody.push([
@@ -560,13 +565,8 @@ borrarArticulo(key: any, color: string) {
     }
 
     generarPDFcontrolPendientes() {
-      if (this.mapaArticulosModificados?.size === 0) {
-        alert("No hay ningún pedido producción con estado EN TALLER que tenga artículos para modificar");
-        return;
-      }
-      
-    
       if (!this.mapaArticulosModificados || this.mapaArticulosModificados.size === 0) {
+        alert("No hay ningún pedido de producción con estado EN TALLER que tenga artículos para modificar");
         return;
       }
     
@@ -606,23 +606,55 @@ borrarArticulo(key: any, color: string) {
         styles: this.getStyles(),
       };
     
-      const tablaBody = [
+      const tablaBody: any[] = [
         [
-          { text: 'Pedido de Producción', style: 'tableHeaderControl' },
+          // { text: 'Pedido Producción', style: 'tableHeaderControl' }, // sacado
           { text: 'Artículo', style: 'tableHeaderControl' },
           { text: 'Pendiente Antes', style: 'tableHeaderControl' },
           { text: 'Descontado', style: 'tableHeaderControl' },
           { text: 'Pendiente Después', style: 'tableHeaderControl' }
         ]
       ];
+      
+    
+      let pedidoActual = '';
     
       this.mapaArticulosModificados?.forEach((articulos, clave) => {
+    
+        const numeroStr = clave.match(/#(\d+)/)?.[1];
+        const numero = numeroStr ? parseInt(numeroStr, 10) : null;
+  
+        const pedidoTemp: PedidoProduccion = { id: numero! };
+        const cliente = this.getCliente(pedidoTemp) || 'Stock';
+        // Nueva sección: Pedido distinto
+        if (clave !== pedidoActual) {
+          
+          // línea divisoria debajo del título
+          tablaBody.push([
+            {
+              colSpan: 4,
+              stack: [
+                { text: '', margin: [0, 2] }, // espacio arriba
+                { text: `${clave} - ${cliente}`, bold: true, alignment: 'center' }, // texto centrado en negrita
+                { text: '', margin: [0, 2] } // espacio abajo
+              ]
+            },
+            {}, {}, {}
+          ]);
+          
+          
+          
+          
+    
+          pedidoActual = clave;
+        }
+    
         articulos.forEach(articulo => {
           const a = articulo.articuloAfectado;
           const descripcion = `${a?.codigo ?? 'N/A'} ${a?.descripcion ?? 'N/A'} ${a?.color?.codigo ?? 'N/A'}`;
           tablaBody.push([
-            { text: clave, style: 'tableCell' },
-            { text: descripcion, style: 'tableCell' },
+            //{ text: clave + '- ' +cliente, style: 'tableCell' },
+            { text: descripcion, style: 'tableCell2' },
             { text: articulo.pendienteAntes?.toString() ?? '0', style: 'tableCell' },
             { text: articulo.descontado?.toString() ?? '0', style: 'tableCell' },
             { text: articulo.pendienteDespues?.toString() ?? '0', style: 'tableCell' }
@@ -633,18 +665,22 @@ borrarArticulo(key: any, color: string) {
       docDefinition.content.push({
         table: {
           headerRows: 1,
-          widths: [80, '*', 60, 60, 60],
+          widths: ['*', 60, 60, 60],
           body: tablaBody
         },
         layout: 'lightHorizontalLines',
         style: 'table'
       });
+      
     
       // Generar el PDF
-      pdfMake.createPdf(docDefinition).download(`Control-Pendientes-${this.currentTaller?.razonSocial}_${new Date().toISOString().split('T')[0]}.pdf`);
+      pdfMake.createPdf(docDefinition).download(
+        `Control-Pendientes-${this.currentTaller?.razonSocial}_${new Date().toISOString().split('T')[0]}.pdf`
+      );
     
       this.actualizarPedidosProduccion();
     }
+    
     
 
 
@@ -673,6 +709,11 @@ getStyles() {
     tableCell: {
       fontSize: 10,
       alignment: 'center',
+      margin: [0, 5, 0, 5]
+    },
+    tableCell2: {
+      fontSize: 10,
+      alignment: 'left',
       margin: [0, 5, 0, 5]
     },
     tableHeaderControl:{
@@ -978,12 +1019,19 @@ async actualizarPedidosProduccion() {
       ppSeleccionado.idEstadoPedidoProduccion = this.estadosPedidoProduccion?.find(estado=>estado.codigo=="COMP")?.id;
     }
 
-    this.ordenProduccionService.actualizar(ppSeleccionado).subscribe((id: number) => {  
-    }, error => {
-      console.error('❌ Error al actualizar la orden de pedido:', error);
-    });
+    this.ordenProduccionService.actualizar(ppSeleccionado).subscribe({
+      next: id=>{
+      },
+      error: err => {
+        console.error('❌ Error al guardar los pendientes', err);
+        this.mostrarError('Ocurrió un error al guardar los pendientes. ¡¡¡¡¡AVISAR A FRAN!!!!!!.');
+      }
+    })
     console.log("Pedido producción actualizado")
+    
   }
+
+
 
   // Asegurate que esto se ejecute después de cargar todos los presupuestos
   this.actualizarPresupuestos();
@@ -999,7 +1047,6 @@ generarDetallesPPI(){
       .crearDetallesIngresoPedidoProduccion(this.detallesPedidoProduccionIngresos)
       .subscribe({
         next: resp => {
-          this.mostrarMensaje('✅ Detalles guardados con éxito: ' + resp);
         },
         error: err => {
           console.error('❌ Error al guardar detalles', err);
