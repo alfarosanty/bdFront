@@ -1139,6 +1139,7 @@ consultaMedidasNecesariasYGenerarPDF() {
   console.log("los articulos a preguntar", listaDeArticulos);
   const listaDeIDSPermitidos = [1,2,3,4,5,7]
   listaDeArticulos = listaDeArticulos.filter(presuArt=>listaDeIDSPermitidos.includes(presuArt.articulo?.medida?.id!))
+  console.log("Artículos a preguntar: ", listaDeArticulos)
 
   this.articuloService.consultarMedidasNecesarias(listaDeArticulos).subscribe({
     next: (response) => {

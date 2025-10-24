@@ -9,4 +9,6 @@ export class PedidoProduccionIngresoDetalle {
     presupuesto?: Presupuesto;
     articulo?: Articulo;
     cantidadDescontada?: number;
+    cantidadPendienteAntes?: number;
+    cantidadPendienteDespues?: number;
 }

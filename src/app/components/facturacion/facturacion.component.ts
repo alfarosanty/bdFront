@@ -769,7 +769,7 @@ puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
               //alert('Factura creada exitosamente');
           
               // recién ahora, facturás en AFIP
-             /* this.facturaService.facturarARCA(this.currentFactura!).subscribe({
+              this.facturaService.facturarARCA(this.currentFactura!).subscribe({
                 next: (response) => {
                   console.log('Factura enviada correctamente a AFIP:', response);
                   // podés guardar el CAE, mostrar mensaje, etc.
@@ -779,7 +779,7 @@ puntosDeVentasPosibles = [0,1,2,3,4,5,6,7,8,9,10]
                   const msg = error?.error?.message || 'No se pudo enviar a AFIP. Intente nuevamente.';
                   this.mostrarError(msg);
                 }
-              });*/
+              })
             },
             error: (error) => {
               console.error('Error al crear factura:', error);

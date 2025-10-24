@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, ElementRef, Inject, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
-import { Observable, throwError } from 'rxjs';
-import { catchError, map, startWith } from 'rxjs/operators'
+import { forkJoin, Observable, of, throwError } from 'rxjs';
+import { catchError, map, startWith, tap } from 'rxjs/operators'
 import { Articulo } from 'src/app/models/articulo.model';
 import { PresupuestoArticulo } from 'src/app/models/presupuesto-articulo.model';
 import { Presupuesto } from 'src/app/models/presupuesto.model';
@@ -677,9 +677,7 @@ borrarArticulo(key: any, color: string) {
       pdfMake.createPdf(docDefinition).download(
         `Control-Pendientes-${this.currentTaller?.razonSocial}_${new Date().toISOString().split('T')[0]}.pdf`
       );
-    
-      this.actualizarPedidosProduccion();
-    }
+      }
     
     
 
@@ -866,77 +864,93 @@ aplicarIngresoAPedidosProduccion(){
 
 }
 
+
 aclararProductoPendentesDisminuidos() {
 
   if (!this.currentIngresoMercaderia || !this.pedidosProduccionXTaller) return;
 
   // Ordenar pedidos por fecha (de más antiguo a más reciente)
-  this.pedidosProduccionXTaller.sort((a, b) => (new Date(a.fecha!).getTime()) - (new Date(b.fecha!).getTime()));
-  const pedidosAAgregarIngresos = this.pedidosProduccionXTaller.filter(pedido=>pedido.idEstadoPedidoProduccion == this.estadosPedidoProduccion?.find(estado=>estado.codigo =="TA")?.id)
+  this.pedidosProduccionXTaller.sort(
+    (a, b) => (new Date(a.fecha!).getTime()) - (new Date(b.fecha!).getTime())
+  );
 
-console.log("Ingreso que deberia estar completo", this.currentIngresoMercaderia)
+  const pedidosAAgregarIngresos = this.pedidosProduccionXTaller.filter(
+    pedido => pedido.idEstadoPedidoProduccion == this.estadosPedidoProduccion?.find(estado => estado.codigo == "TA")?.id
+  );
+
+  console.log("🔹 Ingreso que se debería procesar completo:", this.currentIngresoMercaderia);
+  console.log("🔹 Pedidos a agregar ingresos:", pedidosAAgregarIngresos.map(p => p.id));
 
   for (let articuloIngreso of this.currentIngresoMercaderia.articulos ?? []) {
-    console.log("ArticuloIngreso", articuloIngreso)
-  
+    console.log("---------------------------------------------------");
+    console.log("🔹 Procesando Artículo de Ingreso:", articuloIngreso.articulo?.codigo, "Cantidad:", articuloIngreso.cantidad);
 
     let cantidadRestante = articuloIngreso.cantidad;
-    console.log("Cantidad restante", cantidadRestante)
     let cantidadInicial = cantidadRestante; // Cantidad inicial ingresada
 
     for (let pedidoProduccion of pedidosAAgregarIngresos) {
 
-      let articuloADescontar = (pedidoProduccion.articulos ?? []).find(presuArt => presuArt.articulo!.id == articuloIngreso.articulo?.id);
-      if(!articuloADescontar || articuloADescontar.cantidadPendiente == 0){continue}
+      let articuloADescontar = (pedidoProduccion.articulos ?? []).find(
+        presuArt => presuArt.articulo!.id == articuloIngreso.articulo?.id
+      );
+
+      if (!articuloADescontar || articuloADescontar.cantidadPendiente == 0) {
+        console.log(`  - Artículo no encontrado o pendiente 0 en Pedido ${pedidoProduccion.id}`);
+        continue;
+      }
 
       let cantidadPendienteAntes = articuloADescontar.cantidadPendiente ?? 0;
-      console.log("CantidadPendienteAntes:", cantidadPendienteAntes)
       let cantidadADescontar = Math.min(cantidadPendienteAntes, cantidadRestante!);
-      console.log("CantidadADescontar:", cantidadADescontar)
-
       let cantidadPendienteDespues = cantidadPendienteAntes - cantidadADescontar;
 
+      console.log(`  - Pedido ${pedidoProduccion.id}: PendienteAntes=${cantidadPendienteAntes}, Descontado=${cantidadADescontar}, PendienteDespues=${cantidadPendienteDespues}`);
 
       cantidadRestante! -= cantidadADescontar; // Reducimos la cantidad restante
 
-      const key = `#${pedidoProduccion.id} - ${this.formatearFecha(pedidoProduccion.fecha!)}`
-      const nuevoValor ={
-        articuloAfectado : articuloIngreso.articulo,
+      const key = `#${pedidoProduccion.id} - ${this.formatearFecha(pedidoProduccion.fecha!)}`;
+      const nuevoValor = {
+        articuloAfectado: articuloIngreso.articulo,
         pendienteAntes: cantidadPendienteAntes,
         descontado: cantidadADescontar,
         pendienteDespues: cantidadPendienteDespues,
         idPedidoProduccion: pedidoProduccion.id,
-        cantidadPedidaOriginal : articuloADescontar.cantidad,
-        hayStock : this.noTienePendientes(cantidadPendienteDespues)
-      }
-      console.log("Nuevo valor", nuevoValor)
+        cantidadPedidaOriginal: articuloADescontar.cantidad,
+        hayStock: this.noTienePendientes(cantidadPendienteDespues)
+      };
+
+      console.log("  - Nuevo valor a mapaArticulosModificados:", nuevoValor);
 
       const detallePPI: PedidoProduccionIngresoDetalle = {
         pedidoProduccion: pedidoProduccion,
         ingreso: this.currentIngresoMercaderia,
         articulo: nuevoValor.articuloAfectado,
-        presupuesto:{ id: 0},
-        cantidadDescontada: nuevoValor.descontado
+        presupuesto: { id: 0 },
+        cantidadDescontada: nuevoValor.descontado,
+        cantidadPendienteAntes: nuevoValor.pendienteAntes,
+        cantidadPendienteDespues: nuevoValor.pendienteDespues
       };
-      console.log("Detalle: ", detallePPI)
-      
-      this.detallesPedidoProduccionIngresos?.push(detallePPI);
-      
+
+      console.log("  - Detalle generado:", detallePPI);
+
+      // Evitar duplicados exactos
+      const keyDetalle = `${detallePPI.articulo?.id}-${detallePPI.pedidoProduccion?.id}-${detallePPI.ingreso?.id}`;
+      if (!this.detallesPedidoProduccionIngresos?.some(d => `${d.articulo?.id}-${d.pedidoProduccion?.id}-${d.ingreso?.id}` === keyDetalle)) {
+        this.detallesPedidoProduccionIngresos?.push(detallePPI);
+      } else {
+        console.warn("  ⚠️ Detalle ya existente, no se agrega:", keyDetalle);
+      }
+
       if (!this.mapaArticulosModificados!.has(key)) {
-        // Si el pedido no existe, lo creamos con una nueva lista
         this.mapaArticulosModificados!.set(key, [nuevoValor]);
-    } else {
-        // Si ya existe, agregamos el nuevo artículo a la lista existente
+      } else {
         this.mapaArticulosModificados!.get(key)?.push(nuevoValor);
+      }
+
+      if (cantidadRestante! <= 0) {
+        console.log(`  - Se agotó la cantidad del artículo ${articuloIngreso.articulo?.codigo}`);
+        break;
+      }
     }
-    
-    if (cantidadRestante! <= 0) break;
-}
-
-
-      // Si ya no queda más cantidad por descontar, salir del bucle
-    }
-
 
     const mapaOrdenado = new Map(
       Array.from(this.mapaArticulosModificados!.entries()).sort(([keyA], [keyB]) => {
@@ -945,13 +959,18 @@ console.log("Ingreso que deberia estar completo", this.currentIngresoMercaderia)
         return numA - numB;
       })
     );
-    
-    // Reasignamos el mapa original por el ordenado
+
     this.mapaArticulosModificados = mapaOrdenado;
 
-    this.actualizarPedidosProduccion()
+    console.log("🔹 Mapa de artículos modificados hasta ahora:", Array.from(this.mapaArticulosModificados.entries()));
 
   }
+  this.actualizarPedidosProduccion();
+
+  console.log("✅ Finalizó aclararProductoPendentesDisminuidos");
+  console.log("Detalles finales de ingresos:", this.detallesPedidoProduccionIngresos);
+}
+
 
   noTienePendientes(unaCantidadPendiente : number): boolean{
     if(unaCantidadPendiente === 0) {return true}
@@ -963,80 +982,109 @@ console.log("Ingreso que deberia estar completo", this.currentIngresoMercaderia)
     return isNaN(fechaObj.getTime()) ? 'Fecha inválida' : `${fechaObj.getDate()}/${fechaObj.getMonth() + 1}/${fechaObj.getFullYear()}`;
   }
 
-async actualizarPedidosProduccion() {
-  for (const valor of this.mapaArticulosModificados!.values()) {
-
-    const ppSeleccionado = this.pedidosProduccionXTaller.find(
-      pedidoProduccion => pedidoProduccion.id === valor[0].idPedidoProduccion
-    );
-    if (!ppSeleccionado) continue;
-
-    try {
-      if(ppSeleccionado.idPresupuesto){
-      const presuAsociado = await firstValueFrom(
-        this.presupuestoService.get(ppSeleccionado.idPresupuesto)
+  async actualizarPedidosProduccion() {
+    if (!this.mapaArticulosModificados || !this.pedidosProduccionXTaller) return;
+  
+    console.log("🔹 Iniciando actualización de pedidos de producción...");
+  
+    const observablesActualizar: any[] = [];
+  
+    for (const valor of this.mapaArticulosModificados.values()) {
+  
+      const ppSeleccionado = this.pedidosProduccionXTaller.find(
+        pedido => pedido.id === valor[0].idPedidoProduccion
       );
-      this.presupuestosAModificar.push(presuAsociado);
-      const detalleAsociado = this.detallesPedidoProduccionIngresos
-      ?.find(detalle => detalle.pedidoProduccion?.id === ppSeleccionado.id);
-    
-    if (detalleAsociado) {
-      detalleAsociado.presupuesto = presuAsociado;
-    }
-    } else {console.log("No hay presupuesto asociado")}
-    } catch (error) {
-      console.error("Error al obtener presupuesto", error);
-    }
-
-    for (let registro of valor) {
-      const presuArtAModificar = ppSeleccionado.articulos?.find(
-        presuArt => presuArt.articulo?.id == registro.articuloAfectado?.id
-      )
-
-      console.log("PresuArt a disminuir pendiente", presuArtAModificar)
-      ppSeleccionado.articulos = ppSeleccionado.articulos?.filter(
-        presuArt => presuArt.articulo?.id !== registro.articuloAfectado?.id
-      ) ?? [];
-
-      const articuloActualizado = {
-        articulo: registro.articuloAfectado,
-        cantidad: presuArtAModificar?.cantidad,
-        cantidadPendiente: registro.pendienteDespues,
-        cantidadActual: registro.pendienteDespues,
-        cantidadOriginal: registro.cantidadPedidaOriginal,
-        hayStock: this.noTienePendientes(registro.pendienteDespues!),
-        idPedidoProduccion : registro.idPedidoProduccion,
-        codigo: registro.articuloAfectado?.codigo,
-        descripcion: registro.articuloAfectado?.descripcion
-
-      };
-      console.log("Articulo actualizado", articuloActualizado)
-      ppSeleccionado.articulos.push(articuloActualizado);
-    }
-
-    const cantPendientesPP = ppSeleccionado.articulos?.map(a => a.cantidadPendiente);
-    if (cantPendientesPP?.every(p => p === 0)) {
-      ppSeleccionado.idEstadoPedidoProduccion = this.estadosPedidoProduccion?.find(estado=>estado.codigo=="COMP")?.id;
-    }
-
-    this.ordenProduccionService.actualizar(ppSeleccionado).subscribe({
-      next: id=>{
-      },
-      error: err => {
-        console.error('❌ Error al guardar los pendientes', err);
-        this.mostrarError('Ocurrió un error al guardar los pendientes. ¡¡¡¡¡AVISAR A FRAN!!!!!!.');
+      if (!ppSeleccionado) continue;
+  
+      try {
+        // Traemos presupuesto asociado si existe
+        if (ppSeleccionado.idPresupuesto) {
+          const presuAsociado = await firstValueFrom(
+            this.presupuestoService.get(ppSeleccionado.idPresupuesto)
+          );
+          this.presupuestosAModificar.push(presuAsociado);
+  
+          // Actualizamos detalle si existe
+          const detallesAsociados = this.detallesPedidoProduccionIngresos
+          ?.filter(detalle => detalle.pedidoProduccion?.id === ppSeleccionado.id);
+          detallesAsociados?.forEach(detalle => {
+          detalle.presupuesto = presuAsociado;
+        });
+        
+        } else {
+          console.log(`No hay presupuesto asociado para Pedido ${ppSeleccionado.id}`);
+        }
+      } catch (error) {
+        console.error("Error al obtener presupuesto:", error);
       }
-    })
-    console.log("Pedido producción actualizado")
-    
+  
+      // Actualizamos cada artículo del pedido
+      for (let registro of valor) {
+        const presuArtAModificar = ppSeleccionado.articulos?.find(
+          a => a.articulo?.id === registro.articuloAfectado?.id
+        );
+  
+        // Reemplazamos con el registro actualizado
+        ppSeleccionado.articulos = ppSeleccionado.articulos?.filter(
+          a => a.articulo?.id !== registro.articuloAfectado?.id
+        ) ?? [];
+  
+        const articuloActualizado = {
+          articulo: registro.articuloAfectado,
+          cantidad: presuArtAModificar?.cantidad,
+          cantidadPendiente: registro.pendienteDespues,
+          cantidadActual: registro.pendienteDespues,
+          cantidadOriginal: registro.cantidadPedidaOriginal,
+          hayStock: this.noTienePendientes(registro.pendienteDespues!),
+          idPedidoProduccion: registro.idPedidoProduccion,
+          codigo: registro.articuloAfectado?.codigo,
+          descripcion: registro.articuloAfectado?.descripcion
+        };
+  
+        console.log("🔹 Artículo actualizado:", articuloActualizado);
+  
+        ppSeleccionado.articulos.push(articuloActualizado);
+      }
+  
+      // Actualizamos estado del pedido si todas las pendientes son 0
+      const cantPendientesPP = ppSeleccionado.articulos?.map(a => a.cantidadPendiente);
+      if (cantPendientesPP?.every(p => p === 0)) {
+        ppSeleccionado.idEstadoPedidoProduccion = this.estadosPedidoProduccion?.find(e => e.codigo === "COMP")?.id;
+      }
+  
+      // Guardamos observable de actualización
+      observablesActualizar.push(
+        this.ordenProduccionService.actualizar(ppSeleccionado).pipe(
+          tap(() => console.log(`✅ Pedido ${ppSeleccionado.id} actualizado correctamente`)),
+          catchError(err => {
+            console.error(`❌ Error al guardar pendientes del Pedido ${ppSeleccionado.id}`, err);
+            this.mostrarError(`Ocurrió un error al guardar los pendientes del Pedido ${ppSeleccionado.id}`);
+            return of(null);
+          })
+        )
+      );
+    }
+  
+    // Esperamos a que terminen todas las actualizaciones
+    await firstValueFrom(forkJoin(observablesActualizar));
+  
+    // Eliminamos duplicados de detalles antes de enviar a BD
+    const detallesUnicos = Array.from(new Map(
+      this.detallesPedidoProduccionIngresos!.map(d => [`${d.articulo?.id}-${d.pedidoProduccion?.id}-${d.ingreso?.id}`, d])
+    ).values());
+    this.detallesPedidoProduccionIngresos = detallesUnicos;
+  
+    console.log("🔹 Detalles únicos listos para enviar a BD:", this.detallesPedidoProduccionIngresos);
+  
+    // Ahora sí, generar detalles PPI solo una vez
+    this.generarDetallesPPI();
+  
+    // Finalmente, actualizar presupuestos si aplica
+    this.actualizarPresupuestos();
+  
+    console.log("✅ Actualización completa de pedidos y generación de detalles PPI finalizada");
   }
-
-
-
-  // Asegurate que esto se ejecute después de cargar todos los presupuestos
-  this.actualizarPresupuestos();
-  this.generarDetallesPPI();
-}
+  
 
 generarDetallesPPI(){
 
@@ -1050,7 +1098,7 @@ generarDetallesPPI(){
         },
         error: err => {
           console.error('❌ Error al guardar detalles', err);
-          this.mostrarError('Ocurrió un error al guardar los detalles. Intente nuevamente.');
+          this.mostrarError('Ocurrió un error al guardar los detalles. ¡¡¡¡¡AVISARLE A FRAN!!!!!');
         },
         complete: () => {
           console.log('Proceso finalizado');

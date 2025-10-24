@@ -58,6 +58,8 @@ import { VistaGeneralComponent } from './components/vista-general/vista-general.
 import { ConsultasGeneralComponent } from './components/consultas-general/consultas-general.component';
 import { EliminacionesComponent } from './components/eliminaciones/eliminaciones.component';
 import { SeleccionClienteComponent } from './components/seleccion-cliente/seleccion-cliente.component';
+import { RevisionesIngresosComponent } from './components/revisiones-ingresos/revisiones-ingresos.component';
+import { RevisionesPresupuestosComponent } from './components/revisiones-presupuestos/revisiones-presupuestos.component';
 
 
 
@@ -87,6 +89,8 @@ import { SeleccionClienteComponent } from './components/seleccion-cliente/selecc
     ConsultasGeneralComponent,
     EliminacionesComponent,
     SeleccionClienteComponent,
+    RevisionesIngresosComponent,
+    RevisionesPresupuestosComponent,
   ],
   imports: [
     MatSelectModule,

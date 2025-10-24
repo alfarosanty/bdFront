@@ -19,6 +19,7 @@ import { VistaGeneralComponent } from './components/vista-general/vista-general.
 import { ConsultasGeneralComponent } from './components/consultas-general/consultas-general.component';
 import { EliminacionesComponent } from './components/eliminaciones/eliminaciones.component';
 import { SeleccionClienteComponent } from './components/seleccion-cliente/seleccion-cliente.component';
+import { RevisionesIngresosComponent } from './components/revisiones-ingresos/revisiones-ingresos.component';
 
 
 const routes: Routes = [
@@ -36,6 +37,7 @@ const routes: Routes = [
   { path:  'pedidoProduccion', component: PedidoProduccionComponent},
   { path:  'ingreso', component: IngresoComponent},
   { path:  'revisionPedidoProduccion', component: RevisionPedidosProduccionComponent},
+  { path:  'revisionIngreso', component: RevisionesIngresosComponent},
   { path:  'seleccionarPresupuesto/:id', component: SeparacionProductosComponent},
   { path:  'configuracionArticulo', component: ArticuloConfiguracionComponent},
   { path:  'estadisticas', component: EstadisticasComponent},

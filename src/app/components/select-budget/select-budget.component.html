@@ -1,22 +1,4 @@
-<div class="superior-container">
-
-  <div class="boton-container">
-    <div class="boton-seleccionarPresupuesto">
-      <button mat-raised-button (click)="generarPresupuesto()" color="primary" class="boton-lindo azul">
-        Generar Presupuesto
-      </button>
-    </div>
-
-    <div class="boton-generarPDF">
-      <button mat-raised-button (click)="mostrarPanelBusqueda = !mostrarPanelBusqueda" color="warn" class="boton-lindo rojo">
-        Buscar Presupuesto
-      </button>
-    </div>
-    
-  </div>
-
-</div>
-<div class="inferior-container" *ngIf="mostrarPanelBusqueda" @fadeInOut>
+<div class="inferior-container">
 
     <div class="selector-container">
       <h2>Clientes</h2>

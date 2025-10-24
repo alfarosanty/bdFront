@@ -12,6 +12,7 @@ articulo?: Articulo;
 cantidadEnCorteUnitario?: number;
 cantidadEnTallerUnitario?: number;
 cantidadSeparadoUnitario?: number;
+cantidadEstanteriaUnitario?: number;
 stockUnitario?: number;
 
 
@@ -23,6 +24,7 @@ codigo?: string;
 cantidadEnCorteTotal?: number;
 cantidadEnTallerTotal?: number;
 cantidadSeparadoTotal?: number;
+cantidadEstanteriaTotal?: number;
 stockTotal?: number
 consultas?: ConsultaTallerCorte[]
 

@@ -59,8 +59,8 @@ filterValue ='';
 
 
 //MAT COMPONENTS
-columnsToDisplay = ['Artículo', 'Descripcion', 'En corte', 'En taller', 'Stock'];
-articuloColumnsToDisplay = ['Artículo', 'En corte', 'En taller', 'Stock'];
+columnsToDisplay = ['Artículo', 'Descripcion', 'En corte', 'En taller', 'Separado', 'Estanteria', 'Stock'];
+articuloColumnsToDisplay = ['Artículo', 'En corte', 'En taller', 'Separado', 'Estanteria', 'Stock'];
 expandedElement: any | null;
 dataSourceCodigo: any[] = []; // debe contener objetos con: codigo, descripcion
 
@@ -111,13 +111,13 @@ mostrarVariedadColores() {
       this.articuloService.getCantidadesTallerCorte().subscribe({
         next: (data) => {
           this.articulos = data;
+          console.log("Info llegada de la BD: ", data)
           this.articulos.sort((a, b) => {
             if (!a.codigo) return 1;
             if (!b.codigo) return -1;
             return a.codigo.localeCompare(b.codigo);
           });
           this.cargarMapa(this.articulos, this.mapaArticulosXInformacion!);
-          this.cargarCantidadesEnTallerYCorte(articuloPrecioDeseado?.id!)
           this.cdr.detectChanges();
         },
         error: (e) => console.error('Error al obtener artículos:', e)
@@ -129,12 +129,12 @@ mostrarVariedadColores() {
       break;
   
     default:
-      const idArticuloPrecioDeseado = articuloPrecioDeseado?.id;
-      this.articuloService.getCantidadesTallerCortePorArticuloPrecio(idArticuloPrecioDeseado!).subscribe({
+      const codigoArticuloPrecioDeseado = articuloPrecioDeseado?.codigo;
+      this.articuloService.getCantidadesTallerCortePorArticuloPrecio(codigoArticuloPrecioDeseado!).subscribe({
         next: (data) => {
           this.articulos = data;
+          console.log("Articulos llegados de la BD: ", data)
           this.cargarMapa(this.articulos, this.mapaArticulosXInformacion!);
-          this.cargarCantidadesEnTallerYCorte(idArticuloPrecioDeseado!)
           this.cdr.detectChanges();
         },
         error: (e) => console.error('Error al obtener artículos:', e)
@@ -145,33 +145,6 @@ mostrarVariedadColores() {
 
 
 }
-
-cargarCantidadesEnTallerYCorte(idArticuloPrecioDeseado: number){
-
-  if(idArticuloPrecioDeseado){
-    
-  }
-
-  this.articuloService.getCantidadesTallerCortePorArticuloPrecio(idArticuloPrecioDeseado!).subscribe({
-    next: (data) => {
-      this.cantidadesCorteTallerArticulo = data
-      console.log("articulosDeLaBD:", this.cantidadesCorteTallerArticulo)
-      this.cantidadesCorteTallerArticulo.forEach(objetoConInfo => {
-        const informacionExistente = this.mapaArticulosXInformacion?.get(objetoConInfo.codigo!);
-        if (informacionExistente) {
-          informacionExistente.cantidadEnCorteTotal = objetoConInfo.cantidadEnCorteTotal;
-          informacionExistente.cantidadEnTallerTotal = objetoConInfo.cantidadEnTallerTotal;
-          informacionExistente.cantidadSeparadoTotal = objetoConInfo.cantidadSeparadoTotal;
-          informacionExistente.stockTotal = objetoConInfo.stockTotal;
-          informacionExistente.consultas = objetoConInfo.consultas
-        }
-      });
-      
-    },
-    error: (e) => console.error(e)
-  });
-}
-
 
 cargarMapa(articulos: ConsultaTallerCortePorCodigo[], mapaACargar: Map<string, ConsultaTallerCortePorCodigo>) {
   if (!articulos || articulos.length === 0) {
@@ -207,6 +180,7 @@ actualizarDataSource() {
       enCorte: informacion.cantidadEnCorteTotal,
       enTaller: informacion.cantidadEnTallerTotal,
       separado: informacion.cantidadSeparadoTotal,
+      estanteria: informacion.cantidadEstanteriaTotal,
       stock: informacion.stockTotal
     };
   });

@@ -2,9 +2,14 @@
   <nav class="navbar navbar-expand navbar-dark bg-dark">
     <a href="#" class="navbar-brand" routerLink=''>BlumeFront</a>
     <div class="navbar-nav mr-auto">
-      <li class="nav-item">
-        <a routerLink="selectBudget" class="nav-link">Presupuestos </a>
+      <li class="nav-item dropdown">
+        <a class="nav-link">Presupuestos</a>
+        <ul class="submenu">
+          <li><a routerLink="searchBudget" class="nav-link">Generar Presupuesto</a></li>
+          <li><a routerLink="selectBudget" class="nav-link">Separar Presupuesto</a></li>
+        </ul>
       </li>
+      
       <li class="nav-item">
         <a routerLink="seleccion-cliente" class="nav-link">Clientes </a>
       </li>
@@ -24,8 +29,13 @@
         <a routerLink="listStock" class="nav-link">Stock </a>
       </li>
 
-      <li class="nav-item">
-        <a routerLink="revisionPedidoProduccion" class="nav-link">Revisiones </a>
+      <li class="nav-item dropdown">
+        <a class="nav-link">Revisiones </a>
+        <ul class="submenu">
+          <li><a routerLink="revisionIngreso" class="nav-link">Ingreso</a></li>
+          <li><a routerLink="revisionPedidoProduccion" class="nav-link">Pedido producción</a></li>
+          <li><a routerLink="selectBudget" class="nav-link">Presupuesto</a></li>
+        </ul>
       </li>
 
 

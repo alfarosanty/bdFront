@@ -309,7 +309,7 @@ dataSource = new MatTableDataSource<PedidoProduccion|Ingreso>();
   }
     this.mostrarConfirmacionPDF = true;
 
-    setTimeout(() => {window.location.reload();}, 5000);
+    setTimeout(() => {window.location.reload();}, 10000);
   }
 
   cantidadPedidosABorrar(): number {
@@ -507,32 +507,35 @@ restaurarCantidades(
   docARestaurar: (PedidoProduccion | Presupuesto)[],
   tipo: string
 ) {
-  detalles.forEach(detalle => {
-    // Buscamos el documento correspondiente
+  detalles.forEach((detalle, index) => {
+    console.log(`Procesando detalle #${index}`, detalle.articulo?.codigo, detalle.cantidadDescontada);
+  
     let doc: PedidoProduccion | Presupuesto | undefined;
-
+  
     if (tipo === 'PP') {
       doc = docARestaurar.find(d => d.id === detalle.pedidoProduccion?.id) as PedidoProduccion;
     } else if (tipo === 'P') {
       doc = docARestaurar.find(d => d.id === detalle.presupuesto?.id) as Presupuesto;
     }
-
-    if (!doc) return;
-
-    // Buscamos el artículo dentro del documento
-    const articulo = doc.articulos?.find(a => a.articulo?.id === detalle.articulo?.id);
-    if (!articulo) return;
-
-    // Restauramos la cantidad
-    articulo.cantidadPendiente = (articulo.cantidadPendiente || 0) + (detalle.cantidadDescontada || 0);
-
-    // Reacomodamos el estado del documento
-    if (tipo === 'PP') {
-      (doc as PedidoProduccion).idEstadoPedidoProduccion = 3;
-    } else if (tipo === 'P') {
-      (doc as Presupuesto).estadoPresupuesto!.id = 3;
+  
+    if (!doc) {
+      console.log('Documento no encontrado para detalle', detalle);
+      return;
     }
+  
+    const articulo = doc.articulos?.find(a => a.articulo?.id === detalle.articulo?.id);
+    if (!articulo) {
+      console.log('Artículo no encontrado en documento', detalle.articulo?.codigo);
+      return;
+    }
+  
+    console.log('Articulo a restaurar', articulo.codigo, 'pendiente actual', articulo.cantidadPendiente);
+  
+    articulo.cantidadPendiente = (articulo.cantidadPendiente || 0) + (detalle.cantidadDescontada || 0);
+  
+    console.log('Nueva cantidad pendiente', articulo.cantidadPendiente);
   });
+  
 }
 
 

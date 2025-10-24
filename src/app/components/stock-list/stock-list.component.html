@@ -81,10 +81,20 @@
             <td mat-cell *matCellDef="let element"> {{ element.enTaller }} </td>
             </ng-container>
 
-          <ng-container matColumnDef="Stock">
-            <th mat-header-cell *matHeaderCellDef>Stock</th>
-            <td mat-cell *matCellDef="let element">{{ element.stock - element.separado }}</td>
+            <ng-container matColumnDef="Separado">
+              <th mat-header-cell *matHeaderCellDef>Separado</th>
+              <td mat-cell *matCellDef="let element"> {{ element.separado }} </td>
+              </ng-container>
+
+          <ng-container matColumnDef="Estanteria">
+            <th mat-header-cell *matHeaderCellDef>Estantería</th>
+            <td mat-cell *matCellDef="let element">{{ element.estanteria }}</td>
             </ng-container>
+
+            <ng-container matColumnDef="Stock">
+              <th mat-header-cell *matHeaderCellDef>Stock</th>
+              <td mat-cell *matCellDef="let element">{{ element.stock}}</td>
+              </ng-container>
   
         
         
@@ -122,14 +132,29 @@
                     </td>
                   </ng-container> 
 
+                  <!-- SEPARADO -->
+                  <ng-container matColumnDef="Separado">
+                    <th mat-header-cell *matHeaderCellDef>Separado</th>
+                    <td mat-cell *matCellDef="let informacion">
+                      {{ informacion?.cantidadSeparadoUnitario}}
+                    </td>
+                  </ng-container> 
+                  <!-- ESTANTERIA -->
+                  <ng-container matColumnDef="Estanteria">
+                    <th mat-header-cell *matHeaderCellDef>Estantería</th>
+                    <td mat-cell *matCellDef="let informacion">
+                      {{ informacion?.cantidadEstanteriaUnitario}}
+                    </td>
+                  </ng-container> 
+ 
                   <!-- STOCK -->
                   <ng-container matColumnDef="Stock">
                     <th mat-header-cell *matHeaderCellDef>Stock</th>
                     <td mat-cell *matCellDef="let informacion">
-                      {{ informacion?.stockUnitario - informacion?.cantidadSeparadoUnitario}}
+                      {{ informacion?.stockUnitario}}
                     </td>
-                  </ng-container> 
-        
+                  </ng-container>            
+                  
                   <tr mat-header-row *matHeaderRowDef="articuloColumnsToDisplay"></tr>
                   <tr mat-row *matRowDef="let row; columns: articuloColumnsToDisplay"></tr>
                 </table>

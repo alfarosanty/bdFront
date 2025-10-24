@@ -33,8 +33,8 @@ export class IngresoService {
   );
   }
 
-  getByTaller(id:any): Observable<PedidoProduccion[]> {
-    return this.http.get<PedidoProduccion[]>(`${baseUrl}/IngresoByTaller/${id} `);
+  getByTaller(id:any): Observable<Ingreso[]> {
+    return this.http.get<Ingreso[]>(`${baseUrl}/IngresoByTaller/${id} `);
   }
 
   
