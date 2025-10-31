@@ -60,6 +60,7 @@ import { EliminacionesComponent } from './components/eliminaciones/eliminaciones
 import { SeleccionClienteComponent } from './components/seleccion-cliente/seleccion-cliente.component';
 import { RevisionesIngresosComponent } from './components/revisiones-ingresos/revisiones-ingresos.component';
 import { RevisionesPresupuestosComponent } from './components/revisiones-presupuestos/revisiones-presupuestos.component';
+import { LoginComponent } from './components/login/login.component';
 
 
 
@@ -91,6 +92,7 @@ import { RevisionesPresupuestosComponent } from './components/revisiones-presupu
     SeleccionClienteComponent,
     RevisionesIngresosComponent,
     RevisionesPresupuestosComponent,
+    LoginComponent,
   ],
   imports: [
     MatSelectModule,

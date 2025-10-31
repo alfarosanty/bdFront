@@ -1,0 +1,8 @@
+<form (ngSubmit)="onSubmit()" #loginForm="ngForm">
+    <input type="text" name="userName" [(ngModel)]="userName" placeholder="Usuario" required />
+    <input type="password" name="contrasenia" [(ngModel)]="contrasenia" placeholder="Contraseña" required />
+    <button type="submit">Login</button>
+  </form>
+  
+  <div *ngIf="error">{{ error }}</div>
+  

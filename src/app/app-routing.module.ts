@@ -20,6 +20,7 @@ import { ConsultasGeneralComponent } from './components/consultas-general/consul
 import { EliminacionesComponent } from './components/eliminaciones/eliminaciones.component';
 import { SeleccionClienteComponent } from './components/seleccion-cliente/seleccion-cliente.component';
 import { RevisionesIngresosComponent } from './components/revisiones-ingresos/revisiones-ingresos.component';
+import { LoginComponent } from './components/login/login.component';
 
 
 const routes: Routes = [
@@ -47,6 +48,7 @@ const routes: Routes = [
   { path:  'consultasGeneral', component: ConsultasGeneralComponent},
   { path:  'eliminaciones', component: EliminacionesComponent},
   { path:  'seleccion-cliente', component: SeleccionClienteComponent},
+  { path:  'login', component: LoginComponent},
 
 
 ];
