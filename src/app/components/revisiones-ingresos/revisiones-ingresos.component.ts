@@ -172,33 +172,30 @@ drop(event: CdkDragDrop<Ingreso[]>) {
   this.dataSource.data = data;
 }
 
-async generarPDFControl(ingreso: Ingreso){
+async generarPDFControl(ingreso: Ingreso) {
+  // 1️⃣ Traer los detalles desde el backend
+  const detallesPPI = await firstValueFrom(this.ingresoService.getDetallePPI(ingreso));
+  console.log("Detalles llegados de la BD: ", detallesPPI)
 
-  
-  let detallesPPI = await firstValueFrom(this.ingresoService.getDetallePPI(ingreso));
-
-  let mapaDetallesXPP = new Map<number, PedidoProduccionIngresoDetalle[]>();
-  
-  for (const detalle of detallesPPI) {
-    const key = detalle.pedidoProduccion?.id;
-  
-    if (!mapaDetallesXPP.has(key!)) {
-      mapaDetallesXPP.set(key!, []);
-    }
-  
-    mapaDetallesXPP.get(key!)?.push(detalle);
-  }
-  
-
-
-}
-
-generarPDFcontrolPendientes() {
-  if (!this.mapaArticulosModificados || this.mapaArticulosModificados.size === 0) {
-    alert("No hay ningún pedido de producción con estado EN TALLER que tenga artículos para modificar");
+  if (!detallesPPI || detallesPPI.length === 0) {
+    alert('No hay detalles asociados a este ingreso.');
     return;
   }
 
+  // 2️⃣ Agrupar los detalles por Pedido de Producción
+  const mapaDetallesXPP = new Map<number, PedidoProduccionIngresoDetalle[]>();
+
+  for (const detalle of detallesPPI) {
+    const key = detalle.pedidoProduccion?.id ?? 0;
+    if (!mapaDetallesXPP.has(key)) {
+      mapaDetallesXPP.set(key, []);
+    }
+    mapaDetallesXPP.get(key)!.push(detalle);
+  }
+
+  console.log("Mapa con detalles: ", mapaDetallesXPP)
+
+  // 3️⃣ Definir encabezado del PDF
   const docDefinition: any = {
     content: [
       {
@@ -206,7 +203,7 @@ generarPDFcontrolPendientes() {
           {
             width: '*',
             stack: [
-              { text: `Fecha: ${this.formatearFecha(this.fechaIngresoMercaderia)}`, style: 'caption', alignment: 'left' },
+              { text: `Fecha: ${this.formatearFecha(ingreso.fecha)}`, style: 'caption', alignment: 'left' },
               { text: `Taller: ${this.currentTaller?.razonSocial}`, style: 'caption', alignment: 'left' },
               { text: `Dirección: ${this.currentTaller?.direccion}`, style: 'caption', alignment: 'left' },
               { text: `Teléfono: ${this.currentTaller?.telefono}`, style: 'caption', alignment: 'left' },
@@ -235,62 +232,50 @@ generarPDFcontrolPendientes() {
     styles: this.getStyles(),
   };
 
+  // 4️⃣ Armar tabla principal
   const tablaBody: any[] = [
     [
-      // { text: 'Pedido Producción', style: 'tableHeaderControl' }, // sacado
       { text: 'Artículo', style: 'tableHeaderControl' },
       { text: 'Pendiente Antes', style: 'tableHeaderControl' },
       { text: 'Descontado', style: 'tableHeaderControl' },
       { text: 'Pendiente Después', style: 'tableHeaderControl' }
     ]
   ];
-  
 
-  let pedidoActual = '';
+  // 5️⃣ Recorrer cada Pedido Producción y agregar filas
+  for (const [idPP, detalles] of mapaDetallesXPP.entries()) {
 
-  this.mapaArticulosModificados?.forEach((articulos, clave) => {
+    // Obtener cliente desde el presupuesto (o 'Stock' si no hay)
+    const cliente = detalles[0]?.presupuesto?.cliente?.razonSocial ?? 'Stock';
+    const tituloPedido = `Pedido #${idPP} - ${cliente}`;
 
-    const numeroStr = clave.match(/#(\d+)/)?.[1];
-    const numero = numeroStr ? parseInt(numeroStr, 10) : null;
+    // Encabezado de grupo
+    tablaBody.push([
+      {
+        colSpan: 4,
+        stack: [
+          { text: '', margin: [0, 2] },
+          { text: tituloPedido, bold: true, alignment: 'center' },
+          { text: '', margin: [0, 2] }
+        ]
+      },
+      {}, {}, {}
+    ]);
 
-    const pedidoTemp: PedidoProduccion = { id: numero! };
-    const cliente = this.getCliente(pedidoTemp) || 'Stock';
-    // Nueva sección: Pedido distinto
-    if (clave !== pedidoActual) {
-      
-      // línea divisoria debajo del título
+    // Filas de artículos
+    for (const det of detalles) {
+      const art = det.articulo;
+      const descripcion = `${art?.codigo ?? 'N/A'} ${art?.descripcion ?? ''} ${art?.color?.codigo ?? ''}`;
       tablaBody.push([
-        {
-          colSpan: 4,
-          stack: [
-            { text: '', margin: [0, 2] }, // espacio arriba
-            { text: `${clave} - ${cliente}`, bold: true, alignment: 'center' }, // texto centrado en negrita
-            { text: '', margin: [0, 2] } // espacio abajo
-          ]
-        },
-        {}, {}, {}
+        { text: descripcion.trim(), style: 'tableCell2' },
+        { text: det.cantidadPendienteAntes?.toString() ?? '0', style: 'tableCell' },
+        { text: det.cantidadDescontada?.toString() ?? '0', style: 'tableCell' },
+        { text: det.cantidadPendienteDespues?.toString() ?? '0', style: 'tableCell' }
       ]);
-      
-      
-      
-      
-
-      pedidoActual = clave;
     }
+  }
 
-    articulos.forEach(articulo => {
-      const a = articulo.articuloAfectado;
-      const descripcion = `${a?.codigo ?? 'N/A'} ${a?.descripcion ?? 'N/A'} ${a?.color?.codigo ?? 'N/A'}`;
-      tablaBody.push([
-        //{ text: clave + '- ' +cliente, style: 'tableCell' },
-        { text: descripcion, style: 'tableCell2' },
-        { text: articulo.pendienteAntes?.toString() ?? '0', style: 'tableCell' },
-        { text: articulo.descontado?.toString() ?? '0', style: 'tableCell' },
-        { text: articulo.pendienteDespues?.toString() ?? '0', style: 'tableCell' }
-      ]);
-    });
-  });
-
+  // 6️⃣ Insertar la tabla al contenido del PDF
   docDefinition.content.push({
     table: {
       headerRows: 1,
@@ -300,14 +285,12 @@ generarPDFcontrolPendientes() {
     layout: 'lightHorizontalLines',
     style: 'table'
   });
-  
 
-  // Generar el PDF
+  // 7️⃣ Generar PDF
   pdfMake.createPdf(docDefinition).download(
     `Control-Pendientes-${this.currentTaller?.razonSocial}_${new Date().toISOString().split('T')[0]}.pdf`
   );
-  }
-
+}
 
 
 

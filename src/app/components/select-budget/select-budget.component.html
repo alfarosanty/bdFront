@@ -65,10 +65,15 @@
       </div>
 
 
-    <div *ngIf="presupuestoSeleccionado" style="display: flex; gap: 16px; align-items: center;">
-    
-      <button class="btn-azul" (click)="accederAPresupuesto()">Modificar</button>
-      <button class="btn-azul" (click)="seleccionarPresupuesto()">Separar</button>
-    </div>
+      <div *ngIf="presupuestoSeleccionado" style="display: flex; gap: 16px; align-items: center;">
+        <button *ngIf="modo === 'revisar'" class="btn-azul" (click)="accederAPresupuesto()">
+          Revisar
+        </button>
+      
+        <button *ngIf="modo === 'separar'" class="btn-azul" (click)="seleccionarPresupuesto()">
+          Separar
+        </button>
+      </div>
+      
     
 

@@ -5,8 +5,13 @@
       <li class="nav-item dropdown">
         <a class="nav-link">Presupuestos</a>
         <ul class="submenu">
-          <li><a routerLink="searchBudget" class="nav-link">Generar Presupuesto</a></li>
-          <li><a routerLink="selectBudget" class="nav-link">Separar Presupuesto</a></li>
+          <li><a routerLink="searchBudget" class="nav-link">
+            Generar Presupuesto
+          </a></li>
+
+          <li><a [routerLink]="['/selectBudget']" [queryParams]="{ modo: 'separar' }" class="nav-link">
+            Separar Presupuesto
+          </a></li>        
         </ul>
       </li>
       
@@ -34,7 +39,11 @@
         <ul class="submenu">
           <li><a routerLink="revisionIngreso" class="nav-link">Ingreso</a></li>
           <li><a routerLink="revisionPedidoProduccion" class="nav-link">Pedido producción</a></li>
-          <li><a routerLink="selectBudget" class="nav-link">Presupuesto</a></li>
+          <li>
+            <a [routerLink]="['/selectBudget']" [queryParams]="{ modo: 'revisar' }" class="nav-link">
+              Presupuesto
+            </a>
+          </li>
         </ul>
       </li>
 

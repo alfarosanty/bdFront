@@ -1,7 +1,7 @@
 import { animate, style, transition, trigger } from '@angular/animations';
 import { Component } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, map, Observable, startWith, throwError } from 'rxjs';
 import { Cliente } from 'src/app/models/cliente';
 import { Presupuesto } from 'src/app/models/presupuesto.model';
@@ -27,6 +27,10 @@ import { EstadoPresupuesto } from 'src/app/models/estado-presupuesto.model';
   ]
 })
 export class SelectBudgetComponent {
+
+// ESPECIFICACIONES DE PÁGINA
+modo: 'revisar' | 'separar' = 'revisar';
+
 
 // LISTAS
   clientes?: Cliente[];
@@ -55,11 +59,15 @@ currentCliente?: Cliente|null
 
 
 
-  constructor(private snackbar : MatSnackBar, private clienteService : ClienteService,private presupuestoService : PresupuestoService, private router : Router) {}
+  constructor(private route: ActivatedRoute, private snackbar : MatSnackBar, private clienteService : ClienteService,private presupuestoService : PresupuestoService, private router : Router) {}
 
 
 
   ngOnInit(): void {
+    this.route.queryParams.subscribe(params => {
+      this.modo = params['modo'] || 'revisar';
+    });
+
     this.listarClientes();
     this.fechaPresupuesto =  new Date().toISOString().split('T')[0];
 
