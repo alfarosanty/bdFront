@@ -21,27 +21,52 @@ import { EliminacionesComponent } from './components/eliminaciones/eliminaciones
 import { SeleccionClienteComponent } from './components/seleccion-cliente/seleccion-cliente.component';
 import { RevisionesIngresosComponent } from './components/revisiones-ingresos/revisiones-ingresos.component';
 import { LoginComponent } from './components/login/login.component';
+import { authGuard } from './guards/auth.guard';
+import { roleGuard } from './guards/role.guard';
+import { NoPermisoComponent } from './components/no-permiso/no-permiso.component';
 
 
 const routes: Routes = [
   { path: '', component: PresentacionComponent },
-  { path: 'addStock', component: AddStockComponent },
-  { path: 'viewStock', component: StockDetailsComponent },
-  { path: 'listStock', component: StockListComponent },
+  { 
+    path: 'addStock',
+    component: AddStockComponent,
+    canActivate: [authGuard]
+  },
+  { 
+    path: 'viewStock', 
+    component: StockDetailsComponent, 
+    canActivate: [authGuard]
+  },
+  { 
+    path: 'listStock', 
+    component: StockListComponent, 
+    canActivate: [authGuard]
+  },
   { path: 'listStock/:id', component: StockDetailsComponent },
   { path:  'searchBudget', component: SearchBudgetComponent},
   { path:  'searchBudget/:id', component: SearchBudgetComponent},
   { path:  'selectBudget', component: SelectBudgetComponent},
   { path:  'clientes', component: ClientesComponent},
   { path:  'clientes/:id', component: ClientesComponent},
-  { path:  'facturacion', component: FacturacionComponent},
+  { 
+    path:  'facturacion', 
+    component: FacturacionComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { roles: ['ADMIN', 'CONTROL_FINANZAS'] }
+  },
   { path:  'pedidoProduccion', component: PedidoProduccionComponent},
   { path:  'ingreso', component: IngresoComponent},
   { path:  'revisionPedidoProduccion', component: RevisionPedidosProduccionComponent},
   { path:  'revisionIngreso', component: RevisionesIngresosComponent},
   { path:  'seleccionarPresupuesto/:id', component: SeparacionProductosComponent},
   { path:  'configuracionArticulo', component: ArticuloConfiguracionComponent},
-  { path:  'estadisticas', component: EstadisticasComponent},
+  { 
+    path:  'estadisticas', 
+    component: EstadisticasComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { role: 'ADMIN' }
+  },
   { path:  'actualizacionPrecios', component: ActualizacionPreciosComponent},
   { path:  'vista', component: VistaGeneralComponent},
   { path:  'vista/:id', component: VistaGeneralComponent},
@@ -49,6 +74,8 @@ const routes: Routes = [
   { path:  'eliminaciones', component: EliminacionesComponent},
   { path:  'seleccion-cliente', component: SeleccionClienteComponent},
   { path:  'login', component: LoginComponent},
+  { path: 'no-permission', component: NoPermisoComponent }
+
 
 
 ];

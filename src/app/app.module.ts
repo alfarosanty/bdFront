@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -61,6 +61,8 @@ import { SeleccionClienteComponent } from './components/seleccion-cliente/selecc
 import { RevisionesIngresosComponent } from './components/revisiones-ingresos/revisiones-ingresos.component';
 import { RevisionesPresupuestosComponent } from './components/revisiones-presupuestos/revisiones-presupuestos.component';
 import { LoginComponent } from './components/login/login.component';
+import { NoPermisoComponent } from './components/no-permiso/no-permiso.component';
+import { CredentialsInterceptor } from './core/interceptors/credentials.interceptor';
 
 
 
@@ -93,6 +95,7 @@ import { LoginComponent } from './components/login/login.component';
     RevisionesIngresosComponent,
     RevisionesPresupuestosComponent,
     LoginComponent,
+    NoPermisoComponent,
   ],
   imports: [
     MatSelectModule,
@@ -125,7 +128,9 @@ import { LoginComponent } from './components/login/login.component';
   ],
   
   providers: [
-    { provide: MAT_DATE_LOCALE, useValue: 'es-AR' }
+    { provide: MAT_DATE_LOCALE, useValue: 'es-AR' },
+    { provide: HTTP_INTERCEPTORS, useClass: CredentialsInterceptor, multi: true }
+
   ],
   bootstrap: [AppComponent]
 })
