@@ -3,5 +3,6 @@ export class Usuario {
     nombre?: string;
     apellido?: string;
     userName?: string;
+    contrasenia?: string;
     rol?: string;
 }

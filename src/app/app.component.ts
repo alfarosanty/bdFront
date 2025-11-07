@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { LoginService } from './services/login.service';
 import { Usuario } from './models/usuario.model';
 import { AuthService } from './services/auth.service';
@@ -12,43 +12,37 @@ import { Router } from '@angular/router';
 export class AppComponent implements OnInit {
 
   user: Usuario | null = null;
+  loaded = false;
 
-  constructor(public authService: AuthService,
-              private loginService: LoginService,
-              private router: Router) {}
+  constructor(
+    public authService: AuthService,
+    private loginService: LoginService,
+    private router: Router,
+    private cdr: ChangeDetectorRef
+  ) {}
 
-              ngOnInit(): void {
+  ngOnInit(): void {
+    console.log("🚀 AppComponent iniciado, llamando checkSession()");
+    this.authService.checkSession();
+  
+    this.authService.user$.subscribe(u => {
+      console.log("👤 user$ cambió:", u);
+      this.user = u;
+      this.cdr.detectChanges();
+    });
 
-                this.authService.checkSession();
-                
-                this.authService.user$.subscribe(u => {
-                  console.log("👤 user$ cambió:", u);
-                  this.user = u;
-                });
-
-              
-                this.authService.loggedIn$.subscribe(v => {
-                  console.log("🔐 loggedIn$ cambió:", v);
-                });
-              
-                this.loginService.me().subscribe({
-                  next: (userData: Usuario) => {
-                    console.log("✅ /me devolvió usuario:", userData);
-                    this.authService.setUser(userData);
-                  },
-                  error: (err) => {
-                    console.log("❌ /me falló:", err.status, err.error);
-              
-                    if (!this.authService.isLoggedIn()) {
-                      console.log("➡️ Redirigiendo al login porque NO hay usuario en memoria.");
-                      this.router.navigate(['/login']);
-                    } else {
-                      console.log("⚠️ /me falló pero mantengo el usuario, porque ya estaba logueado.");
-                    }
-                  }
-                });
-              }
-              
+    this.authService.loggedIn$.subscribe(v => {
+      console.log("🔐 loggedIn$ cambió:", v);
+      if (!v) {
+        this.router.navigate(['/']);
+      }
+    });
+  
+    this.authService.loggedIn$.subscribe(v => {
+      console.log("🔐 loggedIn$ cambió:", v);
+    });
+  }
+  
 
   logout(): void {
     this.loginService.logout().subscribe(() => {
@@ -61,3 +55,4 @@ export class AppComponent implements OnInit {
     return this.user?.rol === role;
   }
 }
+

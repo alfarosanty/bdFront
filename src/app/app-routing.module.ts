@@ -24,6 +24,7 @@ import { LoginComponent } from './components/login/login.component';
 import { authGuard } from './guards/auth.guard';
 import { roleGuard } from './guards/role.guard';
 import { NoPermisoComponent } from './components/no-permiso/no-permiso.component';
+import { ListUsuariosComponent } from './components/list-usuarios/list-usuarios.component';
 
 
 const routes: Routes = [
@@ -43,38 +44,126 @@ const routes: Routes = [
     component: StockListComponent, 
     canActivate: [authGuard]
   },
-  { path: 'listStock/:id', component: StockDetailsComponent },
-  { path:  'searchBudget', component: SearchBudgetComponent},
-  { path:  'searchBudget/:id', component: SearchBudgetComponent},
-  { path:  'selectBudget', component: SelectBudgetComponent},
-  { path:  'clientes', component: ClientesComponent},
-  { path:  'clientes/:id', component: ClientesComponent},
+  { 
+    path: 'listStock/:id', 
+    component: StockDetailsComponent,
+    canActivate: [authGuard] 
+  },
+  { 
+    path:  'searchBudget', 
+    component: SearchBudgetComponent,
+    canActivate: [authGuard]
+  },
+  { 
+    path:  'searchBudget/:id', 
+    component: SearchBudgetComponent,
+    canActivate: [authGuard]
+  },
+  { 
+    path:  'selectBudget', 
+    component: SelectBudgetComponent,
+    canActivate: [authGuard]
+  },
+  { 
+    path:  'clientes', 
+    component: ClientesComponent,
+    canActivate: [authGuard]
+  },
+  { 
+    path:  'clientes/:id', 
+    component: ClientesComponent,
+    canActivate: [authGuard]
+  },
   { 
     path:  'facturacion', 
     component: FacturacionComponent,
     canActivate: [authGuard, roleGuard],
     data: { roles: ['ADMIN', 'CONTROL_FINANZAS'] }
   },
-  { path:  'pedidoProduccion', component: PedidoProduccionComponent},
-  { path:  'ingreso', component: IngresoComponent},
-  { path:  'revisionPedidoProduccion', component: RevisionPedidosProduccionComponent},
-  { path:  'revisionIngreso', component: RevisionesIngresosComponent},
-  { path:  'seleccionarPresupuesto/:id', component: SeparacionProductosComponent},
-  { path:  'configuracionArticulo', component: ArticuloConfiguracionComponent},
   { 
-    path:  'estadisticas', 
+    path:  'pedidoProduccion', 
+    component: PedidoProduccionComponent,
+    canActivate: [authGuard]
+
+  },
+  { 
+    path:  'ingreso', 
+    component: IngresoComponent,
+    canActivate: [authGuard]
+  },
+  { 
+    path:  'revisionPedidoProduccion', 
+    component: RevisionPedidosProduccionComponent,
+    canActivate: [authGuard]
+  },
+  { 
+    path:  'revisionIngreso', 
+    component: RevisionesIngresosComponent,
+    canActivate: [authGuard]
+  },
+  { 
+    path:  'seleccionarPresupuesto/:id', 
+    component: SeparacionProductosComponent,
+    canActivate: [authGuard]
+  },
+  { 
+    path:  'configuracionArticulo', 
+    component: ArticuloConfiguracionComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path:  'estadisticas',
     component: EstadisticasComponent,
     canActivate: [authGuard, roleGuard],
     data: { role: 'ADMIN' }
   },
-  { path:  'actualizacionPrecios', component: ActualizacionPreciosComponent},
-  { path:  'vista', component: VistaGeneralComponent},
-  { path:  'vista/:id', component: VistaGeneralComponent},
-  { path:  'consultasGeneral', component: ConsultasGeneralComponent},
-  { path:  'eliminaciones', component: EliminacionesComponent},
-  { path:  'seleccion-cliente', component: SeleccionClienteComponent},
-  { path:  'login', component: LoginComponent},
-  { path: 'no-permission', component: NoPermisoComponent }
+  { 
+    path:  'actualizacionPrecios', 
+    component: ActualizacionPreciosComponent,
+    canActivate: [authGuard]
+  },
+  { 
+    path:  'vista', 
+    component: VistaGeneralComponent,
+    canActivate: [authGuard]
+  },
+  { 
+    path:  'vista/:id', 
+    component: VistaGeneralComponent,
+    canActivate: [authGuard]
+  },
+  { 
+    path:  'consultasGeneral', 
+    component: ConsultasGeneralComponent,
+    canActivate: [authGuard]
+  },
+  { 
+    path:  'eliminaciones', 
+    component: EliminacionesComponent,
+    canActivate: [authGuard]
+  },
+  { 
+    path:  'seleccion-cliente', 
+    component: SeleccionClienteComponent,
+    canActivate: [authGuard]
+  },
+  { 
+    path:  'login', 
+    component: LoginComponent,
+  },
+  { 
+    path: 'no-permission', 
+    component: NoPermisoComponent,
+    canActivate: [authGuard]
+
+  },
+  { 
+    path: 'list-usuarios', 
+    component: ListUsuariosComponent,
+    canActivate: [authGuard, roleGuard],
+    data: { role: 'ADMIN' }
+  }
+
 
 
 

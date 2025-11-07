@@ -28,6 +28,8 @@ import {MatMenuModule} from '@angular/material/menu';
 import {MatProgressBarModule} from '@angular/material/progress-bar';
 import {MatSnackBarModule} from '@angular/material/snack-bar';
 import {MatStepperModule} from '@angular/material/stepper';
+import {MatPaginatorModule} from '@angular/material/paginator';
+
 
 
 
@@ -63,6 +65,8 @@ import { RevisionesPresupuestosComponent } from './components/revisiones-presupu
 import { LoginComponent } from './components/login/login.component';
 import { NoPermisoComponent } from './components/no-permiso/no-permiso.component';
 import { CredentialsInterceptor } from './core/interceptors/credentials.interceptor';
+import { ListUsuariosComponent } from './components/list-usuarios/list-usuarios.component';
+import { UsuarioFormDialogComponent } from './pages/usuarios/usuario-form-dialog/usuario-form-dialog.component';
 
 
 
@@ -96,6 +100,8 @@ import { CredentialsInterceptor } from './core/interceptors/credentials.intercep
     RevisionesPresupuestosComponent,
     LoginComponent,
     NoPermisoComponent,
+    ListUsuariosComponent,
+    UsuarioFormDialogComponent,
   ],
   imports: [
     MatSelectModule,
@@ -124,7 +130,8 @@ import { CredentialsInterceptor } from './core/interceptors/credentials.intercep
     MatSortModule,
     MatProgressBarModule,
     MatSnackBarModule,
-    MatStepperModule
+    MatStepperModule,
+    MatPaginatorModule
   ],
   
   providers: [

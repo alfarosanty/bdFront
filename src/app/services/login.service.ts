@@ -4,7 +4,7 @@ import { environment } from 'src/environment/environment';
 import { UsuarioLoginRequest } from '../models/usuario-login-request.model';
 import { catchError, Observable, tap, throwError } from 'rxjs';
 
-const baseUrl = environment.apiUrl+'/api/auth';
+const baseUrl = environment.apiUrl+'/api/Auth';
 @Injectable({
   providedIn: 'root'
 })

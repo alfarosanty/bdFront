@@ -1,0 +1,27 @@
+.usuarios-container {
+    padding: 20px;
+  }
+  
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  
+    h2 {
+      margin: 0;
+      font-weight: 600;
+    }
+  }
+  
+  .filtro {
+    width: 300px;
+    margin-bottom: 12px;
+  }
+  
+  .tabla {
+    background: white;
+    border-radius: 8px;
+    padding: 10px;
+  }
+  

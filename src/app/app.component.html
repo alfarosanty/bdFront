@@ -1,94 +1,85 @@
 <div>
   <nav class="navbar navbar-expand navbar-dark bg-dark">
     <a href="#" class="navbar-brand" routerLink=''>BlumeFront</a>
+
     <div class="navbar-nav mr-auto">
       <li class="nav-item dropdown">
         <a class="nav-link">Presupuestos</a>
         <ul class="submenu">
-          <li><a routerLink="searchBudget" class="nav-link">
-            Generar Presupuesto
-          </a></li>
-
-          <li><a [routerLink]="['/selectBudget']" [queryParams]="{ modo: 'separar' }" class="nav-link">
-            Separar Presupuesto
-          </a></li>        
+          <li><a routerLink="searchBudget" class="nav-link">Generar Presupuesto</a></li>
+          <li><a [routerLink]="['/selectBudget']" [queryParams]="{ modo: 'separar' }" class="nav-link">Separar Presupuesto</a></li>
         </ul>
       </li>
-      
+
       <li class="nav-item">
-        <a routerLink="seleccion-cliente" class="nav-link">Clientes </a>
+        <a routerLink="seleccion-cliente" class="nav-link">Clientes</a>
+      </li>
+
+      <li class="nav-item" *ngIf="authService.hasRole(['ADMIN', 'CONTROL_FINANZAS'])">
+        <a routerLink="facturacion" class="nav-link">Facturación</a>
       </li>
 
       <li class="nav-item">
-        <a routerLink="facturacion" class="nav-link">Facturación </a>
-      </li>
-    
-      <li class="nav-item">
-        <a routerLink="pedidoProduccion" class="nav-link">Pedido Producción </a>
+        <a routerLink="pedidoProduccion" class="nav-link">Pedido Producción</a>
       </li>
       <li class="nav-item">
-        <a routerLink="ingreso" class="nav-link">Ingreso Mercadería </a>
-      </li>
-
-      <li class="nav-item">
-        <a routerLink="listStock" class="nav-link">Stock </a>
+        <a routerLink="ingreso" class="nav-link">Ingreso Mercadería</a>
       </li>
 
       <li class="nav-item dropdown">
-        <a class="nav-link">Revisiones </a>
+        <a class="nav-link">Revisiones</a>
         <ul class="submenu">
           <li><a routerLink="revisionIngreso" class="nav-link">Ingreso</a></li>
           <li><a routerLink="revisionPedidoProduccion" class="nav-link">Pedido producción</a></li>
-          <li>
-            <a [routerLink]="['/selectBudget']" [queryParams]="{ modo: 'revisar' }" class="nav-link">
-              Presupuesto
-            </a>
-          </li>
+          <li><a [routerLink]="['/selectBudget']" [queryParams]="{ modo: 'revisar' }" class="nav-link">Presupuesto</a></li>
         </ul>
       </li>
 
+      <li class="nav-item dropdown">
+        <a class="nav-link">Artículos</a>
+        <ul class="submenu">
+          <li><a routerLink="configuracionArticulo" class="nav-link">Colores</a></li>
+          <li><a routerLink="listStock" class="nav-link">Stock</a></li>
+          <li><a routerLink="actualizacionPrecios" class="nav-link">Precios</a></li>
+        </ul>
+      </li>
 
-      <li class="nav-item">
-        <a routerLink="configuracionArticulo" class="nav-link">Artículos </a>
+      <li class="nav-item" *ngIf="authService.hasRole(['ADMIN'])">
+        <a routerLink="estadisticas" class="nav-link">Estadísticas</a>
       </li>
 
       <li class="nav-item">
-        <a routerLink="estadisticas" class="nav-link">Estadísticas </a>
+        <a routerLink="eliminaciones" class="nav-link">Eliminación</a>
       </li>
 
-      <li class="nav-item">
-        <a routerLink="actualizacionPrecios" class="nav-link">Precios </a>
-      </li>
-      <li class="nav-item">
-        <a routerLink="eliminaciones" class="nav-link">Eliminación </a>
+      <li class="nav-item" *ngIf="authService.hasRole(['ADMIN'])">
+        <a routerLink="list-usuarios" class="nav-link">Usuarios</a>
       </li>
     </div>
 
-
+    <!-- Si ESTÁ logueado -->
     <ul class="navbar-nav ml-auto" *ngIf="authService.loggedIn$ | async">
       <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="cursor: pointer;">
+        <a class="nav-link dropdown-toggle" data-toggle="dropdown" style="cursor:pointer;">
+          <i class="fas fa-user-circle mr-2"></i>
           {{ (authService.user$ | async)?.nombre }}
         </a>
-        <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
-          <li>
-            <a class="dropdown-item" style="cursor: pointer;" (click)="logout()">Cerrar sesión</a>
-          </li>
+        <ul class="dropdown-menu dropdown-menu-right">
+          <li><a class="dropdown-item" style="cursor:pointer;" (click)="logout()"><i class="fas fa-sign-out-alt mr-2"></i> Cerrar sesión</a></li>
         </ul>
       </li>
     </ul>
-    
 
+    <!-- Si NO está logueado -->
+    <ul class="navbar-nav ml-auto" *ngIf="!(authService.loggedIn$ | async)">
+      <li class="nav-item">
+        <a class="nav-link" routerLink="/login" style="cursor:pointer;">
+          <i class="fas fa-sign-in-alt mr-2"></i> Iniciar sesión
+        </a>
+      </li>
+    </ul>
 
   </nav>
-
-
-
-
-
-
-
 
   <div class="container mt-3">
     <router-outlet></router-outlet>
